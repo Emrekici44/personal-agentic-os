@@ -2,7 +2,7 @@
 
 ## Sleep-safe checkpoint
 
-Resume in `outputs/agentic-os`. There is no development server or browser automation process intentionally left running. First action: run formatter if needed, `npm test`, then `npm run build`. Fix only current compile/test failures without reverting the expanded UI or vault work. Then start the local preview and capture desktop command center plus mobile faith/career/finance/integration screenshots.
+Resume in `outputs/agentic-os`. Formatting, six tests, and production build now pass. Remaining actions: capture and inspect fresh desktop/mobile previews, commit the verified state, purge historical preview binaries before any remote push, and create the private GitHub repository after GitHub CLI installation/authentication.
 
 The authorized vault is `C:\Users\ekici\Documents\Obsidian Vault\Emre`. Original content was inventoried and must remain untouched. New files exist only in `00 System`, `01 Projekte`, `02 Journal`, `03 Aufgaben`, `04 Wissen/Wissen Index.md`, `05 Menschen`, `06 Agenten`, `07 Skills`, `08 Integrationen`, and `09 Vorlagen`.
 

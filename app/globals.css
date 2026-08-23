@@ -508,6 +508,99 @@ header h1 {
 .financeDomain {
   background: linear-gradient(145deg, #f1f7fb, #f7f7f3);
 }
+.healthDomain {
+  background: linear-gradient(145deg, #eff8f3, #f7f7f3);
+}
+.healthTop {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+.healthTop h3 {
+  font-size: 24px;
+}
+.healthTop small {
+  font-size: 8px;
+  color: var(--muted);
+}
+.healthGrid {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 15px;
+  margin-top: 15px;
+}
+.fitnessBars {
+  height: 190px;
+  display: flex;
+  align-items: end;
+  gap: 10px;
+  padding: 18px 0 22px;
+}
+.fitnessBars i {
+  flex: 1;
+  background: linear-gradient(#5fae8d, #bde0d1);
+  border-radius: 5px 5px 0 0;
+  position: relative;
+}
+.fitnessBars span {
+  position: absolute;
+  bottom: -18px;
+  width: 100%;
+  text-align: center;
+  font: normal 7px Inter;
+  color: var(--muted);
+}
+.exercise {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 9px;
+}
+.recovery {
+  padding: 9px 0;
+}
+.recovery > div {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9px;
+}
+.recovery > i {
+  display: block;
+  height: 5px;
+  background: #e3ebe6;
+  border-radius: 9px;
+  margin-top: 6px;
+}
+.recovery em {
+  display: block;
+  height: 100%;
+  background: #5fae8d;
+  border-radius: 9px;
+}
+.nutrition {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 7px;
+  margin: 20px 0;
+}
+.nutrition > div {
+  background: #eff6f1;
+  border-radius: 9px;
+  padding: 12px;
+  text-align: center;
+}
+.nutrition b,
+.nutrition span {
+  display: block;
+}
+.nutrition b {
+  font: 18px Georgia;
+}
+.nutrition span {
+  font-size: 8px;
+  color: var(--muted);
+}
 .relationDomain {
   background: linear-gradient(145deg, #fff4f6, #f7f7f3);
 }
@@ -1739,6 +1832,12 @@ header h1 {
   .moneytop {
     grid-template-columns: 1fr 1fr;
   }
+  .healthTop {
+    grid-template-columns: 1fr 1fr;
+  }
+  .healthGrid {
+    grid-template-columns: 1fr;
+  }
   .projects {
     grid-template-columns: 1fr;
   }
@@ -1789,4 +1888,138 @@ header h1 {
     white-space: nowrap;
   }
 }
-.zeroMode{position:fixed;right:76px;top:17px;z-index:40;text-decoration:none;background:#e8f2e9;color:#4d7c5d;border:1px solid #cfe0d1;border-radius:20px;padding:6px 10px;font-size:7px;font-weight:800}.zeroMode span{font-weight:500;margin-left:5px}.settingsGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}.settingsGrid label{display:grid;gap:5px;margin:14px 0}.settingsGrid input{border:1px solid var(--line);border-radius:8px;padding:8px;background:#fff}.usagePage{max-width:1180px;margin:auto;padding:42px 24px}.usagePage>a{color:var(--sage);text-decoration:none}.usagePage>header{position:static;height:auto;display:block;background:none;border:0;padding:30px 0}.usagePage>header h1{font:42px Georgia;margin:8px 0}.modeGrid,.limitGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}.modeGrid article,.limitGrid article{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px}.modeGrid article>em{float:right;font-style:normal;font-size:8px;background:#e8f2e9;padding:4px 7px;border-radius:20px}.modeGrid h2,.sectionTitle{font:22px Georgia}.modeGrid p,.modeGrid dl{font-size:9px;line-height:1.6}.modeGrid dl{display:grid;grid-template-columns:1fr 1fr}.modeGrid dd{margin:0;text-align:right}.limitGrid article{display:grid;grid-template-columns:28px 1fr auto;gap:8px;align-items:center}.limitGrid svg{width:19px}.limitGrid b,.limitGrid em{display:block;font-size:9px}.limitGrid em{font-style:normal;color:var(--muted)}.limitGrid p{grid-column:2;font-size:8px}.usagePage>aside{margin-top:16px;background:#eaf3e9;border:1px solid #cee0cf;border-radius:12px;padding:14px;display:flex;gap:10px;font-size:9px}@media(max-width:720px){.zeroMode{display:none}.settingsGrid,.modeGrid,.limitGrid{grid-template-columns:1fr}}
+.zeroMode {
+  position: fixed;
+  right: 76px;
+  top: 17px;
+  z-index: 40;
+  text-decoration: none;
+  background: #e8f2e9;
+  color: #4d7c5d;
+  border: 1px solid #cfe0d1;
+  border-radius: 20px;
+  padding: 6px 10px;
+  font-size: 7px;
+  font-weight: 800;
+}
+.zeroMode span {
+  font-weight: 500;
+  margin-left: 5px;
+}
+.settingsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+}
+.settingsGrid label {
+  display: grid;
+  gap: 5px;
+  margin: 14px 0;
+}
+.settingsGrid input {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px;
+  background: #fff;
+}
+.usagePage {
+  max-width: 1180px;
+  margin: auto;
+  padding: 42px 24px;
+}
+.usagePage > a {
+  color: var(--sage);
+  text-decoration: none;
+}
+.usagePage > header {
+  position: static;
+  height: auto;
+  display: block;
+  background: none;
+  border: 0;
+  padding: 30px 0;
+}
+.usagePage > header h1 {
+  font: 42px Georgia;
+  margin: 8px 0;
+}
+.modeGrid,
+.limitGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+}
+.modeGrid article,
+.limitGrid article {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 20px;
+}
+.modeGrid article > em {
+  float: right;
+  font-style: normal;
+  font-size: 8px;
+  background: #e8f2e9;
+  padding: 4px 7px;
+  border-radius: 20px;
+}
+.modeGrid h2,
+.sectionTitle {
+  font: 22px Georgia;
+}
+.modeGrid p,
+.modeGrid dl {
+  font-size: 9px;
+  line-height: 1.6;
+}
+.modeGrid dl {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.modeGrid dd {
+  margin: 0;
+  text-align: right;
+}
+.limitGrid article {
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+.limitGrid svg {
+  width: 19px;
+}
+.limitGrid b,
+.limitGrid em {
+  display: block;
+  font-size: 9px;
+}
+.limitGrid em {
+  font-style: normal;
+  color: var(--muted);
+}
+.limitGrid p {
+  grid-column: 2;
+  font-size: 8px;
+}
+.usagePage > aside {
+  margin-top: 16px;
+  background: #eaf3e9;
+  border: 1px solid #cee0cf;
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  gap: 10px;
+  font-size: 9px;
+}
+@media (max-width: 720px) {
+  .zeroMode {
+    display: none;
+  }
+  .settingsGrid,
+  .modeGrid,
+  .limitGrid {
+    grid-template-columns: 1fr;
+  }
+}
