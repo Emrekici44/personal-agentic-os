@@ -8,11 +8,14 @@ Follow the README. Settings → Backup export downloads the current local state.
 
 1. In the user's Google Cloud project, enable Calendar API and configure an OAuth consent screen.
 2. Create a Web OAuth client with the exact local and future private-host redirect URLs.
-3. Store the client ID and secret in `.env.local`; do not paste them into chat or commit them.
-4. Begin with Calendar read-only permission and verify work, commute, training, and Sunday planning events.
-5. Enable write permission only after the change-preview and approval flow is tested.
+3. Register exactly `http://localhost:3000/api/calendar/callback` as the local redirect URI.
+4. Copy `.env.example` to `.env.local`, set the four values, and generate `AUTH_SECRET` locally. Never paste values into chat or commit the file.
+5. Restart Northstar, connect from Integrations, select calendars, and verify the bounded week.
+6. The current connector is read-only. Write scope and actual commit logic require a separate reviewed change and renewed consent.
 
 Expected environment variable names: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `AUTH_SECRET`, and `APP_URL`. A future hosted deployment must set these in the host's encrypted secret manager.
+
+Without them, Northstar automatically uses clearly labeled fixed test data that cannot contact or modify Google.
 
 ## Obsidian
 

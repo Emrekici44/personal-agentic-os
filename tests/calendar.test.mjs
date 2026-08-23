@@ -1,0 +1,5 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {readMockEvents,proposeFocusBlocks,validateApproval} from '../lib/calendar-core.mjs';
+test('calendar reads are bounded to eight days',()=>assert.throws(()=>readMockEvents({start:'2026-08-23',end:'2026-09-02'}),/8 Tage/));
+test('selected calendars bound mock reads',()=>{const x=readMockEvents({start:'2026-08-23',end:'2026-08-30',calendarIds:['training']});assert.ok(x.length>0);assert.ok(x.every(e=>e.calendarId==='training'))});
+test('focus blocks remain proposals and avoid training days',()=>{const events=readMockEvents({start:'2026-08-23',end:'2026-08-30'}),p=proposeFocusBlocks(events);assert.ok(p.every(x=>x.status==='proposal'&&!x.writesPerformed));assert.ok(p.every(x=>!['2026-08-24','2026-08-26'].includes(x.start.slice(0,10))))});
+test('calendar approval requires exact confirmation and at most three blocks',()=>{assert.throws(()=>validateApproval({blocks:[{}]}),/freigabe/i);assert.equal(validateApproval({confirmation:'APPROVE_CALENDAR_WRITES',blocks:[{}]}).length,1);assert.throws(()=>validateApproval({confirmation:'APPROVE_CALENDAR_WRITES',blocks:[{},{},{},{}]}),/1–3/)})

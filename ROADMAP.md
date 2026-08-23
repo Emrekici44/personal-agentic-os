@@ -18,10 +18,12 @@
 - Obsidian-compatible safe import contract: read-only preview before any indexing
 - No existing vault is touched
 
-## Phase 4 — Real connectors (requires user-owned credentials)
+## Phase 4 — Google Calendar connector (implementation complete; consent pending)
 
-- Google OAuth client and authorized redirect URL
-- Calendar read scope first; write scope only after preview approval
+- Secure OAuth callback, encrypted HTTP-only token boundary, status and calendar selection
+- Real reads limited to eight days; `calendar.readonly` scope only
+- Proposal-only focus blocks and exact approval contract; mock proves zero writes
+- Account-side OAuth client creation and user consent remain pending
 - Tasks, health, and finance adapters remain opt-in and read-only by default
 
 ## Phase 5 — Private mobile deployment (requires user approval)

@@ -1,0 +1,2 @@
+import {NextRequest,NextResponse} from 'next/server';import {proposeFocusBlocks,readMockEvents} from '@/lib/calendar-core.mjs';
+export async function POST(req:NextRequest){const b=await req.json();try{const events=readMockEvents({start:b.start,end:b.end,calendarIds:b.calendarIds||[]});return NextResponse.json({mode:'mock',proposalOnly:true,writesPerformed:false,blocks:proposeFocusBlocks(events)})}catch(e){return NextResponse.json({error:e instanceof Error?e.message:'Vorschlag fehlgeschlagen'},{status:400})}}

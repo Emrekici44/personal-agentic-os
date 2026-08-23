@@ -1,9 +1,11 @@
 # Current state
 
-Status: locally operational and production-build verified.
+Status: locally operational; Calendar connector implemented and mock-verified.
 
 Implemented: all navigation modules, Sunday weekly reset, three-outcome constraint, 36% example buffer, training energy protection, explicit calendar approval, idea capture, projects, life areas, six agents, shared browser state, audit trail, knowledge graph view, integration setup states, and local backup.
 
-Not claimed live: Google Calendar/Tasks, Obsidian import, health/finance providers, hosted authentication, or private deployment. These require user-selected accounts and credentials.
+Google Calendar now has OAuth boundaries, encrypted HTTP-only session storage, connection status, calendar selection, bounded reads, proposals, and an approval API. It requests read-only scope, so real writes remain impossible. Mock data is always labeled and never contacts Google.
 
-Next safe action: create a Google Cloud OAuth client outside chat, add its client ID/secret through a local `.env.local`, connect with read-only Calendar scope, verify event ingestion, then separately request calendar write scope.
+Not claimed live: Google consent, Calendar writes, Google Tasks, Obsidian import, health/finance providers, hosted authentication, or private deployment.
+
+Next safe action: create a Google OAuth Web client outside chat, register `http://localhost:3000/api/calendar/callback`, add the four local environment values, and complete read-only consent. Write scope and commit logic require a later separate approval.
