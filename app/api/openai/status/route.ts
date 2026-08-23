@@ -1,0 +1,1 @@
+import{NextResponse}from'next/server';import{providerPolicy}from'@/lib/openai-provider.mjs';export async function GET(){const p=providerPolicy(process.env);return NextResponse.json({mode:p.mode,configured:p.configured,killSwitch:p.killSwitch,dailyLimit:p.dailyLimit,monthlyLimit:p.monthlyLimit,keyExposed:false,usageSource:'unavailable',modelsVerified:false})}
