@@ -1,5 +1,19 @@
 # Northstar visual preview — safe mock mode
 
+> Product label has since changed to the neutral, editable `Agentic OS` placeholder.
+
+## Expanded command center and mobile dashboards
+
+![Expanded desktop command center](expanded-desktop-command-center.png)
+
+![Expanded desktop faith dashboard](expanded-desktop-faith.png)
+
+![Expanded desktop agent overview](expanded-desktop-agents.png)
+
+![Expanded mobile health dashboard](expanded-mobile-health.png)
+
+![Expanded mobile integration health center](expanded-mobile-integrations.png)
+
 No Google login or external account was used. The Calendar screen shows fixed test data and cannot perform external writes.
 
 ## Dashboard

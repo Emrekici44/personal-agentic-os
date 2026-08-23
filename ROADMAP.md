@@ -7,7 +7,8 @@
 - Three provider modes plus Usage & Limits and pre-request kill switch: implemented, API remains disabled
 - Emre vault additive system layer: implemented; original notes preserved
 - Graphify: optional pilot only; built-in free graph remains core
-- Next: run tests/build, fix any compile issues, update remaining documentation, capture new desktop/mobile previews
+- Local end-state verified: tests, production build, documentation, VS Code handoff, and desktop/mobile previews complete
+- External next step: install/authenticate GitHub CLI, then create and push the audited private repository
 
 ## Phase 1 — Foundation (complete)
 
@@ -25,7 +26,7 @@
 
 - Knowledge graph surface, shared audit history, local persistence
 - Obsidian-compatible safe import contract: read-only preview before any indexing
-- No existing vault is touched
+- Existing vault content preserved; authorized additive Emre system structure complete
 
 ## Phase 4 — Google Calendar connector (implementation complete; consent pending)
 

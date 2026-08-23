@@ -9,6 +9,7 @@ type View =
   | "journal"
   | "habits"
   | "finance"
+  | "health"
   | "relations"
   | "faith"
   | "career"
@@ -137,7 +138,11 @@ export default function App() {
     [tasks, setTasks] = useState<any[]>([]),
     [journal, setJournal] = useState(""),
     [mood, setMood] = useState("ruhig"),
-    [brand, setBrand] = useState({ name: "Agentic OS", short: "AOS", accent: "#6f8d78" });
+    [brand, setBrand] = useState({
+      name: "Agentic OS",
+      short: "AOS",
+      accent: "#6f8d78",
+    });
   useEffect(() => {
     setTasks(
       store.get("tasks", [
@@ -147,7 +152,13 @@ export default function App() {
       ]),
     );
     setJournal(store.get("journal", ""));
-    setBrand(store.get("brand", { name: "Agentic OS", short: "AOS", accent: "#6f8d78" }));
+    setBrand(
+      store.get("brand", {
+        name: "Agentic OS",
+        short: "AOS",
+        accent: "#6f8d78",
+      }),
+    );
   }, []);
   const saveTasks = (x: any[]) => {
     setTasks(x);
@@ -164,7 +175,8 @@ export default function App() {
         <div className="logo">
           <b style={{ background: brand.accent }}>{brand.short.slice(0, 3)}</b>
           <span>
-            {brand.name}<small>life operating system</small>
+            {brand.name}
+            <small>life operating system</small>
           </span>
           <button onClick={() => setMenu(false)}>
             <I.X />
@@ -214,6 +226,7 @@ export default function App() {
           {v === "areas" && <Areas go={setV} />} {v === "faith" && <Faith />}
           {v === "career" && <Career />}
           {v === "finance" && <Finance />}
+          {v === "health" && <Health />}
           {v === "relations" && <Relations />}
           {v === "projects" && <Projects />}
           {v === "habits" && <Habits tasks={tasks} save={saveTasks} />}{" "}
@@ -235,7 +248,16 @@ export default function App() {
           {v === "inbox" && <Inbox note={note} />}{" "}
           {v === "integrations" && <Integrations note={note} />}{" "}
           {v === "brain" && <Brain />}
-          {v === "settings" && <Settings brand={brand} save={(x:any)=>{setBrand(x);store.set("brand",x);note("Branding lokal gespeichert")}} />}
+          {v === "settings" && (
+            <Settings
+              brand={brand}
+              save={(x: any) => {
+                setBrand(x);
+                store.set("brand", x);
+                note("Branding lokal gespeichert");
+              }}
+            />
+          )}
         </section>
       </main>
       {menu && <div className="shade" onClick={() => setMenu(false)} />}{" "}
@@ -572,6 +594,114 @@ function Career() {
     </div>
   );
 }
+function Health() {
+  return (
+    <div className="domain healthDomain">
+      <Intro
+        eyebrow="GESUNDHEIT · ORGANISATORISCH"
+        title="Stärker werden. Gut regenerieren."
+      >
+        <p>
+          Training, Ernährung und Erholung in einem ehrlichen Überblick – keine
+          medizinische Beratung.
+        </p>
+      </Intro>
+      <div className="healthTop">
+        {[
+          ["Trainingswoche", "3 / 4", "Einheiten"],
+          ["Schlaf", "7 h 28", "Ø 7 Tage"],
+          ["Erholung", "Gut", "subjektiv"],
+          ["Protein", "128 g", "Tageswert · Mock"],
+        ].map((x) => (
+          <Card key={x[0]}>
+            <Tag>{x[0]}</Tag>
+            <h3>{x[1]}</h3>
+            <small>{x[2]}</small>
+          </Card>
+        ))}
+      </div>
+      <div className="healthGrid">
+        <Card className="chart">
+          <div className="row">
+            <div>
+              <Tag>TRAININGSVOLUMEN</Tag>
+              <h3>Letzte 8 Wochen</h3>
+            </div>
+            <b>+12%</b>
+          </div>
+          <div
+            className="fitnessBars"
+            role="img"
+            aria-label="Trainingsvolumen steigt über acht Wochen moderat an"
+          >
+            {[42, 48, 45, 57, 61, 66, 71, 76].map((h, i) => (
+              <i style={{ height: h + "%" }} key={i}>
+                <span>W{i + 1}</span>
+              </i>
+            ))}
+          </div>
+        </Card>
+        <Card>
+          <Tag>NÄCHSTE EINHEIT</Tag>
+          <h3>Push · moderat</h3>
+          <p>
+            Montag, 17:30 · 60 Minuten. Danach bleibt der Abend frei von Deep
+            Work.
+          </p>
+          {[
+            ["Bankdrücken", "3 × 8"],
+            ["Schulterdrücken", "3 × 10"],
+            ["Trizeps", "2 × 12"],
+          ].map((x) => (
+            <div className="exercise" key={x[0]}>
+              <b>{x[0]}</b>
+              <span>{x[1]}</span>
+            </div>
+          ))}
+        </Card>
+        <Card>
+          <Tag>REGENERATION</Tag>
+          {[
+            ["Schlafqualität", 78],
+            ["Muskelgefühl", 66],
+            ["Stress", 42],
+            ["Energie", 72],
+          ].map((x) => (
+            <div className="recovery" key={x[0] as string}>
+              <div>
+                <b>{x[0]}</b>
+                <span>{x[1]}%</span>
+              </div>
+              <i>
+                <em style={{ width: x[1] + "%" }} />
+              </i>
+            </div>
+          ))}
+        </Card>
+        <Card>
+          <Tag>ERNÄHRUNG</Tag>
+          <div className="nutrition">
+            <div>
+              <b>2.180</b>
+              <span>kcal · Mock</span>
+            </div>
+            <div>
+              <b>128 g</b>
+              <span>Protein</span>
+            </div>
+            <div>
+              <b>2,1 l</b>
+              <span>Wasser</span>
+            </div>
+          </div>
+          <p>
+            Datenquelle unverbunden. Werte dienen nur der visuellen Planung.
+          </p>
+        </Card>
+      </div>
+    </div>
+  );
+}
 function Finance() {
   return (
     <div className="domain financeDomain">
@@ -723,7 +853,7 @@ function Relations() {
 function Projects() {
   const p = [
     [
-      "Northstar OS",
+      "Agentic OS",
       "System im Alltag verankern",
       "Aktiv",
       "68%",
@@ -1099,7 +1229,7 @@ function Chats({ note }: any) {
             </button>
           </div>
           {[
-            ["Wochenplanung KW 35", "Northstar OS"],
+            ["Wochenplanung KW 35", "Agentic OS"],
             ["Angebot schärfen", "Selbstständigkeit"],
             ["Training & Erholung", "Health Baseline"],
             ["Tagesreflexion", "Glaube"],
@@ -1427,7 +1557,7 @@ function Brain() {
           <Tag>VAULT-IMPORT</Tag>
           <h3>Read-only zuerst.</h3>
           <p>
-            Northstar inventarisiert Markdown und Links, bevor ein
+            Agentic OS inventarisiert Markdown und Links, bevor ein
             anwendungseigener Index entsteht. Dein Vault bleibt unverändert.
           </p>
           <Btn soft>Ordner-Vorschau wählen</Btn>
@@ -1436,7 +1566,67 @@ function Brain() {
     </>
   );
 }
-function Settings({brand,save}:any){const[d,setD]=useState(brand);return <><Intro eyebrow="PERSÖNLICH & LOKAL" title="Einstellungen"><p>Der Produktname ist ein Platzhalter und kann jederzeit ohne Datenmigration geändert werden.</p></Intro><div className="settingsGrid"><Card><Tag>IDENTITÄT</Tag><label>Produktname<input value={d.name} onChange={e=>setD({...d,name:e.target.value})}/></label><label>Kurzname / Monogramm<input value={d.short} maxLength={3} onChange={e=>setD({...d,short:e.target.value})}/></label><label>Akzentfarbe<input type="color" value={d.accent} onChange={e=>setD({...d,accent:e.target.value})}/></label><Btn onClick={()=>save(d)}>Branding speichern</Btn></Card><Card><Tag>KOSTENREGEL</Tag><h3>Lokal und kostenlos als Standard</h3><p>Funktionen mit möglichen Nutzungskosten erklären Preisart und Wirkung vor Aktivierung und benötigen deine ausdrückliche Freigabe.</p><a className="btn soft" href="/usage">Usage & Limits öffnen</a></Card><Card><Tag>VAULT</Tag><h3>Emre · autorisiert</h3><p>Bestehende Inhalte bleiben erhalten. Neue Struktur ist additiv; App-Writes benötigen weiterhin Vorschau, Freigabe und Audit.</p></Card></div></>}
+function Settings({ brand, save }: any) {
+  const [d, setD] = useState(brand);
+  return (
+    <>
+      <Intro eyebrow="PERSÖNLICH & LOKAL" title="Einstellungen">
+        <p>
+          Der Produktname ist ein Platzhalter und kann jederzeit ohne
+          Datenmigration geändert werden.
+        </p>
+      </Intro>
+      <div className="settingsGrid">
+        <Card>
+          <Tag>IDENTITÄT</Tag>
+          <label>
+            Produktname
+            <input
+              value={d.name}
+              onChange={(e) => setD({ ...d, name: e.target.value })}
+            />
+          </label>
+          <label>
+            Kurzname / Monogramm
+            <input
+              value={d.short}
+              maxLength={3}
+              onChange={(e) => setD({ ...d, short: e.target.value })}
+            />
+          </label>
+          <label>
+            Akzentfarbe
+            <input
+              type="color"
+              value={d.accent}
+              onChange={(e) => setD({ ...d, accent: e.target.value })}
+            />
+          </label>
+          <Btn onClick={() => save(d)}>Branding speichern</Btn>
+        </Card>
+        <Card>
+          <Tag>KOSTENREGEL</Tag>
+          <h3>Lokal und kostenlos als Standard</h3>
+          <p>
+            Funktionen mit möglichen Nutzungskosten erklären Preisart und
+            Wirkung vor Aktivierung und benötigen deine ausdrückliche Freigabe.
+          </p>
+          <a className="btn soft" href="/usage">
+            Usage & Limits öffnen
+          </a>
+        </Card>
+        <Card>
+          <Tag>VAULT</Tag>
+          <h3>Emre · autorisiert</h3>
+          <p>
+            Bestehende Inhalte bleiben erhalten. Neue Struktur ist additiv;
+            App-Writes benötigen weiterhin Vorschau, Freigabe und Audit.
+          </p>
+        </Card>
+      </div>
+    </>
+  );
+}
 function Goal({ n, t, p }: any) {
   return (
     <div className="goal">

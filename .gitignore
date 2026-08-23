@@ -3,3 +3,12 @@ node_modules/
 .env*
 !.env.example
 *.log
+*.db
+*.sqlite*
+*.tar.gz
+backups/
+local-state/
+previews/*.png
+previews/*.jpg
+previews/*.jpeg
+.obsidian/

@@ -1,6 +1,6 @@
-# Northstar — Personal Agentic OS
+# Agentic OS — Personal Life Operating System
 
-Northstar is a calm, local-first command center for planning a meaningful life without turning every ambition into another task. It is intentionally organized around Today, weekly outcomes, ideas, projects, life areas, agents, memory, integrations, and settings.
+`Agentic OS` is a neutral temporary name for a calm, local-first command center. Name, short name, monogram, and accent are editable in Settings without migrating user data.
 
 ## Run locally
 
@@ -10,6 +10,10 @@ Northstar is a calm, local-first command center for planning a meaningful life w
 4. Run `npm run build` before a release.
 
 The current verified mode stores user state in browser local storage and supports a JSON backup from Settings. Demo content is visibly representative; no external account is claimed as connected.
+
+## Ownership and privacy
+
+This directory is the complete normal source project: application code, tests, documentation, and Git history. Open the folder directly in Visual Studio Code. The Emre Obsidian vault is deliberately outside this repository and is never uploaded. Local screenshots, environment values, databases, backups, caches, and personal state are ignored.
 
 ## Design rationale
 

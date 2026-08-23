@@ -6,7 +6,9 @@ Expanded redesign source is saved but final visual verification is pending. Impl
 
 The Emre vault was fully inventoried before writes. All 14 original Markdown files—including both Graphify dossier files—remain untouched. Twelve additive hub/index/template/project files were created under new numbered directories. No file was deleted, moved, renamed, or overwritten.
 
-Verification state: earlier Calendar tests/build passed; the expanded redesign has not yet received its final `npm test` and production build after the last settings/checkpoint edit. Resume with formatting, tests, build, then desktop/mobile browser previews. No external account, paid service, or public deployment is active.
+Verification state: expanded redesign passes six automated safety tests and a production build. Dedicated health analytics, editable branding, Usage & Limits, PWA manifest, provider guard, and all expanded domain dashboards are present. Fresh desktop/mobile previews were captured and inspected locally. No external account, paid service, or public deployment is active.
+
+Repository audit: complete source is in this normal local Git project. Environment files, databases, backups, caches, local state, vault content, and screenshots are excluded. Secret-pattern scan is clear. GitHub CLI is not installed, so private repository creation is blocked at the user-controlled tool/authentication boundary.
 
 Status: locally operational; Calendar connector implemented and mock-verified.
 

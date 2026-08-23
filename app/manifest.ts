@@ -1,1 +1,13 @@
-import type{MetadataRoute}from'next';export default function manifest():MetadataRoute.Manifest{return{name:'Agentic OS',short_name:'Agentic OS',description:'Local-first personal life operating system',start_url:'/',display:'standalone',background_color:'#f5f7f3',theme_color:'#25322c',icons:[{src:'/favicon.svg',sizes:'any',type:'image/svg+xml'}]}}
+import type { MetadataRoute } from "next";
+export default function manifest(): MetadataRoute.Manifest {
+  return {
+    name: "Agentic OS",
+    short_name: "Agentic OS",
+    description: "Local-first personal life operating system",
+    start_url: "/",
+    display: "standalone",
+    background_color: "#f5f7f3",
+    theme_color: "#25322c",
+    icons: [{ src: "/favicon.svg", sizes: "any", type: "image/svg+xml" }],
+  };
+}
