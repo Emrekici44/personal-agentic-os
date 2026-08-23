@@ -1561,6 +1561,32 @@ header h1 {
 .calendarSafe {
   margin-bottom: 15px;
 }
+
+.setupBoundary {
+  display: flex;
+  gap: 9px;
+  margin: 14px 0;
+  border: 1px solid rgba(241, 185, 80, 0.18);
+  border-radius: 6px;
+  background: rgba(241, 185, 80, 0.05);
+  padding: 11px;
+  color: #d9b66c;
+}
+
+.setupBoundary svg {
+  flex: 0 0 auto;
+  width: 16px;
+}
+
+.setupBoundary span,
+.setupBoundary b {
+  display: block;
+  font-size: 8px;
+}
+
+.setupBoundary span {
+  color: #9f927a;
+}
 .connectionHead {
   display: flex;
   align-items: center;
@@ -1707,6 +1733,92 @@ header h1 {
 }
 .memoryrow span {
   color: var(--muted);
+}
+
+.vaultHealth {
+  grid-column: span 1;
+}
+
+.vaultMetrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 14px 0;
+}
+
+.vaultMetrics span {
+  display: grid;
+  gap: 3px;
+  border: 1px solid rgba(42, 215, 255, 0.13);
+  border-radius: 6px;
+  background: rgba(10, 31, 48, 0.62);
+  padding: 10px;
+  color: #829cad;
+  font-size: 8px;
+}
+
+.vaultMetrics b {
+  color: #dff8ff;
+  font: 18px ui-monospace, "Cascadia Code", monospace;
+}
+
+.vaultSections,
+.vaultRelations {
+  display: grid;
+  gap: 6px;
+  margin: 12px 0;
+}
+
+.vaultSections span,
+.vaultRelations span {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border-bottom: 1px solid rgba(66, 164, 202, 0.1);
+  padding: 7px 0;
+  color: #8fa9ba;
+  font-size: 8px;
+}
+
+.vaultRelations span {
+  justify-content: flex-start;
+}
+
+.vaultRelations svg {
+  width: 12px;
+  color: var(--cyan);
+}
+
+.vaultRelations > small {
+  color: #6fdff5;
+  font: 7px ui-monospace, monospace;
+  letter-spacing: 0.12em;
+}
+
+.vaultGuard {
+  display: flex;
+  gap: 8px;
+  border: 1px solid rgba(66, 227, 183, 0.16);
+  border-radius: 6px;
+  background: rgba(66, 227, 183, 0.05);
+  padding: 10px;
+  color: #7be7cb;
+}
+
+.vaultGuard svg {
+  flex: 0 0 auto;
+  width: 16px;
+}
+
+.vaultGuard span,
+.vaultGuard b {
+  display: block;
+  font-size: 8px;
+}
+
+.vaultGuard span {
+  color: #8ea9ae;
 }
 .audit {
   display: flex;
@@ -3393,6 +3505,187 @@ textarea::placeholder {
   .inboxlist button,
   .agents .card > button {
     min-height: 44px;
+  }
+}
+
+.systemProgress {
+  margin: 15px 0 22px;
+  overflow: hidden;
+  border-color: rgba(76, 211, 255, 0.2);
+  background:
+    linear-gradient(135deg, rgba(7, 23, 42, 0.96), rgba(5, 13, 27, 0.98)),
+    repeating-linear-gradient(90deg, transparent 0 39px, rgba(76, 211, 255, 0.03) 40px);
+}
+
+.progressHead {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.progressHead h3 {
+  margin: 7px 0 4px;
+  font-size: clamp(17px, 2vw, 22px);
+}
+
+.progressHead p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.progressCount {
+  min-width: 145px;
+  padding-left: 18px;
+  border-left: 1px solid rgba(76, 211, 255, 0.18);
+  color: var(--muted);
+  font-size: 10px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.progressCount b {
+  display: block;
+  color: #bceeff;
+  font-size: 17px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.progressChecklist {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.progressChecklist li {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  min-height: 64px;
+  padding: 10px 12px;
+  border: 1px solid rgba(132, 176, 207, 0.13);
+  border-radius: 10px;
+  background: rgba(4, 13, 27, 0.72);
+}
+
+.progressChecklist li > i {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 1px solid rgba(132, 176, 207, 0.2);
+  border-radius: 50%;
+  color: #6f8ba2;
+}
+
+.progressChecklist svg {
+  width: 15px;
+  height: 15px;
+}
+
+.progressChecklist strong,
+.progressChecklist small {
+  display: block;
+}
+
+.progressChecklist strong {
+  color: #d9eff9;
+  font-size: 12px;
+}
+
+.progressChecklist small {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.progressChecklist a {
+  display: inline-flex;
+  min-width: 34px;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  color: #7ddfff;
+}
+
+.progressChecklist li.complete > i {
+  border-color: rgba(54, 224, 164, 0.38);
+  background: rgba(54, 224, 164, 0.1);
+  color: #56e9b4;
+}
+
+.progressChecklist li.active {
+  border-color: rgba(76, 211, 255, 0.46);
+  box-shadow: inset 3px 0 #4cd3ff, 0 0 20px rgba(14, 139, 208, 0.08);
+}
+
+.progressChecklist li.active > i {
+  color: #70ddff;
+}
+
+.progressChecklist li.active > i svg {
+  animation: orbit-spin 1.4s linear infinite;
+}
+
+.progressChecklist li.user_action {
+  border-color: rgba(255, 195, 88, 0.34);
+}
+
+.progressChecklist li.user_action > i {
+  color: #ffc96b;
+}
+
+.systemProgress footer {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(132, 176, 207, 0.12);
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.systemProgress footer span {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.systemProgress footer svg {
+  width: 13px;
+}
+
+@media (max-width: 720px) {
+  .progressHead,
+  .systemProgress footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .progressCount {
+    padding-top: 10px;
+    padding-left: 0;
+    border-top: 1px solid rgba(76, 211, 255, 0.18);
+    border-left: 0;
+  }
+
+  .progressChecklist {
+    grid-template-columns: 1fr;
+  }
+
+  .progressChecklist li {
+    min-height: 58px;
   }
 }
 

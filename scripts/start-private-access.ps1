@@ -6,6 +6,10 @@ $npm = (Get-Command npm.cmd -ErrorAction Stop).Source
 $localUrl = "http://127.0.0.1:3211"
 $runtimeRoot = Join-Path $env:LOCALAPPDATA "AgenticOS"
 $pidFile = Join-Path $runtimeRoot "private-web.pid"
+$defaultVault = Join-Path $env:USERPROFILE "Documents\Obsidian Vault\Emre"
+if (-not $env:AGENTIC_OS_OBSIDIAN_VAULT -and (Test-Path -LiteralPath $defaultVault)) {
+  $env:AGENTIC_OS_OBSIDIAN_VAULT = $defaultVault
+}
 
 function Test-Endpoint([string]$Uri) {
   try {

@@ -1,6 +1,7 @@
 "use client";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { type MouseEvent, useCallback, useEffect, useRef, useState } from "react";
 import * as I from "lucide-react";
+import { systemProgress } from "@/data/system-progress";
 type View =
   | "home"
   | "agents"
@@ -123,6 +124,8 @@ const viewIds = new Set<View>([
   ...nav.map(([id]) => id as View),
   ...areas.map(([id]) => id as View),
 ]);
+const isView = (candidate: unknown): candidate is View =>
+  typeof candidate === "string" && viewIds.has(candidate as View);
 const store = {
   get: (k: string, d: any) => {
     if (typeof window === "undefined") return d;
@@ -144,6 +147,7 @@ export default function App() {
     [tasks, setTasks] = useState<any[]>([]),
     [journal, setJournal] = useState(""),
     [mood, setMood] = useState("ruhig"),
+    [vaultOnline, setVaultOnline] = useState(false),
     [brand, setBrand] = useState({
       name: "Agentic OS",
       short: "AOS",
@@ -171,6 +175,10 @@ export default function App() {
     };
     setBrand(migratedBrand);
     store.set("brand", migratedBrand);
+    fetch("/api/obsidian/status", { cache: "no-store" })
+      .then((response) => response.json())
+      .then((status) => setVaultOnline(status.status === "online"))
+      .catch(() => setVaultOnline(false));
   }, []);
   const saveTasks = (x: any[]) => {
     setTasks(x);
@@ -203,15 +211,17 @@ export default function App() {
     const syncFromHistory = () => {
       const fromState = window.history.state?.view;
       const fromHash = window.location.hash.slice(1);
-      const next = (viewIds.has(fromState) ? fromState : fromHash) as View;
-      showView(viewIds.has(next) ? next : "home");
+      const next = isView(fromHash) ? fromHash : fromState;
+      showView(isView(next) ? next : "home");
     };
 
     if (!window.history.state?.view) {
+      const initialHash = window.location.hash.slice(1);
+      const initialView = isView(initialHash) ? initialHash : "home";
       window.history.replaceState(
-        { view: "home" },
+        { view: initialView },
         "",
-        window.location.hash || "#home",
+        `#${initialView}`,
       );
     }
     syncFromHistory();
@@ -305,7 +315,7 @@ export default function App() {
           ref={contentRef}
           tabIndex={-1}
         >
-          {v === "home" && <Home go={navigate} tasks={tasks} />}{" "}
+          {v === "home" && <Home go={navigate} tasks={tasks} vaultOnline={vaultOnline} />}{" "}
           {v === "areas" && <Areas go={navigate} />} {v === "faith" && <Faith note={note} />}
           {v === "career" && <Career />}
           {v === "finance" && <Finance />}
@@ -386,7 +396,7 @@ function Intro({ eyebrow, title, children, action }: any) {
     </div>
   );
 }
-function Home({ go, tasks }: any) {
+function Home({ go, tasks, vaultOnline }: any) {
   return (
     <>
       <Intro eyebrow="DEIN SYSTEM AUF EINEN BLICK" title="Guten Abend, Emre.">
@@ -435,6 +445,7 @@ function Home({ go, tasks }: any) {
           ))}
         </Card>
       </div>
+      <SystemProgress go={go} />
       <div className="sectionhead">
         <h3>Lebensbereiche</h3>
         <button onClick={() => go("areas")}>
@@ -486,7 +497,7 @@ function Home({ go, tasks }: any) {
             ["Wochenplaner", "online"],
             ["Google Calendar", "unconfigured"],
             ["OpenAI", "unconfigured"],
-            ["Obsidian", "offline"],
+            ["Obsidian", vaultOnline ? "online" : "unconfigured"],
           ].map((x) => (
             <div className="statusline" key={x[0]}>
               <i className={x[1]} />
@@ -505,6 +516,82 @@ function Home({ go, tasks }: any) {
         </Card>
       </div>
     </>
+  );
+}
+function SystemProgress({ go }: any) {
+  const completeCount = systemProgress.items.filter(
+    (item) => item.status === "complete",
+  ).length;
+  const activeItem = systemProgress.items.find((item) => item.status === "active");
+  const userAction = systemProgress.items.find(
+    (item) => item.status === "user_action",
+  );
+
+  const openProgressLink = (event: MouseEvent<HTMLAnchorElement>, href?: string) => {
+    if (!href) return;
+    event.preventDefault();
+    go(href.slice(1));
+  };
+
+  return (
+    <section aria-labelledby="system-progress-title" className="card systemProgress">
+      <div className="progressHead">
+        <div>
+          <Tag>SYSTEMAUFBAU · FORTSCHRITT</Tag>
+          <h3 id="system-progress-title">{systemProgress.currentPhase}</h3>
+          <p aria-live="polite" role="status">
+            {activeItem ? `Aktiv: ${activeItem.label}` : "Kein interner Schritt aktiv"}
+          </p>
+        </div>
+        <span className="progressCount">
+          <b>{completeCount} von {systemProgress.items.length}</b>
+          Schritte abgeschlossen
+        </span>
+      </div>
+      <ol className="progressChecklist">
+        {systemProgress.items.map((item) => (
+          <li className={item.status} key={item.id}>
+            <i aria-hidden="true">
+              {item.status === "complete" ? (
+                <I.Check />
+              ) : item.status === "active" ? (
+                <I.LoaderCircle />
+              ) : item.status === "user_action" ? (
+                <I.UserRoundCheck />
+              ) : (
+                <I.Circle />
+              )}
+            </i>
+            <span>
+              <b>{item.label}</b>
+              <small>{item.evidence}</small>
+            </span>
+            {item.href && (
+              <a
+                aria-label={`${item.label} öffnen`}
+                href={item.href}
+                onClick={(event) => openProgressLink(event, item.href)}
+              >
+                Öffnen <I.ChevronRight />
+              </a>
+            )}
+          </li>
+        ))}
+      </ol>
+      <footer>
+        <span>
+          <I.Clock3 /> Zuletzt verifiziert: {systemProgress.lastVerifiedAt}
+        </span>
+        {userAction && (
+          <a
+            href={userAction.href}
+            onClick={(event) => openProgressLink(event, userAction.href)}
+          >
+            <I.TriangleAlert /> Wartet auf dich: {userAction.label}
+          </a>
+        )}
+      </footer>
+    </section>
   );
 }
 function Areas({ go }: any) {
@@ -1556,7 +1643,25 @@ function Inbox({ note }: any) {
 }
 function Integrations({ note }: any) {
   const [loaded, setLoaded] = useState(false),
-    [proposed, setProposed] = useState(false);
+    [proposed, setProposed] = useState(false),
+    [vaultStatus, setVaultStatus] = useState<any>({ status: "unconfigured" }),
+    [calendarStatus, setCalendarStatus] = useState<any>({
+      configured: false,
+      connected: false,
+      mode: "mock",
+    });
+  useEffect(() => {
+    fetch("/api/obsidian/status", { cache: "no-store" })
+      .then((response) => response.json())
+      .then(setVaultStatus)
+      .catch(() => setVaultStatus({ status: "degraded" }));
+    fetch("/api/calendar/status", { cache: "no-store" })
+      .then((response) => response.json())
+      .then(setCalendarStatus)
+      .catch(() =>
+        setCalendarStatus({ configured: false, connected: false, mode: "mock" }),
+      );
+  }, []);
   return (
     <>
       <Intro
@@ -1574,11 +1679,28 @@ function Integrations({ note }: any) {
             <I.CalendarDays />
           </span>
           <div>
-            <Tag>GOOGLE CALENDAR · TESTADAPTER</Tag>
+            <Tag>
+              GOOGLE CALENDAR · {calendarStatus.connected ? "READ-ONLY LIVE" : calendarStatus.configured ? "OAUTH BEREIT" : "TESTADAPTER"}
+            </Tag>
             <h3>Wochenplanung sicher verbinden</h3>
           </div>
-          <em>Unkonfiguriert</em>
+          <em>{calendarStatus.connected ? "Online" : calendarStatus.configured ? "Bereit" : "Unkonfiguriert"}</em>
         </div>
+        {!calendarStatus.configured && (
+          <div className="setupBoundary">
+            <I.Shield />
+            <span>
+              <b>Ein externer Schritt fehlt</b>
+              Google-Cloud-Web-OAuth-Client mit Calendar API und Callback anlegen;
+              Client-ID/Secret ausschließlich lokal in `.env.local` speichern.
+            </span>
+          </div>
+        )}
+        {calendarStatus.configured && !calendarStatus.connected && (
+          <a className="btn soft" href="/api/calendar/connect">
+            Read-only mit Google verbinden <I.ExternalLink />
+          </a>
+        )}
         <div className="flow">
           <div>
             <b>1 · Kalender</b>
@@ -1633,7 +1755,12 @@ function Integrations({ note }: any) {
       <div className="connections">
         {[
           ["Google Tasks", "Aufgaben", "unconfigured", "Keine Berechtigung"],
-          ["Obsidian", "Wissen", "offline", "Read-only Vorschau"],
+          [
+            "Obsidian",
+            "Wissen",
+            vaultStatus.status === "online" ? "online" : vaultStatus.status === "degraded" ? "offline" : "unconfigured",
+            vaultStatus.status === "online" ? `${vaultStatus.noteCount} Markdown-Notizen · Read-only` : "Read-only Vorschau",
+          ],
           ["OpenAI", "Modelle & Chats", "unconfigured", "Kein API-Key"],
           ["Health", "Training", "offline", "Keine Datenquelle"],
           ["Finance", "Konten", "unconfigured", "Read-only only"],
@@ -1661,9 +1788,9 @@ function Integrations({ note }: any) {
               <dt>Scope</dt>
               <dd>{x[3]}</dd>
               <dt>Letzter Sync</dt>
-              <dd>Nie</dd>
+              <dd>{x[0] === "Obsidian" && vaultStatus.status === "online" ? "Gerade lokal verifiziert" : "Nie"}</dd>
               <dt>Aktivität</dt>
-              <dd>Keine externen Aktionen</dd>
+              <dd>{x[0] === "Obsidian" && vaultStatus.status === "online" ? "Metadatenindex gelesen · 0 Writes" : "Keine externen Aktionen"}</dd>
             </dl>
             <button onClick={() => note(`${x[0]}: sichere Details geöffnet`)}>
               Details <I.ChevronRight />
@@ -1675,6 +1802,21 @@ function Integrations({ note }: any) {
   );
 }
 function Brain() {
+  const [vault, setVault] = useState<any>({ status: "loading" });
+  const loadVault = useCallback(async () => {
+    setVault((current: any) => ({ ...current, status: "loading" }));
+    try {
+      const response = await fetch("/api/obsidian/status", { cache: "no-store" });
+      setVault(await response.json());
+    } catch {
+      setVault({ status: "degraded", error: "Lokaler Vault-Index nicht erreichbar" });
+    }
+  }, []);
+  useEffect(() => {
+    void loadVault();
+  }, [loadVault]);
+
+  const connected = vault.status === "online";
   return (
     <>
       <Intro eyebrow="WISSEN & SHARED MEMORY" title="Dein zweites Gedächtnis.">
@@ -1686,7 +1828,9 @@ function Brain() {
         <Card className="knowledge">
           <div className="row">
             <Tag>WISSENSGRAPH</Tag>
-            <span>24 Knoten · Mock</span>
+            <span>
+              {connected ? `${vault.noteCount} Notizen · echter Read-only Index` : "Lokaler Index"}
+            </span>
           </div>
           <div className="nodes">
             {[
@@ -1703,6 +1847,47 @@ function Brain() {
               </i>
             ))}
           </div>
+        </Card>
+        <Card className="vaultHealth">
+          <div className="row">
+            <Tag>OBSIDIAN · READ-ONLY PREVIEW</Tag>
+            <i className={`badge ${connected ? "online" : vault.status === "degraded" ? "offline" : "unconfigured"}`}>
+              {connected ? "online" : vault.status === "loading" ? "prüft" : vault.status}
+            </i>
+          </div>
+          <h3>{connected ? `${vault.rootLabel} ist lokal indiziert` : "Vault-Verbindung"}</h3>
+          {connected ? (
+            <>
+              <div className="vaultMetrics">
+                <span><b>{vault.noteCount}</b>Markdown-Notizen</span>
+                <span><b>{vault.frontmatterNoteCount}</b>mit Frontmatter</span>
+                <span><b>{vault.relationshipCount}</b>aufgelöste Beziehungen</span>
+                <span><b>{vault.linkCount}</b>lokale Links</span>
+              </div>
+              <div className="vaultSections">
+                {vault.sectionCounts?.slice(0, 6).map((item: any) => (
+                  <span key={item.section}><b>{item.section}</b>{item.count}</span>
+                ))}
+              </div>
+              {vault.relationships?.length > 0 && (
+                <div className="vaultRelations">
+                  <small>BEZIEHUNGSVORSCHAU</small>
+                  {vault.relationships.filter((item: any) => !item.sensitive).slice(0, 3).map((item: any, index: number) => (
+                    <span key={`${item.source}-${item.target}-${index}`}>
+                      {item.source} <I.ArrowRight /> {item.target}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </>
+          ) : (
+            <p>{vault.error || "Lokaler Pfad ist noch nicht in der Server-Umgebung gesetzt."}</p>
+          )}
+          <div className="vaultGuard">
+            <I.ShieldCheck />
+            <span><b>Schreibzugriff gesperrt</b>Jede spätere Änderung braucht Vorschau, ausdrückliche Freigabe und Audit.</span>
+          </div>
+          <Btn soft onClick={loadVault}>Read-only Index neu laden</Btn>
         </Card>
         <Card>
           <Tag>MEMORY</Tag>
@@ -1738,13 +1923,14 @@ function Brain() {
           ))}
         </Card>
         <Card>
-          <Tag>VAULT-IMPORT</Tag>
-          <h3>Read-only zuerst.</h3>
+          <Tag>INDEX-SICHERHEIT</Tag>
+          <h3>Nur Metadaten und Beziehungen.</h3>
           <p>
-            Agentic OS inventarisiert Markdown und Links, bevor ein
-            anwendungseigener Index entsteht. Dein Vault bleibt unverändert.
+            `.obsidian`, Papierkorb, Caches, Anhänge, Symlinks und Nicht-Markdown
+            bleiben ausgeschlossen. Notiztexte erscheinen weder im Health-Status
+            noch in Logs oder Vorschau-Bildern.
           </p>
-          <Btn soft>Ordner-Vorschau wählen</Btn>
+          <Btn soft onClick={loadVault}>Sicher erneut prüfen</Btn>
         </Card>
       </div>
     </>

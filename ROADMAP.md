@@ -61,6 +61,8 @@
 
 ## Phase 8 — Recommended next data integrations
 
-- Safe Obsidian synchronization: read/index first, explicit diff, per-action approval, audit, and backup
+- Safe Obsidian connection: live read-only metadata/link index and Integration Health evidence implemented and verified
+- Persistent command-center progress: structured discrete checklist, current step, evidence, user action, and status links implemented
+- Obsidian write synchronization remains gated: explicit diff, per-action approval, audit, and backup
 - Google Calendar read-only: user-owned OAuth credentials/consent, selected calendars, bounded eight-day reads
 - Only after separate approval: evaluate write scope for exact approved focus-block proposals

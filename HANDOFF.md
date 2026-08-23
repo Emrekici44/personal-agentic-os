@@ -14,7 +14,7 @@ Useful launchers:
 
 The private route must remain Tailscale Serve/tailnet-only. Never invoke Funnel, create public tunnels, forward router ports, or silently change Windows power settings. Run Unattended is an optional manual user/admin action.
 
-Final foundation verification: thirteen web/safety tests pass, root lint passes, Expo typecheck/lint/export passes, two Electron security tests pass, and the optimized Next.js production build passes. Responsive checks pass at 390×844 and 393×852 without horizontal overflow. A live Electron window is verified on Windows ARM and the physical iPhone navigation checkpoint is accepted.
+Final foundation and first-data verification: eighteen web/safety tests pass, root lint passes, Expo typecheck/lint/export passes, two Electron security tests pass, and the optimized Next.js production build including the Obsidian route passes. Responsive checks pass at 390×844 and 393×852 without horizontal overflow. A live Electron window is verified on Windows ARM, the physical iPhone navigation checkpoint is accepted, and the server-only Obsidian read-only health/index is verified against the authorized vault without a write. `data/system-progress.ts` is the maintainable source for the command-center `Systemaufbau / Fortschritt` checklist.
 
 The private repository is `https://github.com/Emrekici44/personal-agentic-os`. Previews remain local-only and ignored. The authorized vault is `%USERPROFILE%\Documents\Obsidian Vault\Emre`; original content must remain untouched. Additive files exist only in the documented numbered system directories.
 
@@ -30,6 +30,6 @@ The private repository is `https://github.com/Emrekici44/personal-agentic-os`. P
 
 1. Keep Windows awake, plugged in, signed into Tailscale, and start the desired local/private launcher when remote access is needed.
 2. If Emre wants automatic daily reliability, obtain explicit approval before configuring Windows startup and Tailscale Run Unattended; never alter sleep/power policy silently.
-3. Implement safe Obsidian synchronization next: read/index, show an exact diff, require approval for every write, audit, and backup.
-4. Then perform the user-owned Google OAuth credential/consent step for read-only selected-calendar access and verify the eight-day boundary.
+3. The Obsidian read/index health connection is live. Any next write synchronization must show an exact diff, require approval for every write, audit, and backup.
+4. Perform the user-owned Google OAuth credential/consent step for read-only selected-calendar access and verify the eight-day boundary. Credentials belong only in local/server configuration, never chat or Git.
 5. Treat any future Google write scope, API spending, installer signing, or public/cloud deployment as a new explicit approval boundary.

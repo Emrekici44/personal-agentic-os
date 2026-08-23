@@ -3,6 +3,10 @@ $ErrorActionPreference = "Stop"
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $mobileRoot = Join-Path $projectRoot "apps\mobile"
 $npm = (Get-Command npm.cmd -ErrorAction Stop).Source
+$defaultVault = Join-Path $env:USERPROFILE "Documents\Obsidian Vault\Emre"
+if (-not $env:AGENTIC_OS_OBSIDIAN_VAULT -and (Test-Path -LiteralPath $defaultVault)) {
+  $env:AGENTIC_OS_OBSIDIAN_VAULT = $defaultVault
+}
 
 $lanAddress = Get-NetIPConfiguration |
   Where-Object { $_.IPv4DefaultGateway -and $_.NetAdapter.Status -eq "Up" } |

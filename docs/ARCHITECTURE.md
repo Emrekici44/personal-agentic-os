@@ -12,6 +12,8 @@ The connector boundary is intentionally separate from planning logic. A connecto
 
 The knowledge adapter accepts a user-selected directory, inventories Markdown without writes, previews frontmatter/wiki-links/tags, and only then builds an application-owned index. Obsidian is the human-readable knowledge and notes layer, not the only operational database. Structured tasks, approvals, project state, audit records, connector state, and agent handoffs belong in an application-owned structured store. Browser storage is the verified first state layer; SQLite is the planned durable local upgrade. Synchronization to Obsidian must remain deliberate, previewed, approved, and audited rather than treating Markdown as a transactional database. Future hosted persistence should use an authenticated per-user database with encrypted secrets outside the database.
 
+The live Obsidian boundary is server-only and read-only. `lib/obsidian-vault.ts` inventories bounded Markdown metadata and local relationships from a runtime-configured path; `app/api/obsidian/status` returns sanitized health/index evidence without absolute paths, bodies, or frontmatter values. The client cannot select or write arbitrary filesystem paths. See `docs/OBSIDIAN.md`.
+
 Google Calendar routes are server-only. Credentials never enter the browser bundle. The callback encrypts the short-lived token into an HTTP-only cookie; calendar and event routes normalize Google records and enforce a bounded week. Proposal generation has no write capability. Approval requires an exact confirmation and 1–3 blocks; the mock adapter still records zero writes. Real Calendar commit logic and broader Google scope are deliberately absent until separately approved.
 
 ## Expanded application
