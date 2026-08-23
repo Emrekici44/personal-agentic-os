@@ -13,5 +13,12 @@
 - Run dependency audits before deployment; do not apply breaking automatic fixes without review.
 - Local/free operation is the default. Potentially billable providers must disclose cost class and obtain explicit activation approval.
 - OpenAI keys are server-only. ChatGPT Pro is never treated as API authorization. API requests are blocked locally until positive daily/monthly ceilings and kill-switch state permit them.
+- ChatGPT Companion Mode has no conversation-history integration. Only text the user deliberately pastes into the Inbox becomes Agentic OS data.
+- The Electron renderer is sandboxed with context isolation and web security enabled, Node integration disabled, permissions denied, and navigation restricted to its loopback Agentic OS origin. No installer or updater is active.
+- The Expo companion receives only a non-secret LAN URL through `EXPO_PUBLIC_AGENTIC_OS_URL`. It contains no API key, OAuth credential, fixed machine IP, tunnel, hosted endpoint, or EAS account configuration.
+- LAN mode exposes the development web port to the private local network. Use only a trusted private Wi-Fi and do not approve Windows Firewall access for public networks.
+- Remote mode uses Tailscale Serve only: private HTTPS/MagicDNS to a `127.0.0.1:3211` backend, protected by the tailnet policy. The project never calls Funnel, opens router ports, or creates a public tunnel.
+- Tailscale host names and IPs are discovered at runtime and never committed. Expo Go over Tailscale is development-only and requires Metro plus a connected, awake laptop.
+- Run Unattended and Windows sleep/power settings remain explicit user choices; helpers never change them silently.
 - `.gitignore` excludes secrets, environment files, databases, backups, caches, screenshots, and local personal state. The Emre vault lives outside the repository and must never be pushed.
 - Relationship, faith, financial, and health demo data is labeled; real sensitive data requires deliberate import/connection boundaries.

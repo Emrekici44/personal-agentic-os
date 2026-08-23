@@ -7,6 +7,12 @@
   },
   "scripts": {
     "dev": "next dev",
+    "dev:lan": "next dev -H 0.0.0.0 -p 3000",
+    "dev:desktop-web": "next dev -H 127.0.0.1 -p 3210",
+    "start:private-web": "next start -H 127.0.0.1 -p 3211",
+    "desktop": "npm --prefix apps/desktop start",
+    "desktop:check": "npm --prefix apps/desktop run check",
+    "mobile:check": "npm --prefix apps/mobile run check",
     "build": "next build",
     "start": "next start",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",

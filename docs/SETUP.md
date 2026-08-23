@@ -2,7 +2,11 @@
 
 ## Local operation
 
-Follow the README. Settings → Backup export downloads the current local state.
+Follow the README. Settings → Backup export downloads the current local state. Dedicated launch instructions are in `DESKTOP.md`, `MOBILE.md`, and `REMOTE-ACCESS.md`.
+
+## Default ChatGPT Companion Mode
+
+Use the installed ChatGPT app/subscription for conversations. Use Agentic OS for structured projects, tasks, notes, dashboards, tracking, and visualizations. Agentic OS cannot read the ChatGPT conversation history. To transfer useful context, open Universal Inbox → ChatGPT Companion Capture, request or write a structured summary in ChatGPT, and paste only the selected summary into Agentic OS. Embedded OpenAI API mode remains unconfigured and disabled behind cost ceilings and the kill switch.
 
 ## Google Calendar first connection
 
@@ -19,7 +23,7 @@ Without them, Agentic OS automatically uses clearly labeled fixed test data that
 
 ## Visual Studio Code
 
-Open `C:\Users\ekici\Documents\Codex\2026-08-23\personal-agentic-os\outputs\agentic-os` as the project folder. Source lives in `app/` and `lib/`, automated safety checks in `tests/`, and operational documentation at the project root plus `docs/`. No required source lives in a temporary directory.
+Open the checked-out `personal-agentic-os` folder in Visual Studio Code. Source lives in `app/` and `lib/`, automated safety checks in `tests/`, and operational documentation at the project root plus `docs/`. No required source lives in a temporary directory.
 
 ## Cost consent
 
@@ -27,7 +31,11 @@ Local mode is the default. Any connector or provider that may incur charges must
 
 ## Obsidian
 
-Choose a vault directory only when ready. The first pass inventories Markdown and renders a read-only preview. Indexing writes only to application-owned storage. Vault mutation is a separate opt-in capability.
+The authorized Emre vault is the human-readable notes and knowledge layer. Operational records such as task state, approvals, audits, connector state, and job handoffs belong in the application-owned structured state layer, with SQLite as the planned durable local store. Synchronization to Markdown is explicit and auditable. Vault mutation remains a separate opt-in capability.
+
+## Private Tailscale access
+
+The prepared no-cost remote path is a Tailscale Personal tailnet with both devices signed in, a production Next server bound to `127.0.0.1:3211`, and private HTTPS through `tailscale serve`. Funnel, public tunnels, router port forwarding, and paid hosting are forbidden by the helper. Exact user steps and the honest cellular verification boundary are in `REMOTE-ACCESS.md`.
 
 ## Private deployment
 

@@ -11,4 +11,5 @@ local-state/
 previews/*.png
 previews/*.jpg
 previews/*.jpeg
+previews/*.svg
 .obsidian/

@@ -9,6 +9,8 @@
 3. Run `npm run dev` and open `http://localhost:3000`.
 4. Run `npm run build` before a release.
 
+For the laptop app, double-click `Agentic OS - Laptop starten.cmd`. For the no-cost iPhone companion, install Expo Go once and double-click `Agentic OS - iPhone starten.cmd`; then scan the displayed QR code while both devices are on the same Wi-Fi. Private travel access is prepared through Tailscale Personal and `tailscale serve`—never Funnel—using `Agentic OS - Privat unterwegs starten.cmd`. See `docs/DESKTOP.md`, `docs/MOBILE.md`, and `docs/REMOTE-ACCESS.md`.
+
 The current verified mode stores user state in browser local storage and supports a JSON backup from Settings. Demo content is visibly representative; no external account is claimed as connected.
 
 ## Ownership and privacy
@@ -17,6 +19,6 @@ This directory is the complete normal source project: application code, tests, d
 
 ## Design rationale
 
-Next.js and React provide a maintainable responsive application path for desktop, mobile, and later private hosting. The first operational mode is local-first so the system is useful before credentials exist. Every consequential connector follows preview → approval → write → audit. External secrets belong in environment variables or a managed secret store, never source files or chat.
+Next.js and React remain the single UI and server source of truth. A hardened Electron shell supplies the dedicated Windows laptop window, while an Expo Go WebView shell supplies the no-cost iPhone development path without duplicating screens. The first operational mode is local-first so the system is useful before credentials exist. Every consequential connector follows preview → approval → write → audit. External secrets belong in environment variables or a managed secret store, never source files or chat.
 
-See `docs/SETUP.md`, `docs/ARCHITECTURE.md`, `docs/SECURITY.md`, `ROADMAP.md`, and `STATE.md`.
+See `docs/SETUP.md`, `docs/DESKTOP.md`, `docs/MOBILE.md`, `docs/REMOTE-ACCESS.md`, `docs/ARCHITECTURE.md`, `docs/SECURITY.md`, `ROADMAP.md`, and `STATE.md`.

@@ -7,10 +7,11 @@ import {
   Database,
   TriangleAlert,
 } from "lucide-react";
+import Link from "next/link";
 export default function Usage() {
   return (
     <main className="usagePage">
-      <a href="/">← Agentic OS</a>
+      <Link href="/">← Agentic OS</Link>
       <header>
         <span>ZERO-COST MODE · STANDARD</span>
         <h1>Usage & Limits</h1>
@@ -34,9 +35,9 @@ export default function Usage() {
             <dt>Status</dt>
             <dd>Manuell / unbekannt</dd>
           </dl>
-          <button>
+          <a href="https://chatgpt.com/" rel="noreferrer" target="_blank">
             Offizielle Kontoansicht <ExternalLink />
-          </button>
+          </a>
         </article>
         <article>
           <b>2 · OpenAI API</b>

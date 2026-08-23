@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import * as I from "lucide-react";
 type View =
   | "home"
@@ -119,6 +119,10 @@ const nav: any[] = [
   ["integrations", "Verbindungen", I.PlugZap],
   ["settings", "Einstellungen", I.Settings2],
 ];
+const viewIds = new Set<View>([
+  ...nav.map(([id]) => id as View),
+  ...areas.map(([id]) => id as View),
+]);
 const store = {
   get: (k: string, d: any) => {
     if (typeof window === "undefined") return d;
@@ -145,6 +149,7 @@ export default function App() {
       short: "AOS",
       accent: "#27d3ff",
     });
+  const contentRef = useRef<HTMLElement>(null);
   useEffect(() => {
     setTasks(
       store.get("tasks", [
@@ -175,34 +180,90 @@ export default function App() {
     setToast(s);
     setTimeout(() => setToast(""), 2400);
   };
+  const showView = useCallback((next: View) => {
+    if (!viewIds.has(next)) return;
+    setV(next);
+    setMenu(false);
+    requestAnimationFrame(() => {
+      window.scrollTo({ behavior: "auto", left: 0, top: 0 });
+      contentRef.current?.focus({ preventScroll: true });
+    });
+  }, []);
+  const navigate = useCallback(
+    (next: View) => {
+      const nextHash = `#${next}`;
+      if (window.location.hash !== nextHash) {
+        window.history.pushState({ view: next }, "", nextHash);
+      }
+      showView(next);
+    },
+    [showView],
+  );
+  useEffect(() => {
+    const syncFromHistory = () => {
+      const fromState = window.history.state?.view;
+      const fromHash = window.location.hash.slice(1);
+      const next = (viewIds.has(fromState) ? fromState : fromHash) as View;
+      showView(viewIds.has(next) ? next : "home");
+    };
+
+    if (!window.history.state?.view) {
+      window.history.replaceState(
+        { view: "home" },
+        "",
+        window.location.hash || "#home",
+      );
+    }
+    syncFromHistory();
+    window.addEventListener("hashchange", syncFromHistory);
+    window.addEventListener("popstate", syncFromHistory);
+    return () => {
+      window.removeEventListener("hashchange", syncFromHistory);
+      window.removeEventListener("popstate", syncFromHistory);
+    };
+  }, [showView]);
+  useEffect(() => {
+    if (!menu) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMenu(false);
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [menu]);
   const title = nav.find((n) => n[0] === v)?.[1] || brand.name;
   return (
     <div className="os">
-      <aside className={menu ? "open" : ""}>
+      <aside
+        aria-label="Hauptnavigation"
+        className={menu ? "open" : ""}
+        id="primary-navigation"
+      >
         <div className="logo">
           <b style={{ background: brand.accent }}>{brand.short.slice(0, 3)}</b>
           <span>
             {brand.name}
             <small>life operating system</small>
           </span>
-          <button onClick={() => setMenu(false)}>
+          <button aria-label="Menü schließen" onClick={() => setMenu(false)}>
             <I.X />
           </button>
         </div>
         <nav>
           {nav.map(([id, n, Icon]) => (
-            <button
+            <a
+              aria-current={v === id ? "page" : undefined}
               className={v === id ? "active" : ""}
-              onClick={() => {
-                setV(id);
-                setMenu(false);
+              href={`#${id}`}
+              onClick={(event) => {
+                event.preventDefault();
+                navigate(id);
               }}
               key={id}
             >
               <Icon />
               {n}
               {id === "inbox" && <em>4</em>}
-            </button>
+            </a>
           ))}
         </nav>
         <div className="privacy">
@@ -215,27 +276,42 @@ export default function App() {
       </aside>
       <main>
         <header>
-          <button className="hamb" onClick={() => setMenu(true)}>
+          <button
+            aria-controls="primary-navigation"
+            aria-expanded={menu}
+            aria-label="Hauptmenü öffnen"
+            className="hamb"
+            onClick={() => setMenu((current) => !current)}
+          >
             <I.Menu />
           </button>
           <div>
             <small>SONNTAG · 23. AUGUST</small>
             <h1>{title}</h1>
           </div>
-          <button className="search">
+          <button
+            aria-label="Wissen durchsuchen"
+            className="search"
+            onClick={() => navigate("brain")}
+          >
             <I.Search />
             Suchen
           </button>
-          <span className="avatar">EM</span>
+          <span className="avatar">E</span>
         </header>
-        <section className="content">
-          {v === "home" && <Home go={setV} tasks={tasks} />}{" "}
-          {v === "areas" && <Areas go={setV} />} {v === "faith" && <Faith />}
+        <section
+          aria-label={title}
+          className="content"
+          ref={contentRef}
+          tabIndex={-1}
+        >
+          {v === "home" && <Home go={navigate} tasks={tasks} />}{" "}
+          {v === "areas" && <Areas go={navigate} />} {v === "faith" && <Faith note={note} />}
           {v === "career" && <Career />}
           {v === "finance" && <Finance />}
           {v === "health" && <Health />}
           {v === "relations" && <Relations />}
-          {v === "projects" && <Projects />}
+          {v === "projects" && <Projects note={note} />}
           {v === "habits" && <Habits tasks={tasks} save={saveTasks} />}{" "}
           {v === "journal" && (
             <Journal
@@ -267,14 +343,20 @@ export default function App() {
           )}
         </section>
       </main>
-      {menu && <div className="shade" onClick={() => setMenu(false)} />}{" "}
+      {menu && (
+        <button
+          aria-label="Menü schließen"
+          className="shade"
+          onClick={() => setMenu(false)}
+        />
+      )}{" "}
       {toast && (
         <div className="toast">
           <I.CheckCircle2 />
           {toast}
         </div>
       )}
-      <MobileNav v={v} go={setV} />
+      <MobileNav v={v} go={navigate} />
     </div>
   );
 }
@@ -283,7 +365,12 @@ const Card = ({ children, className = "" }: any) => (
   <div className={"card " + className}>{children}</div>
 );
 const Btn = ({ children, onClick, soft = false }: any) => (
-  <button onClick={onClick} className={soft ? "btn soft" : "btn"}>
+  <button
+    aria-disabled={!onClick}
+    className={soft ? "btn soft" : "btn"}
+    disabled={!onClick}
+    onClick={onClick}
+  >
     {children}
   </button>
 );
@@ -465,7 +552,7 @@ function Areas({ go }: any) {
     </>
   );
 }
-function Faith() {
+function Faith({ note }: any) {
   return (
     <div className="domain faithDomain">
       <Intro
@@ -517,7 +604,7 @@ function Faith() {
               {x}
             </div>
           ))}
-          <button className="link">
+          <button className="link" onClick={() => note("Duʿā-Erfassung geöffnet · bleibt lokal")}>
             <I.Plus />
             Duʿā hinzufügen
           </button>
@@ -795,6 +882,7 @@ function Finance() {
   );
 }
 function Relations() {
+  const [selected, setSelected] = useState("Mama");
   return (
     <div className="domain relationDomain">
       <Intro
@@ -814,12 +902,20 @@ function Relations() {
               ["S", "Sarah", "friend"],
               ["B", "Bruder", "family"],
             ].map((x, i) => (
-              <button className={"person p" + i} key={x[1]}>
+              <button
+                aria-pressed={selected === x[1]}
+                className={"person p" + i + (selected === x[1] ? " active" : "")}
+                key={x[1]}
+                onClick={() => setSelected(x[1])}
+              >
                 <i>{x[0]}</i>
                 <span>{x[1]}</span>
               </button>
             ))}
           </div>
+          <p aria-live="polite" className="selectionNote">
+            {selected} ausgewählt · private Details bleiben geschlossen.
+          </p>
         </Card>
         <Card>
           <Tag>NÄCHSTE IMPULSE</Tag>
@@ -857,7 +953,8 @@ function Relations() {
     </div>
   );
 }
-function Projects() {
+function Projects({ note }: any) {
+  const [view, setView] = useState("Board");
   const p = [
     [
       "Agentic OS",
@@ -882,18 +979,25 @@ function Projects() {
         eyebrow="FLEXIBLER PROJEKTRAUM"
         title="Vorhaben, die sich mit dir entwickeln."
         action={
-          <Btn>
+          <Btn onClick={() => note("Projekt-Erfassung geöffnet · noch nicht gespeichert")}>
             <I.Plus />
             Projekt
           </Btn>
         }
       />
       <div className="projectTools">
-        <button>Board</button>
-        <button>Liste</button>
-        <button>Timeline</button>
+        {["Board", "Liste", "Timeline"].map((item) => (
+          <button
+            aria-pressed={view === item}
+            className={view === item ? "active" : ""}
+            key={item}
+            onClick={() => setView(item)}
+          >
+            {item}
+          </button>
+        ))}
         <span />
-        <button>
+        <button onClick={() => note("Projektfilter geöffnet")}>
           <I.Filter />
           Filter
         </button>
@@ -925,7 +1029,10 @@ function Projects() {
             <div className="avatars">
               <i>WP</i>
               <i>PC</i>
-              <button>
+              <button
+                aria-label={`Agent oder Skill zu ${x[0]} hinzufügen`}
+                onClick={() => note(`${x[0]}: Zuordnung geöffnet`)}
+              >
                 <I.Plus />
               </button>
             </div>
@@ -1022,6 +1129,10 @@ function Habits({ tasks, save }: any) {
   );
 }
 function Journal({ text, setText, mood, setMood, note }: any) {
+  const insertPrompt = (prompt: string) => {
+    const separator = text.trim() ? "\n\n" : "";
+    setText(`${text}${separator}${prompt}\n`);
+  };
   return (
     <>
       <Intro eyebrow="TAGESJOURNAL" title="Sonntag, 23. August">
@@ -1040,9 +1151,9 @@ function Journal({ text, setText, mood, setMood, note }: any) {
             placeholder="Schreibe frei …"
           />
           <div className="prompts">
-            <button>Wofür bin ich dankbar?</button>
-            <button>Was darf ich loslassen?</button>
-            <button>Was nehme ich mit?</button>
+            <button onClick={() => insertPrompt("Wofür bin ich dankbar?")}>Wofür bin ich dankbar?</button>
+            <button onClick={() => insertPrompt("Was darf ich loslassen?")}>Was darf ich loslassen?</button>
+            <button onClick={() => insertPrompt("Was nehme ich mit?")}>Was nehme ich mit?</button>
           </div>
           <Btn onClick={() => note("Journal lokal gespeichert")}>
             Eintrag abschließen
@@ -1090,7 +1201,7 @@ function Journal({ text, setText, mood, setMood, note }: any) {
             "21. August · Training",
             "20. August · Familie",
           ].map((x) => (
-            <button className="history" key={x}>
+            <button className="history" key={x} onClick={() => note(`${x} als Vorschau geöffnet`)}>
               {x}
               <I.ChevronRight />
             </button>
@@ -1101,7 +1212,6 @@ function Journal({ text, setText, mood, setMood, note }: any) {
   );
 }
 function Agents({ note }: any) {
-  const [model, setModel] = useState("gpt-5.4");
   return (
     <>
       <Intro
@@ -1145,7 +1255,7 @@ function Agents({ note }: any) {
               Modell
               <select
                 defaultValue={a[3]}
-                onChange={(e) => setModel(e.target.value)}
+                onChange={(e) => note(`${a[0]}: Modell lokal auf ${e.target.value} gesetzt`)}
               >
                 <option>gpt-5.4</option>
                 <option>gpt-5.4-mini</option>
@@ -1168,9 +1278,12 @@ function Agents({ note }: any) {
   );
 }
 function Skills() {
-  const [q, setQ] = useState("");
-  const list = skills.filter((x) =>
-    x.join(" ").toLowerCase().includes(q.toLowerCase()),
+  const [q, setQ] = useState(""),
+    [category, setCategory] = useState("Alle");
+  const list = skills.filter(
+    (x) =>
+      x.join(" ").toLowerCase().includes(q.toLowerCase()) &&
+      (category === "Alle" || x.join(" ").toLowerCase().includes(category.toLowerCase())),
   );
   return (
     <>
@@ -1188,7 +1301,14 @@ function Skills() {
           />
         </label>
         {["Alle", "Planung", "Gesundheit", "Wissen"].map((x) => (
-          <button key={x}>{x}</button>
+          <button
+            aria-pressed={category === x}
+            className={category === x ? "active" : ""}
+            key={x}
+            onClick={() => setCategory(x)}
+          >
+            {x}
+          </button>
         ))}
       </div>
       <div className="skilltable">
@@ -1215,33 +1335,58 @@ function Skills() {
 }
 function Chats({ note }: any) {
   const [model, setModel] = useState("gpt-5.4"),
-    [msg, setMsg] = useState("");
+    [msg, setMsg] = useState(""),
+    [selected, setSelected] = useState(0);
+  const conversations = [
+    ["Wochenplanung KW 35", "Agentic OS"],
+    ["Angebot schärfen", "Selbstständigkeit"],
+    ["Training & Erholung", "Health Baseline"],
+    ["Tagesreflexion", "Glaube"],
+  ];
   return (
     <>
       <Intro
-        eyebrow="OFFICIAL OPENAI API · MOCK"
+        eyebrow="CHATGPT COMPANION MODE · STANDARD"
         title="Chats, die zu deiner Arbeit gehören."
       >
         <p>
-          ChatGPT Pro ist kein API-Schlüssel. Modelle bleiben unbestätigt, bis
-          ein eigener Server-Key sicher konfiguriert wurde.
+          Gespräche bleiben bewusst in deiner ChatGPT-App. Agentic OS ordnet
+          Projekte, Aufgaben, Wissen und von dir ausgewählte Zusammenfassungen.
         </p>
       </Intro>
+      <Card className="companionMode">
+        <div>
+          <Tag>AKTIVER STANDARD · IM ABO ENTHALTEN</Tag>
+          <h3>ChatGPT für Gespräche. Agentic OS für Struktur.</h3>
+          <p>
+            Agentic OS liest keinen ChatGPT-Verlauf. Öffne ChatGPT selbst und
+            übernimm nur eine bewusst ausgewählte Zusammenfassung in die Inbox.
+          </p>
+        </div>
+        <a
+          className="btn soft"
+          href="https://chatgpt.com/"
+          rel="noreferrer"
+          target="_blank"
+        >
+          ChatGPT öffnen <I.ExternalLink />
+        </a>
+      </Card>
       <div className="chatlayout">
         <Card className="conversations">
           <div className="row">
             <Tag>PROJEKT-CHATS</Tag>
-            <button>
+            <button aria-label="Neuen Projekt-Chat vorbereiten" onClick={() => note("Neuer Projekt-Chat vorbereitet")}>
               <I.Plus />
             </button>
           </div>
-          {[
-            ["Wochenplanung KW 35", "Agentic OS"],
-            ["Angebot schärfen", "Selbstständigkeit"],
-            ["Training & Erholung", "Health Baseline"],
-            ["Tagesreflexion", "Glaube"],
-          ].map((x, i) => (
-            <button className={i === 0 ? "active" : ""} key={x[0]}>
+          {conversations.map((x, i) => (
+            <button
+              aria-pressed={selected === i}
+              className={selected === i ? "active" : ""}
+              key={x[0]}
+              onClick={() => setSelected(i)}
+            >
               <I.MessageCircle />
               <span>
                 <b>{x[0]}</b>
@@ -1253,7 +1398,7 @@ function Chats({ note }: any) {
         <Card className="chatbox">
           <div className="chathead">
             <span>
-              <b>Wochenplanung KW 35</b>
+              <b>{conversations[selected][0]}</b>
               <small>Wochenplaner · Mock provider</small>
             </span>
             <label>
@@ -1295,17 +1440,17 @@ function Chats({ note }: any) {
           </small>
         </Card>
         <Card className="modelcard">
-          <Tag>PROVIDER-STATUS</Tag>
+          <Tag>OPTIONAL · NUTZUNGSBASIERT</Tag>
           <div className="provider">
             <i className="unconfigured" />
             <span>
-              <b>OpenAI</b>
-              <small>Unkonfiguriert</small>
+              <b>OpenAI API</b>
+              <small>Deaktiviert · Kill switch aktiv</small>
             </span>
           </div>
           <p>
-            Serverseitige Responses-API-Grenze vorbereitet. Modellzugriff ist
-            nicht verifiziert.
+            ChatGPT Pro gewährt keinen API-Zugriff. Die serverseitige Grenze
+            bleibt ohne Schlüssel und ausdrückliche Kostenfreigabe gesperrt.
           </p>
           <Btn
             soft
@@ -1318,15 +1463,55 @@ function Chats({ note }: any) {
     </>
   );
 }
+const defaultInboxEntries = [
+  ["Angebotsidee konkretisieren", "Idee", "Karriere"],
+  ["Meal-Prep vereinfachen", "Aufgabe", "Gesundheit"],
+  ["Artikel zu Fokusarbeit", "Link", "Inbox"],
+  ["Gesprächsnotiz", "Notiz", "Beziehungen"],
+];
+
 function Inbox({ note }: any) {
   const [type, setType] = useState("Idee"),
-    [txt, setTxt] = useState("");
+    [txt, setTxt] = useState(""),
+    [entries, setEntries] = useState(defaultInboxEntries);
+  useEffect(() => setEntries(store.get("inbox", defaultInboxEntries)), []);
+  const capture = () => {
+    const value = txt.trim();
+    if (!value) return;
+    const next = [[value, type, "Inbox"], ...entries];
+    setEntries(next);
+    store.set("inbox", next);
+    setTxt("");
+    note(`${type} lokal erfasst`);
+  };
   return (
     <>
       <Intro eyebrow="ALLES DARF HIER BEGINNEN" title="Universelle Inbox." />
+      <Card className="companionCapture">
+        <span className="connector">
+          <I.MessageSquareText />
+        </span>
+        <div>
+          <Tag>CHATGPT COMPANION CAPTURE</Tag>
+          <h3>Nur übernehmen, was du bewusst auswählst.</h3>
+          <p>
+            Bitte ChatGPT um eine strukturierte Zusammenfassung, kopiere sie
+            selbst und füge sie unten als ChatGPT-Notiz ein. Kein Scraping, kein
+            automatischer Zugriff auf deinen Verlauf.
+          </p>
+        </div>
+        <a
+          className="btn soft"
+          href="https://chatgpt.com/"
+          rel="noreferrer"
+          target="_blank"
+        >
+          ChatGPT öffnen <I.ExternalLink />
+        </a>
+      </Card>
       <Card className="captureAll">
         <div className="capturetypes">
-          {["Idee", "Aufgabe", "Notiz", "Link", "Datei"].map((x) => (
+          {["Idee", "Aufgabe", "Notiz", "ChatGPT-Notiz", "Link", "Datei"].map((x) => (
             <button
               className={type === x ? "active" : ""}
               onClick={() => setType(x)}
@@ -1344,25 +1529,15 @@ function Inbox({ note }: any) {
         <div className="row">
           <span>Später in Bereich, Projekt oder Agent triagieren.</span>
           <Btn
-            onClick={() => {
-              if (txt) {
-                setTxt("");
-                note(`${type} lokal erfasst`);
-              }
-            }}
+            onClick={capture}
           >
             Erfassen <I.ArrowRight />
           </Btn>
         </div>
       </Card>
       <div className="inboxlist">
-        {[
-          ["Angebotsidee konkretisieren", "Idee", "Karriere"],
-          ["Meal-Prep vereinfachen", "Aufgabe", "Gesundheit"],
-          ["Artikel zu Fokusarbeit", "Link", "Inbox"],
-          ["Gesprächsnotiz", "Notiz", "Beziehungen"],
-        ].map((x) => (
-          <Card key={x[0]}>
+        {entries.map((x, index) => (
+          <Card key={`${x[0]}-${index}`}>
             <i />
             <span>
               <b>{x[0]}</b>
@@ -1370,7 +1545,7 @@ function Inbox({ note }: any) {
                 {x[1]} · {x[2]}
               </small>
             </span>
-            <button>
+            <button onClick={() => note(`${x[0]} zur Triage ausgewählt`)}>
               Triage <I.ChevronRight />
             </button>
           </Card>
@@ -1462,17 +1637,19 @@ function Integrations({ note }: any) {
           ["OpenAI", "Modelle & Chats", "unconfigured", "Kein API-Key"],
           ["Health", "Training", "offline", "Keine Datenquelle"],
           ["Finance", "Konten", "unconfigured", "Read-only only"],
+          ["Tailscale", "Privater Fernzugriff", "unconfigured", "Tailnet-only · kein Funnel"],
         ].map((x, i) => (
           <Card key={x[0]}>
             <div className="row">
               <span className="connector">
                 {
                   [
-                    <I.CheckSquare />,
-                    <I.BookOpen />,
-                    <I.Sparkles />,
-                    <I.Activity />,
-                    <I.Landmark />,
+                    <I.CheckSquare key="tasks" />,
+                    <I.BookOpen key="obsidian" />,
+                    <I.Sparkles key="openai" />,
+                    <I.Activity key="health" />,
+                    <I.Landmark key="finance" />,
+                    <I.ShieldCheck key="tailscale" />,
                   ][i]
                 }
               </span>
@@ -1488,7 +1665,7 @@ function Integrations({ note }: any) {
               <dt>Aktivität</dt>
               <dd>Keine externen Aktionen</dd>
             </dl>
-            <button>
+            <button onClick={() => note(`${x[0]}: sichere Details geöffnet`)}>
               Details <I.ChevronRight />
             </button>
           </Card>
@@ -1669,14 +1846,20 @@ function MobileNav({ v, go }: any) {
         ["habits", "Aufgaben", I.CheckSquare],
         ["agents", "Agenten", I.Bot],
       ].map(([id, n, Icon]: any) => (
-        <button
+        <a
+          aria-current={v === id ? "page" : undefined}
+          aria-label={n}
           className={v === id ? "active" : ""}
-          onClick={() => go(id)}
+          href={`#${id}`}
+          onClick={(event) => {
+            event.preventDefault();
+            go(id);
+          }}
           key={id}
         >
           <Icon />
           <span>{n}</span>
-        </button>
+        </a>
       ))}
     </div>
   );

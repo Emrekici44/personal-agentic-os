@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'none'" />
+    <title>Agentic OS startet</title>
+    <style>
+      :root { color-scheme: dark; font-family: Inter, "Segoe UI", sans-serif; }
+      * { box-sizing: border-box; }
+      body { margin: 0; min-height: 100vh; display: grid; place-items: center; overflow: hidden; color: #eaf8fd; background: radial-gradient(circle at 50% 42%, #0a3450 0, #061420 25%, #030812 58%); }
+      body::before { content: ""; position: fixed; inset: -20%; background: linear-gradient(rgba(42,215,255,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(42,215,255,.035) 1px, transparent 1px); background-size: 42px 42px; transform: perspective(500px) rotateX(58deg) translateY(32%); }
+      main { position: relative; text-align: center; width: min(520px, 84vw); }
+      .orbit { width: 150px; height: 150px; margin: 0 auto 38px; border: 1px solid rgba(42,215,255,.3); border-radius: 50%; display: grid; place-items: center; box-shadow: 0 0 48px rgba(42,215,255,.12), inset 0 0 36px rgba(42,215,255,.05); }
+      .orbit::before { content: ""; width: 96px; height: 96px; border: 1px dashed rgba(117,231,255,.28); border-radius: 50%; animation: spin 10s linear infinite; }
+      .orbit::after { content: "E"; position: absolute; display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; color: #f0fbff; font-weight: 800; background: rgba(42,215,255,.14); border: 1px solid rgba(117,231,255,.48); box-shadow: 0 0 22px rgba(42,215,255,.3); }
+      small { color: #2ad7ff; font: 800 9px ui-monospace, monospace; letter-spacing: .25em; }
+      h1 { margin: 13px 0 10px; font-size: 34px; letter-spacing: -.04em; }
+      p { color: #8299ad; font-size: 13px; line-height: 1.6; }
+      .status { display: inline-flex; align-items: center; gap: 9px; margin-top: 24px; padding: 9px 13px; border: 1px solid rgba(66,227,183,.18); border-radius: 6px; color: #8bd2bf; font-size: 10px; background: rgba(6,27,33,.6); }
+      .status i { width: 6px; height: 6px; border-radius: 50%; background: #42e3b7; box-shadow: 0 0 9px #42e3b7; animation: pulse 1.4s ease-in-out infinite; }
+      @keyframes spin { to { transform: rotate(360deg); } }
+      @keyframes pulse { 50% { opacity: .35; } }
+      @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="orbit"></div>
+      <small>LOCAL DESKTOP SHELL // SECURE</small>
+      <h1>Agentic OS wird gestartet</h1>
+      <p>Die lokale Oberfläche und ihre sicheren Server-Funktionen werden nur auf diesem Laptop vorbereitet.</p>
+      <div class="status"><i></i> Keine Cloud · keine externen Schreibzugriffe</div>
+    </main>
+  </body>
+</html>
