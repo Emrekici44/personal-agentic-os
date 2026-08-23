@@ -2,7 +2,7 @@
 
 ## Sleep-safe checkpoint
 
-Resume in `outputs/agentic-os`. Formatting, six tests, and production build now pass. Remaining actions: capture and inspect fresh desktop/mobile previews, commit the verified state, purge historical preview binaries before any remote push, and create the private GitHub repository after GitHub CLI installation/authentication.
+Resume in `outputs/agentic-os`. Eight automated tests and the production build pass. The dark futuristic responsive redesign is complete and browser-verified. The private repository is `https://github.com/Emrekici44/personal-agentic-os`; screenshots remain local-only and ignored.
 
 The authorized vault is `C:\Users\ekici\Documents\Obsidian Vault\Emre`. Original content was inventoried and must remain untouched. New files exist only in `00 System`, `01 Projekte`, `02 Journal`, `03 Aufgaben`, `04 Wissen/Wissen Index.md`, `05 Menschen`, `06 Agenten`, `07 Skills`, `08 Integrationen`, and `09 Vorlagen`.
 
@@ -10,7 +10,7 @@ Naming rule: show `Agentic OS` only as a neutral temporary label; users edit nam
 
 ## Resume point
 
-The complete local product is in `outputs/agentic-os`. Start it with the README steps. Persistent UI state is stored under the browser key `northstar-state`.
+The complete local product is in `outputs/agentic-os`. Start it with the README steps. Persistent UI state uses the `aos:` browser namespace; the former internal namespace is read only as a one-way compatibility fallback.
 
 ## Paul loop
 
