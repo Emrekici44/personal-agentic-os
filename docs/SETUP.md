@@ -13,6 +13,7 @@ Use the installed ChatGPT app/subscription for conversations. Use Agentic OS for
 1. In the user's Google Cloud project, enable Calendar API and configure an OAuth consent screen.
 2. Create a Web OAuth client with the exact local and future private-host redirect URLs.
 3. Register exactly `http://localhost:3000/api/calendar/callback` as the local redirect URI.
+4. Download the official Web OAuth client JSON, then run `Agentic OS - Google lokal importieren.cmd`. The importer validates the callback and writes Client ID/secret only to ignored `.env.local`; it never prints them.
 4. Copy `.env.example` to `.env.local`, set the four values, and generate `AUTH_SECRET` locally. Never paste values into chat or commit the file.
 5. Restart Agentic OS, connect from Integrations, select calendars, and verify the bounded week.
 6. The current connector is read-only. Write scope and actual commit logic require a separate reviewed change and renewed consent.
