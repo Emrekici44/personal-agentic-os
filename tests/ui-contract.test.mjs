@@ -44,8 +44,8 @@ test("gives every mobile destination and drawer control real navigation semantic
   assert.match(page, /href=\{`#\$\{id\}`\}/);
   assert.match(page, /window\.history\.pushState/);
   assert.match(page, /window\.addEventListener\("popstate"/);
-  assert.match(page, /viewIds\.has\(fromHash\) \? fromHash : fromState/);
-  assert.match(page, /initialView = \(viewIds\.has\(initialHash\)/);
+  assert.match(page, /const next = isView\(fromHash\) \? fromHash : fromState/);
+  assert.match(page, /initialView = isView\(initialHash\)/);
   assert.match(page, /aria-controls="primary-navigation"/);
   assert.match(page, /aria-expanded=\{menu\}/);
   assert.match(page, /aria-current=\{v === id \? "page"/);
