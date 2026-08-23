@@ -1,5 +1,13 @@
 # Current state
 
+## Durable checkpoint — 2026-08-23 18:00 Europe/Berlin
+
+Expanded redesign source is saved but final visual verification is pending. Implemented surfaces include the command center, color-coded life areas, faith, split career, finance, relationships constellation, flexible projects, journal, habits/tasks, universal inbox, agents, skills, chats/models, integration health, knowledge graph, PWA manifest, Usage & Limits, provider cost guard, and editable temporary branding (`Agentic OS`). The secure Google Calendar boundary remains preserved.
+
+The Emre vault was fully inventoried before writes. All 14 original Markdown files—including both Graphify dossier files—remain untouched. Twelve additive hub/index/template/project files were created under new numbered directories. No file was deleted, moved, renamed, or overwritten.
+
+Verification state: earlier Calendar tests/build passed; the expanded redesign has not yet received its final `npm test` and production build after the last settings/checkpoint edit. Resume with formatting, tests, build, then desktop/mobile browser previews. No external account, paid service, or public deployment is active.
+
 Status: locally operational; Calendar connector implemented and mock-verified.
 
 Implemented: all navigation modules, Sunday weekly reset, three-outcome constraint, 36% example buffer, training energy protection, explicit calendar approval, idea capture, projects, life areas, six agents, shared browser state, audit trail, knowledge graph view, integration setup states, and local backup.

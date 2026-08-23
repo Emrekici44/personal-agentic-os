@@ -1,5 +1,13 @@
 # Resume handoff
 
+## Sleep-safe checkpoint
+
+Resume in `outputs/agentic-os`. There is no development server or browser automation process intentionally left running. First action: run formatter if needed, `npm test`, then `npm run build`. Fix only current compile/test failures without reverting the expanded UI or vault work. Then start the local preview and capture desktop command center plus mobile faith/career/finance/integration screenshots.
+
+The authorized vault is `C:\Users\ekici\Documents\Obsidian Vault\Emre`. Original content was inventoried and must remain untouched. New files exist only in `00 System`, `01 Projekte`, `02 Journal`, `03 Aufgaben`, `04 Wissen/Wissen Index.md`, `05 Menschen`, `06 Agenten`, `07 Skills`, `08 Integrationen`, and `09 Vorlagen`.
+
+Naming rule: show `Agentic OS` only as a neutral temporary label; users edit name, short name, and accent in Settings. Cost rule: local/free is the default, but do not over-center a rigid zero-cost mode; explain any potential charge and request explicit approval before activation.
+
 ## Resume point
 
 The complete local product is in `outputs/agentic-os`. Start it with the README steps. Persistent UI state is stored under the browser key `northstar-state`.

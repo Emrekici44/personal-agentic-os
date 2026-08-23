@@ -1,5 +1,14 @@
 # Roadmap
 
+## Expanded end-state checkpoint (in progress)
+
+- Complete multi-domain UI and mobile-first navigation: implemented, final verification pending
+- Editable temporary product identity and transparent cost consent: implemented
+- Three provider modes plus Usage & Limits and pre-request kill switch: implemented, API remains disabled
+- Emre vault additive system layer: implemented; original notes preserved
+- Graphify: optional pilot only; built-in free graph remains core
+- Next: run tests/build, fix any compile issues, update remaining documentation, capture new desktop/mobile previews
+
 ## Phase 1 — Foundation (complete)
 
 - Responsive desktop/mobile shell and all nine core modules
