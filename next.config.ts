@@ -1,5 +1,8 @@
-import type { NextConfig } from 'next';
+import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = { turbopack: { root: process.cwd() } };
+const nextConfig: NextConfig = {
+  devIndicators: false,
+  turbopack: { root: process.cwd() },
+};
 
 export default nextConfig;

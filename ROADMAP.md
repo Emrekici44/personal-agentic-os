@@ -1,14 +1,16 @@
 # Roadmap
 
-## Expanded end-state checkpoint (in progress)
+## Expanded end-state checkpoint (complete locally)
 
-- Complete multi-domain UI and mobile-first navigation: implemented, final verification pending
+- Complete multi-domain UI and mobile-first navigation: implemented and browser-verified
+- Original dark futuristic command-center redesign: implemented; left desktop navigation preserved
+- User identity audit: `Emre` verified in visible defaults; mistaken names removed
 - Editable temporary product identity and transparent cost consent: implemented
 - Three provider modes plus Usage & Limits and pre-request kill switch: implemented, API remains disabled
 - Emre vault additive system layer: implemented; original notes preserved
 - Graphify: optional pilot only; built-in free graph remains core
 - Local end-state verified: tests, production build, documentation, VS Code handoff, and desktop/mobile previews complete
-- External next step: install/authenticate GitHub CLI, then create and push the audited private repository
+- Private source ownership: published to `Emrekici44/personal-agentic-os` with `main` as the default branch
 
 ## Phase 1 — Foundation (complete)
 

@@ -1,14 +1,14 @@
 # Current state
 
-## Durable checkpoint — 2026-08-23 18:00 Europe/Berlin
+## Durable checkpoint — 2026-08-23 Europe/Berlin
 
-Expanded redesign source is saved but final visual verification is pending. Implemented surfaces include the command center, color-coded life areas, faith, split career, finance, relationships constellation, flexible projects, journal, habits/tasks, universal inbox, agents, skills, chats/models, integration health, knowledge graph, PWA manifest, Usage & Limits, provider cost guard, and editable temporary branding (`Agentic OS`). The secure Google Calendar boundary remains preserved.
+The complete responsive command center now uses an original dark futuristic blue/cyan visual system with a persistent left desktop navigation and touch-friendly mobile bottom navigation. Emre is the verified local user name throughout the visible defaults. Life areas remain distinguishable through controlled secondary accents. Implemented surfaces include the command center, faith, split career, finance, relationships constellation, flexible projects, journal, habits/tasks, universal inbox, agents, skills, chats/models, integration health, knowledge graph, PWA manifest, Usage & Limits, provider cost guard, and editable temporary branding (`Agentic OS`). The secure Google Calendar boundary remains preserved.
 
 The Emre vault was fully inventoried before writes. All 14 original Markdown files—including both Graphify dossier files—remain untouched. Twelve additive hub/index/template/project files were created under new numbered directories. No file was deleted, moved, renamed, or overwritten.
 
-Verification state: expanded redesign passes six automated safety tests and a production build. Dedicated health analytics, editable branding, Usage & Limits, PWA manifest, provider guard, and all expanded domain dashboards are present. Fresh desktop/mobile previews were captured and inspected locally. No external account, paid service, or public deployment is active.
+Verification state: the current redesign passes eight automated safety/UI tests and a production build. Desktop at 1440px and mobile at 390×844 were browser-verified without horizontal overflow. Dedicated health analytics, editable branding, Usage & Limits, PWA manifest, provider guard, and all expanded domain dashboards are present. No external account, paid service, or public deployment is active.
 
-Repository audit: complete source is in this normal local Git project. Environment files, databases, backups, caches, local state, vault content, and screenshots are excluded. Secret-pattern scan is clear. GitHub CLI is not installed, so private repository creation is blocked at the user-controlled tool/authentication boundary.
+Repository audit: complete source is in this normal local Git project and the audited history is published privately at `https://github.com/Emrekici44/personal-agentic-os`. Environment files, databases, backups, caches, local state, vault content, and screenshots are excluded. Secret-pattern scan is clear.
 
 Status: locally operational; Calendar connector implemented and mock-verified.
 

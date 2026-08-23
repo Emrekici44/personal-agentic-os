@@ -123,13 +123,15 @@ const store = {
   get: (k: string, d: any) => {
     if (typeof window === "undefined") return d;
     try {
-      return JSON.parse(localStorage.getItem("ns:" + k) || "null") ?? d;
+      const current = localStorage.getItem("aos:" + k);
+      const legacy = localStorage.getItem("ns:" + k);
+      return JSON.parse(current || legacy || "null") ?? d;
     } catch {
       return d;
     }
   },
   set: (k: string, v: any) =>
-    localStorage.setItem("ns:" + k, JSON.stringify(v)),
+    localStorage.setItem("aos:" + k, JSON.stringify(v)),
 };
 export default function App() {
   const [v, setV] = useState<View>("home"),
@@ -141,7 +143,7 @@ export default function App() {
     [brand, setBrand] = useState({
       name: "Agentic OS",
       short: "AOS",
-      accent: "#6f8d78",
+      accent: "#27d3ff",
     });
   useEffect(() => {
     setTasks(
@@ -152,13 +154,18 @@ export default function App() {
       ]),
     );
     setJournal(store.get("journal", ""));
-    setBrand(
-      store.get("brand", {
-        name: "Agentic OS",
-        short: "AOS",
-        accent: "#6f8d78",
-      }),
-    );
+    const savedBrand = store.get("brand", {
+      name: "Agentic OS",
+      short: "AOS",
+      accent: "#27d3ff",
+    });
+    const migratedBrand = {
+      ...savedBrand,
+      accent:
+        savedBrand.accent === "#6f8d78" ? "#27d3ff" : savedBrand.accent,
+    };
+    setBrand(migratedBrand);
+    store.set("brand", migratedBrand);
   }, []);
   const saveTasks = (x: any[]) => {
     setTasks(x);
@@ -219,7 +226,7 @@ export default function App() {
             <I.Search />
             Suchen
           </button>
-          <span className="avatar">EK</span>
+          <span className="avatar">EM</span>
         </header>
         <section className="content">
           {v === "home" && <Home go={setV} tasks={tasks} />}{" "}
@@ -295,7 +302,7 @@ function Intro({ eyebrow, title, children, action }: any) {
 function Home({ go, tasks }: any) {
   return (
     <>
-      <Intro eyebrow="DEIN SYSTEM AUF EINEN BLICK" title="Guten Abend, Eren.">
+      <Intro eyebrow="DEIN SYSTEM AUF EINEN BLICK" title="Guten Abend, Emre.">
         <p>Was braucht heute wirklich deine Aufmerksamkeit?</p>
       </Intro>
       <div className="focusrow">
