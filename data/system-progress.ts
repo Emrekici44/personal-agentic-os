@@ -9,8 +9,8 @@ export type ProgressItem = {
 };
 
 export const systemProgress = {
-  currentPhase: "Echte Daten verbinden · sichere Übergabe",
-  lastVerifiedAt: "23.08.2026 · 21:18 Europe/Berlin",
+  currentPhase: "Google Calendar · wartet auf sicheren OAuth-Schritt",
+  lastVerifiedAt: "23.08.2026 · 21:20 Europe/Berlin",
   items: [
     {
       id: "foundation",
@@ -57,9 +57,9 @@ export const systemProgress = {
     {
       id: "data-push",
       label: "Datenphase dokumentieren und privat pushen",
-      evidence: "Secret-/Inhaltsaudit und zweiter GitHub-Push",
+      evidence: "Secret-/Inhaltsaudit · privates main aktualisiert",
       href: "#settings",
-      status: "active",
+      status: "complete",
     },
     {
       id: "google-oauth",

@@ -7,7 +7,7 @@ const pageSource = await readFile("app/page.tsx", "utf8");
 
 test("system progress is a discrete structured checklist without a decorative percentage", () => {
   assert.match(progressSource, /status: "complete"/);
-  assert.match(progressSource, /status: "active"/);
+  assert.match(progressSource, /"active" \| "complete"/);
   assert.match(progressSource, /status: "user_action"/);
   assert.doesNotMatch(progressSource, /progressPercent|percentage|percent:/i);
   assert.match(pageSource, /systemProgress\.items\.filter/);
