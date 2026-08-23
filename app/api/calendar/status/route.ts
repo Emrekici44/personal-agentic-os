@@ -1,0 +1,2 @@
+import {NextRequest,NextResponse} from 'next/server';import {accessToken,calendarConfig} from '@/lib/google-calendar';
+export async function GET(req:NextRequest){const c=calendarConfig(),connected=Boolean(accessToken(req.cookies.get('northstar_google_token')?.value));return NextResponse.json({configured:c.configured,connected,mode:connected?'google':c.configured?'oauth-ready':'mock',permissions:['calendar.readonly'],writesEnabled:false,credentialsExposed:false})}

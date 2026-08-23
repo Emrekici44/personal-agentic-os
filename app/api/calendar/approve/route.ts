@@ -1,0 +1,2 @@
+import {NextRequest,NextResponse} from 'next/server';import {validateApproval} from '@/lib/calendar-core.mjs';
+export async function POST(req:NextRequest){try{const blocks=validateApproval(await req.json());return NextResponse.json({approved:true,mode:'mock',writesPerformed:false,reason:'Mock adapter never writes external data',approvedCount:blocks.length,auditId:crypto.randomUUID()})}catch(e){return NextResponse.json({error:e instanceof Error?e.message:'Freigabe ungültig'},{status:400})}}
