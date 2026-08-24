@@ -31,6 +31,7 @@ test("archived records restore safely in an isolated temporary store", () => {
     const store = await import(${JSON.stringify(moduleUrl)});
     const project = store.createRecord("projects", { title: "Temporary project", status: "planned" });
     const task = store.createRecord("tasks", { title: "Temporary task", status: "active", projectId: project.id, area: "Projekte", priority: "medium", checklist: [], done: false });
+    try { store.archiveRecord("projects", project.id, project.version); throw new Error("project archived with active task"); } catch (error) { if (!String(error.message).includes("aktive Aufgaben")) throw error; }
     store.archiveRecord("tasks", task.id, task.version);
     store.archiveRecord("projects", project.id, project.version);
     const archived = store.listArchivedRecords();
@@ -63,4 +64,12 @@ test("settings expose real archive recovery without claiming a database restore"
   assert.match(page, /method:"PATCH"/);
   assert.match(css, /\.archiveRecords/);
   assert.match(css, /@media\(max-width:720px\)\{\.archiveRecords/);
+});
+
+test("project, journal and agent records expose deliberate reversible archive controls", async () => {
+  const page = await readFile(new URL("../app/page.tsx", import.meta.url), "utf8");
+  for (const contract of ["archiveSelectedProject", "archiveSelectedEntry", "archiveAgent", "Archivierung bestätigen"]) assert.match(page, new RegExp(contract));
+  assert.match(page, /setProjectArchiveArmed\(true\)/);
+  assert.match(page, /setJournalArchiveArmed\(true\)/);
+  assert.match(page, /setAgentArchiveArmed\(true\)/);
 });

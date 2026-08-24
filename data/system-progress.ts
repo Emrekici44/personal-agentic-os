@@ -288,7 +288,7 @@ export const systemProgress = {
     {
       id: "reversible-record-archive",
       label: "Reversibles lokales Datensatz-Archiv",
-      evidence: "Inhaltsarme Liste · exakte Version · Transaktion/Audit · kein Delete/externer Write",
+      evidence: "Direkte Projekt/Journal/Agent-Pfade · Abhängigkeitsprüfung · exakte Version · Transaktion/Audit · kein Delete/externer Write",
       href: "#settings",
       status: "complete",
     },

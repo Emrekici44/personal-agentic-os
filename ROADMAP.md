@@ -37,6 +37,7 @@
 - Settings now has a signed, read-only recovery diagnosis. It checks Shared Store/WAL/schema, connector-health evidence and local backup availability, presents an ordered restart/check/preview runbook, and cannot reconnect, restore or write externally.
 - All remaining sensitive Shared Store/API responses now explicitly use `no-store, private`. Unauthorized reads and mutations consistently return 401 (not a misleading validation 400), including records, preferences, backups, audit, migration preview and Calendar proposal/write routes.
 - Reversible archive is now truthful end-to-end: a private content-light archive lists local records, restores one exact version to its prior status in a transaction, rejects stale/dependency conflicts and never deletes or performs an external action. Backup restore remains a separate locked boundary.
+- Project, Journal and custom Agent surfaces now expose deliberate two-step archive entry points. Archiving itself is transactional and refuses active Project/Agent dependencies before changing state, so cross-client recovery does not create orphaned references.
 
 ## Complete – Bedienwahrheit and responsive refinement
 
