@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { executeLocalSkill, skillProcedureCatalog, skillSafetyContract } from "@/lib/local-skills.mjs";
 import { publicApiError, publicConflict } from "@/lib/public-api-error";
+import { readPrivateJson } from "@/lib/private-request";
 import {
   archiveSkillDefinition,
   createSkillDefinition,
@@ -59,7 +60,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   if (!authorized(request)) return reject(new Error("Lokale Sitzung erforderlich"), 401);
   try {
-    const body = await request.json();
+    const body = await readPrivateJson(request);
     if (body.action === "create_definition") {
       return NextResponse.json({ definition: withStoreTransaction(() => createSkillDefinition(body.definition)), writesPerformed: true, externalActionsPerformed: false }, { status: 201, headers: responseHeaders });
     }
@@ -78,7 +79,7 @@ export async function POST(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   if (!authorized(request)) return reject(new Error("Lokale Sitzung erforderlich"), 401);
   try {
-    const body = await request.json();
+    const body = await readPrivateJson(request);
     if (body.action === "update_definition") return NextResponse.json({ definition: withStoreTransaction(() => updateSkillDefinition(String(body.skillId || ""), body.definition)), externalActionsPerformed: false }, { headers: responseHeaders });
     if (body.action === "archive_definition") return NextResponse.json({ result: withStoreTransaction(() => archiveSkillDefinition(String(body.skillId || ""), Number(body.version))), externalActionsPerformed: false }, { headers: responseHeaders });
     if (body.action === "review_run") return NextResponse.json({ run: withStoreTransaction(() => reviewSkillRun(String(body.runId || ""), Number(body.version))), externalActionsPerformed: false }, { headers: responseHeaders });

@@ -3,6 +3,7 @@ import { refreshedAccessToken } from "@/lib/google-calendar";
 import { readCalendarCatalog, readGoogleCalendarWindow } from "@/lib/google-calendar-read";
 import { buildWeeklyPlan, weeklyWindow } from "@/lib/weekly-planner";
 import { publicApiError, publicConflict } from "@/lib/public-api-error";
+import { readPrivateJson } from "@/lib/private-request";
 import { latestWeeklyPlan, listRecords, listWeeklyPlanSummaries, reviewWeeklyPlan, saveWeeklyPlan, verifyLocalSession, withStoreTransaction } from "@/lib/shared-store";
 
 const headers = { "Cache-Control": "no-store, private" };
@@ -32,7 +33,7 @@ export async function POST(request: NextRequest) {
   }
   let body: any;
   try {
-    body = await request.json();
+    body = await readPrivateJson(request);
   } catch {
     return respond({ error: "Planungsanfrage ist ungültig", writesPerformed: false }, { status: 400 });
   }
@@ -69,7 +70,7 @@ export async function POST(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     if (!authenticated(request)) return respond({ error: "Lokale Sitzung erforderlich", writesPerformed: false }, { status: 401 });
-    const body = await request.json();
+    const body = await readPrivateJson(request);
     const plan = withStoreTransaction(() => reviewWeeklyPlan(String(body.planId || ""), body));
     return respond({ plan, history: listWeeklyPlanSummaries(), calendarWritesPrepared: false, writesPerformed: false });
   } catch (error) {

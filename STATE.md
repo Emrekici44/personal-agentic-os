@@ -168,6 +168,8 @@ Last verified: 25.08.2026, Europe/Berlin.
 - Verifikation des quellenbezogenen Retry-Inkrements: Root 133/133, Lint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export und isolierter Produktionsbuild sind grün. Dashboard 59/62, Desktop und 390×844 ohne horizontalen Überlauf; die echte mobile Inbox öffnete über `Erfassen` und zeigte online keinen falschen Retry.
 - Die Acht-Sekunden-Grenze umfasst nun den vollständigen privaten Antwortkörper, nicht nur Header. Ein deterministischer Hänge-Stream endet mit generischer Timeout-Evidenz; Shared-Mutationen wechseln bei 401/403/5xx in Offline, leeren unverifizierte Controls und werden nicht still wiederholt.
 - Verifikation der vollständigen Antwortgrenze: Root 136/136, Lint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export und isolierter Produktionsbuild sind grün. Dashboard 60/63, keine Offline-Warnung und 0 Desktop-/390×844-Überlauf; der Hänge-Body-Test nutzte ausschließlich einen lokalen Stream-Stub.
+- Private Mutationseingaben sind zentral begrenzt: alle elf aktiven JSON-Routen verlangen ein JSON-Objekt, höchstens 64 KiB und vollständiges Lesen innerhalb von fünf Sekunden. Die Ablehnung geschieht vor Fachlogik, Store oder externem Calendar-Transport und gibt keine Rohdetails aus.
+- Verifikation der privaten Eingabegrenze: Root 140/140, Lint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export und isolierter Produktionsbuild sind grün. Dashboard 61/64, 0 Desktop-/390×844-Überlauf, alle fünf mobilen Hauptziele aktiv; Unit-Proben verwendeten ausschließlich künstliche Request-Streams.
 
 ## User boundaries
 

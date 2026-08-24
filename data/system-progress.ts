@@ -440,6 +440,13 @@ export const systemProgress = {
       status: "complete",
     },
     {
+      id: "bounded-private-json-input",
+      label: "Private JSON-Eingaben begrenzen",
+      evidence: "11 aktive Mutationsrouten · JSON-Objekt · 64 KiB · 5 Sekunden · Ablehnung vor Fachlogik",
+      href: "#settings",
+      status: "complete",
+    },
+    {
       id: "ongoing-local-gap-audit",
       label: "Nächste lokale Bedien-/Recovery-Lücke prüfen",
       evidence: "Nur reversible lokale Änderungen · keine externen Writes, Migrationen, Installationen oder Kosten",

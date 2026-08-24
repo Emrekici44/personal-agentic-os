@@ -110,3 +110,5 @@ All private browser requests in the main and Usage surfaces now use the shared r
 Core Shared Store screens now expose scoped read-only retries and error-only focus/online recovery. Healthy screens do not poll or reset drafts, and failed sources never masquerade as verified empty data.
 
 The bounded private client now buffers each full API response inside the same deadline. Partial response streams and authenticated/server mutation failures therefore fail closed without leaving stale controls active.
+
+Every active private JSON mutation route now shares a bounded server-side body reader. Invalid, oversized or incomplete input is rejected before business logic, storage or external transport.

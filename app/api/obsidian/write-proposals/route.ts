@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { buildVaultWriteProposal, revalidateVaultWriteProposal } from "@/lib/obsidian-write-proposal";
 import { publicApiError } from "@/lib/public-api-error";
+import { readPrivateJson } from "@/lib/private-request";
 import { approveVaultWriteProposal, listVaultWriteProposals, saveVaultWriteProposal, verifyLocalSession, withStoreTransaction } from "@/lib/shared-store";
 
 const headers = { "Cache-Control": "no-store, private" };
@@ -17,7 +18,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   if (!authorized(request)) return errorResponse(new Error("Lokale Sitzung erforderlich"), 401);
   try {
-    const proposal = await buildVaultWriteProposal(await request.json());
+    const proposal = await buildVaultWriteProposal(await readPrivateJson(request));
     const approvalToken = crypto.randomBytes(32).toString("base64url");
     return NextResponse.json({ proposal: withStoreTransaction(() => saveVaultWriteProposal(proposal, approvalToken)), approvalToken, applyAvailable: false, writesPerformed: false, existingNotesModified: 0 }, { status: 201, headers });
   } catch (error) {
@@ -28,7 +29,7 @@ export async function POST(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   if (!authorized(request)) return errorResponse(new Error("Lokale Sitzung erforderlich"), 401);
   try {
-    const body = await request.json();
+    const body = await readPrivateJson(request);
     if (body.action !== "approve_preview") throw new Error("Apply ist gesperrt; nur die Vorschau-Freigabe ist verfügbar");
     const proposal = listVaultWriteProposals(20).find((item) => item.id === String(body.proposalId || ""));
     if (!proposal) throw new Error("Vault-Vorschlag nicht gefunden");

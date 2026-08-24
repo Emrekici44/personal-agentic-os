@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { publicApiError, publicConflict } from "@/lib/public-api-error";
+import { readPrivateJson } from "@/lib/private-request";
 import {
   getPreference,
   isPreferenceId,
@@ -36,7 +37,7 @@ export async function PUT(
     const { id } = await params;
     if (!authorized(request)) return NextResponse.json({ error: "Lokale Sitzung erforderlich" }, { status: 401, headers });
     if (!isPreferenceId(id)) throw new Error("Unbekannte Einstellung");
-    const body = await request.json();
+    const body = await readPrivateJson(request);
     return NextResponse.json(withStoreTransaction(() => setPreference(id, body.value, body.version)), { headers });
   } catch (error) {
     const fallback = "Einstellung konnte lokal nicht sicher gespeichert werden", message = publicApiError(error, fallback), retrySafe = message === fallback;

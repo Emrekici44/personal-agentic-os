@@ -5,6 +5,7 @@ import { auditCalendarWrite, consumeApproval, type CalendarChange } from "@/lib/
 import { refreshedAccessToken } from "@/lib/google-calendar";
 import { googleRequestSignal } from "@/lib/google-transport";
 import { publicApiError } from "@/lib/public-api-error";
+import { readPrivateJson } from "@/lib/private-request";
 import { verifyLocalSession } from "@/lib/shared-store";
 
 const headers = { "Cache-Control": "no-store, private" };
@@ -27,7 +28,7 @@ export async function POST(request: NextRequest) {
 
   let change: CalendarChange;
   try {
-    const body = await request.json();
+    const body = await readPrivateJson(request);
     change = consumeApproval(body.approvalToken, body.confirmation);
   } catch (error) {
     return respond({ error: publicApiError(error, "Kalenderfreigabe wurde sicher abgelehnt"), written: false, outcome: "not_started", approvalConsumed: false, retryAllowed: false }, { status: 400 });

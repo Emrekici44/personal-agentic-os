@@ -106,6 +106,8 @@ Project root: `outputs/agentic-os`. Private source remote: `https://github.com/E
 - Full verification for scoped Shared Store recovery: Root 133/133, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed. Dashboard rendered 59/62 with 0 desktop/390×844 overflow; mobile `Erfassen` opened the real Inbox and displayed no false Retry while online.
 - The private request deadline now includes the complete response body, not merely headers. A deterministic never-ending body stream resolves to the generic timeout; Shared mutations clear stale controls and enter recovery after 401/403/5xx without automatic retry.
 - Full verification for complete response deadlines: Root 136/136, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed. Dashboard rendered 60/63 with no Offline banner and 0 desktop/390×844 overflow; the hanging-body proof used only a local stream stub.
+- All eleven active private JSON mutation routes use one server-side input boundary: object-only JSON, 64 KiB maximum and five-second body deadline. Invalid/oversized/incomplete bodies fail before business logic, storage or Calendar transport and expose no raw detail.
+- Full verification for bounded private inputs: Root 140/140, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed. Dashboard rendered 61/64 with 0 desktop/390×844 overflow and all five mobile primary destinations enabled; the input proofs used only artificial Request streams.
 
 ## Immediate continuation
 

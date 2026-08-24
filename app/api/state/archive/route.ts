@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { publicApiError, publicConflict } from "@/lib/public-api-error";
+import { readPrivateJson } from "@/lib/private-request";
 import { isCrudKind, listArchivedRecords, restoreArchivedRecord, verifyLocalSession } from "@/lib/shared-store";
 
 const headers = { "Cache-Control": "no-store, private" };
@@ -17,7 +18,7 @@ export async function GET(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     if (!authorized(request)) return NextResponse.json({ error: "Lokale Sitzung erforderlich", restored: false }, { status: 401, headers });
-    const body = await request.json(), kind = String(body.kind || "");
+    const body = await readPrivateJson(request), kind = String(body.kind || "");
     if (!isCrudKind(kind)) throw new Error("Unbekannter Archivtyp");
     return NextResponse.json(restoreArchivedRecord(kind, String(body.id || ""), Number(body.version)), { headers });
   } catch (error) {

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { publicApiError, publicConflict } from "@/lib/public-api-error";
+import { readPrivateJson } from "@/lib/private-request";
 import {
   archiveRecord,
   createRecord,
@@ -31,7 +32,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   try {
     if (!auth(request)) return NextResponse.json({ error: "Lokale Sitzung erforderlich" }, { status: 401, headers });
     if (!isCrudKind(kind)) throw new Error("Unbekannter Datentyp");
-    const body = await request.json();
+    const body = await readPrivateJson(request);
     return NextResponse.json(withStoreTransaction(() => createRecord(kind, kind === "agents" ? validateAgentConfig(body) : body)), { status: 201, headers });
   } catch (error) {
     const fallback = "Eintrag konnte lokal nicht sicher erstellt werden", message = publicApiError(error, fallback), retrySafe = message === fallback;
@@ -44,7 +45,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   try {
     if (!auth(request)) return NextResponse.json({ error: "Lokale Sitzung erforderlich" }, { status: 401, headers });
     if (!isCrudKind(kind)) throw new Error("Unbekannter Datentyp");
-    const body = await request.json();
+    const body = await readPrivateJson(request);
     return NextResponse.json(withStoreTransaction(() => updateRecord(kind, String(body.id || ""), kind === "agents" ? validateAgentConfig(body) : body)), { headers });
   } catch (error) {
     const conflict = publicConflict(error);

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { agentWorkflowProfiles, buildAgentWorkflowProposal, isAgentWorkflowId } from "@/lib/agent-workflows";
 import { publicApiError, publicConflict } from "@/lib/public-api-error";
+import { readPrivateJson } from "@/lib/private-request";
 import { latestWeeklyPlan, listAgentWorkflowRuns, listRecords, saveAgentWorkflowRun, transitionAgentWorkflowRun, verifyLocalSession, withStoreTransaction } from "@/lib/shared-store";
 
 const authorized = (request: NextRequest) => verifyLocalSession(request.cookies.get("agentic_os_local_session")?.value);
@@ -19,7 +20,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   if (!authorized(request)) return respond({ error: "Lokale Sitzung erforderlich", externalActionsPerformed: false }, { status: 401 });
   try {
-    const body = await request.json();
+    const body = await readPrivateJson(request);
     if (!isAgentWorkflowId(body.workflowId)) throw new Error("Unbekannter Agenten-Workflow");
     const sources = { projects: listRecords("projects"), tasks: listRecords("tasks"), inbox: listRecords("inbox_items"), habits: listRecords("habits"), journal: listRecords("journal_metadata"), areas: listRecords("area_records"), weeklyPlan: latestWeeklyPlan() };
     const proposal = buildAgentWorkflowProposal(body.workflowId, String(body.input || ""), sources, body.projectId ? String(body.projectId) : undefined);
@@ -33,7 +34,7 @@ export async function POST(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   if (!authorized(request)) return respond({ error: "Lokale Sitzung erforderlich", externalActionsPerformed: false }, { status: 401 });
   try {
-    const body = await request.json();
+    const body = await readPrivateJson(request);
     return respond({ run: withStoreTransaction(() => transitionAgentWorkflowRun(String(body.runId || ""), body.action, body)), externalActionsPerformed: false, nextExternalAction: "not_available" });
   } catch (error) {
     const fallback = "Workflow-Status konnte lokal nicht sicher gespeichert werden", message = publicApiError(error, fallback), conflict = publicConflict(error), retrySafe = !conflict && message === fallback;
