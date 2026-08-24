@@ -90,6 +90,8 @@ Project root: `outputs/agentic-os`. Private source remote: `https://github.com/E
 - Full verification for shared preference conflicts: Root 123/123, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed. Settings rendered both real Theme controls with 0 desktop/390×844 horizontal overflow; the check performed no preference mutation.
 - Preference recovery is now explicit: shell/Settings track Loading, Online and Offline; Theme/Branding writes are fail-closed until verified, Settings exposes Retry and the runtime-online event reloads the shared values automatically.
 - Full verification for preference recovery: Root 123/123, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed. Online Settings had both Theme controls enabled, no false Retry and 0 desktop/390×844 overflow; live progress rendered 52/55.
+- Integration Health and Calendar status/catalog now reload together after the verified runtime-online signal. Health failures have a scoped retry; the callback contains only status/catalog loaders and performs no OAuth, event read or write.
+- Full verification for integration recovery: Root 124/124, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed. Eight real connector cards rendered with no false Retry and 0 desktop/390×844 overflow; progress rendered 53/56 and no OAuth/event read/write ran.
 
 ## Immediate continuation
 

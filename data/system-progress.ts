@@ -384,6 +384,13 @@ export const systemProgress = {
       status: "complete",
     },
     {
+      id: "integration-runtime-recovery",
+      label: "Verbindungsstatus nach Runtime-Ausfall neu prüfen",
+      evidence: "Health + Calendar-Katalog · gemeinsamer Retry/Reconnect-Read · 0 OAuth/Eventreads/Writes",
+      href: "#integrations",
+      status: "complete",
+    },
+    {
       id: "ongoing-local-gap-audit",
       label: "Nächste lokale Bedien-/Recovery-Lücke prüfen",
       evidence: "Nur reversible lokale Änderungen · keine externen Writes, Migrationen, Installationen oder Kosten",

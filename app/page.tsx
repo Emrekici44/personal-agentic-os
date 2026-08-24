@@ -1795,6 +1795,12 @@ function Integrations({ note }: any) {
   useEffect(() => {
     void loadCalendarState();
     void loadIntegrationHealth();
+    const recoverIntegrations = () => {
+      void loadCalendarState();
+      void loadIntegrationHealth();
+    };
+    window.addEventListener("agentic-os:runtime-online", recoverIntegrations);
+    return () => window.removeEventListener("agentic-os:runtime-online", recoverIntegrations);
   }, [loadCalendarState,loadIntegrationHealth]);
   const beginCalendarConnect = async () => {
     try {
@@ -1918,7 +1924,7 @@ function Integrations({ note }: any) {
         </small>
       </Card>
       <div className="integrationSummary"><span><I.RefreshCw/><b>Letzte Gesamtprüfung</b><small>{formatHealthTime(integrationHealth.checkedAt||null)}</small></span><span><I.ShieldCheck/><b>Schreibstatus</b><small>0 externe Writes durch Health Center</small></span><span><I.BadgeEuro/><b>Kostenaktivierung</b><small>Keine</small></span><Btn soft onClick={integrationHealth.state!=="loading"?loadIntegrationHealth:undefined}>{integrationHealth.state==="loading"?"Prüft …":"Health erneut prüfen"}</Btn></div>
-      {integrationHealth.state==="error"&&<p className="plannerError" role="alert"><I.TriangleAlert/>{integrationHealth.error}</p>}
+      {integrationHealth.state==="error"&&<RetryNotice message={integrationHealth.error||"Integrationsstatus ist gerade nicht erreichbar."} onRetry={loadIntegrationHealth} label="Integrationsstatus neu laden"/>}
       <div className="connections healthConnections">
         {integrationHealth.connectors.map((connector:any)=>{const Icon=connectionIcons[connector.id]||I.Plug;return <Card className={selectedConnectorId===connector.id?"selected":""} key={connector.id}>
           <div className="row"><span className="connector"><Icon/></span><div className="connectionBadges"><i className={`badge ${connector.status}`}>{healthStatusLabel[connector.status]||"Nicht verifiziert"}</i><i className={`costBadge ${String(connector.costClass).toLowerCase().replace(/[^a-z]+/g,"-")}`}>{costClassLabel[connector.costClass]||"Ungeklärt"}</i></div></div>

@@ -50,3 +50,13 @@ test("calendar recovery keeps status, token check and catalog evidence separate"
   assert.match(ui, /Der Kalenderkatalog wird erst nach einer verifizierten Verbindung gelesen/);
   assert.match(ui, /Tokenstatus erneut prüfen/);
 });
+
+test("integration and calendar evidence recover together without starting OAuth or writes", async () => {
+  const page = await readFile(new URL("../app/page.tsx", import.meta.url), "utf8");
+  assert.match(page, /agentic-os:runtime-online[\s\S]*recoverIntegrations/);
+  assert.match(page, /recoverIntegrations[\s\S]*loadCalendarState\(\)[\s\S]*loadIntegrationHealth\(\)/);
+  assert.match(page, /Integrationsstatus neu laden/);
+  assert.match(page, /onRetry=\{loadIntegrationHealth\}/);
+  const recoveryBlock = page.match(/const recoverIntegrations[\s\S]*?window\.addEventListener\("agentic-os:runtime-online", recoverIntegrations\)/)?.[0] || "";
+  assert.doesNotMatch(recoveryBlock, /beginCalendarConnect|window\.location|readWeek|write|approve/i);
+});

@@ -75,6 +75,7 @@
 - Procedure-state conflicts are now explicit across devices: Skill definitions/reviews, Agent workflow transitions and Weekly Planner reviews carry their current version, reject stale writes with 409 and reload the shared source instead of silently overwriting a newer decision.
 - Theme and Branding have the same optimistic-concurrency contract: default version 0, first persisted version 1, exact-version updates and authoritative reload after 409. Offline saves are not presented as shared.
 - Preference recovery now follows the common source-truth contract: Loading/Offline is visible, mutation controls are disabled, a scoped retry exists and the verified runtime-online signal reloads Theme and Branding automatically.
+- Integration recovery now reloads Health evidence and Calendar status/catalog after private runtime recovery, with a real Health retry action. The recovery callback is statically constrained to read-only loaders and cannot invoke OAuth, week reads or Calendar writes.
 
 ## Complete – Bedienwahrheit and responsive refinement
 
