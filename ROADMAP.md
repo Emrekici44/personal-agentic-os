@@ -14,6 +14,7 @@
 - Production truth audit removed the final embedded Calendar/event/focus fixtures and unused mock-provider export. Test contracts now exercise only the bounded read guard and the real Planner/Calendar write boundaries.
 - Command Center status is now live and reconnect-aware for Planner, Google Calendar, Obsidian and OpenAI API. Source availability is separated from data presence, so an empty but reachable Planner is no longer mislabeled as unconfigured.
 - Task and life-area surfaces now distinguish verified zero counts from loading/offline sources. Domain insights, records and create controls appear only when the shared source is online; no outage is rendered as an honest empty dataset.
+- Shared-record mutations now fail closed while their source is loading/offline. Stale in-memory rows are removed from active views and prominent Today/Journal/Project/Area/Agent/Inbox/Companion controls stay disabled until the signed private source is reverified.
 - Unified daily workspace with shared tasks, persistent habits and encrypted journal completion.
 - Real content-free shared-store audit in Knowledge; static activity claims removed.
 - Real shared life-area records for faith, health, finance, relationships and split career; encrypted private fields, honest empty states and reversible archive.

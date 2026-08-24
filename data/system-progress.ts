@@ -99,7 +99,7 @@ export const systemProgress = {
     {
       id: "ui-truth",
       label: "Globale Bedienwahrheit und responsive UX",
-      evidence: "AST-Buttonaudit · live Status · 0/Lädt/Offline strikt getrennt · keine eingebetteten Produkt-Mocks",
+      evidence: "AST-Buttonaudit · 0/Lädt/Offline strikt getrennt · Shared Writes fail-closed · keine Produkt-Mocks",
       href: "#home",
       status: "complete",
     },

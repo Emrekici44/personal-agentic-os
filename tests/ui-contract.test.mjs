@@ -165,6 +165,17 @@ test("loading and offline sources are never rendered as truthful zero counts", a
   assert.match(page, /onClick=\{state==="online"\?\(\) => openCreate\(\):undefined\}/);
 });
 
+test("shared record mutations fail closed while the private source is unavailable", async () => {
+  const page = await readFile(pagePath, "utf8");
+  assert.match(page, /if\(state!==['"]online['"]\)throw new Error\(['"]Gemeinsamer Datenkern ist nicht schreibbereit['"]\)/);
+  assert.match(page, /return\{records:state===['"]online['"]\?records:\[\],state,create,update,archive,reload:load\}/);
+  assert.match(page, /disabled=\{habitState !== "online"\}/);
+  assert.match(page, /disabled=\{taskState !== "online"\}/);
+  assert.match(page, /journalState === "online" \? completeJournal : undefined/);
+  assert.match(page, /state === "online" && txt\.trim\(\)\.length >= 2 \? capture : undefined/);
+  assert.match(page, /state === "online" && captureTitle\.trim\(\)\.length >= 2/);
+});
+
 test("knowledge search stays inside the signed metadata-only vault preview", async () => {
   const [page, route] = await Promise.all([
     readFile(pagePath, "utf8"),
