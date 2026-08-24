@@ -104,6 +104,8 @@ Project root: `outputs/agentic-os`. Private source remote: `https://github.com/E
 - Full verification for the complete private UI boundary: Root 131/131, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed. Dashboard rendered 58/61 with 0 desktop/390×844 overflow; mobile `Woche` navigation opened the real planner. The content audit found 0 concrete secret patterns, 0 absolute Vault paths outside documentation and 0 tracked private env/database/WAL/SHM files.
 - Remaining Shared Store error surfaces now provide scoped retries on Command, Areas, Projects, Today, Journal, Companion and Inbox. Each hook also listens for focus/online only while it is actually failed; verified screens and open drafts are not periodically reloaded. No fallback store or external action was added.
 - Full verification for scoped Shared Store recovery: Root 133/133, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed. Dashboard rendered 59/62 with 0 desktop/390×844 overflow; mobile `Erfassen` opened the real Inbox and displayed no false Retry while online.
+- The private request deadline now includes the complete response body, not merely headers. A deterministic never-ending body stream resolves to the generic timeout; Shared mutations clear stale controls and enter recovery after 401/403/5xx without automatic retry.
+- Full verification for complete response deadlines: Root 136/136, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed. Dashboard rendered 60/63 with no Offline banner and 0 desktop/390×844 overflow; the hanging-body proof used only a local stream stub.
 
 ## Immediate continuation
 

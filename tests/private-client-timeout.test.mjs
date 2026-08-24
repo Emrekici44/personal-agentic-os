@@ -22,6 +22,34 @@ test("private client ends a hanging request without leaking content", async () =
   }
 });
 
+test("private client keeps the response body inside the same deadline", async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = (_input, init) => Promise.resolve(new Response(new ReadableStream({
+    start(controller) {
+      controller.enqueue(new TextEncoder().encode('{"online":'));
+      init?.signal?.addEventListener("abort", () => controller.error(new Error("raw streamed body detail")), { once: true });
+    },
+  }), { headers: { "content-type": "application/json" }, status: 200 }));
+  try {
+    await assert.rejects(privateApiFetch("/api/state/status", {}, 50), /Private Quelle hat das Zeitlimit überschritten/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("private client returns a buffered same-origin response", async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = () => Promise.resolve(Response.json({ online: true }, { headers: { "cache-control": "no-store" } }));
+  try {
+    const response = await privateApiFetch("/api/state/status", {}, 100);
+    assert.equal(response.status, 200);
+    assert.equal(response.headers.get("cache-control"), "no-store");
+    assert.deepEqual(await response.json(), { online: true });
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 test("core shared sources and standalone Usage use the bounded client", async () => {
   const [page, usage] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),

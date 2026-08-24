@@ -108,3 +108,5 @@ The full evidence-based status, locally executable vertical slices and bundled d
 All private browser requests in the main and Usage surfaces now use the shared relative `/api/`-only eight-second boundary. This completes the local hanging-request recovery slice without changing external integrations, user data or approval policy.
 
 Core Shared Store screens now expose scoped read-only retries and error-only focus/online recovery. Healthy screens do not poll or reset drafts, and failed sources never masquerade as verified empty data.
+
+The bounded private client now buffers each full API response inside the same deadline. Partial response streams and authenticated/server mutation failures therefore fail closed without leaving stale controls active.

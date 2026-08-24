@@ -30,3 +30,8 @@ test("core empty and offline surfaces expose scoped read-only retries", () => {
   assert.match(page, /Es werden keine lokalen Ersatz- oder Beispieldaten angezeigt/);
   assert.match(page, /es werden keine Ersatzgespräche angezeigt/);
 });
+
+test("shared mutations clear stale controls after private auth or source failures", () => {
+  assert.match(page, /response\.status===401\|\|response\.status===403\|\|response\.status>=500/);
+  assert.match(page, /setRecords\(\[\]\);setState\('error'\)/);
+});

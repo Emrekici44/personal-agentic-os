@@ -433,6 +433,13 @@ export const systemProgress = {
       status: "complete",
     },
     {
+      id: "complete-response-deadline",
+      label: "Private Antworten vollständig zeitlich begrenzen",
+      evidence: "Header + Antwortkörper · 8 Sekunden · 401/403/5xx verwerfen alte Shared-Controls · kein stiller Retry",
+      href: "#settings",
+      status: "complete",
+    },
+    {
       id: "ongoing-local-gap-audit",
       label: "Nächste lokale Bedien-/Recovery-Lücke prüfen",
       evidence: "Nur reversible lokale Änderungen · keine externen Writes, Migrationen, Installationen oder Kosten",

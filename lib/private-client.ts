@@ -14,6 +14,7 @@ export async function privateApiFetch(
   const controller = new AbortController();
   const relayAbort = () => controller.abort();
   init.signal?.addEventListener("abort", relayAbort, { once: true });
+  if (init.signal?.aborted) controller.abort();
   let timer: ReturnType<typeof setTimeout> | undefined;
   const timeout = new Promise<never>((_, reject) => {
     timer = setTimeout(() => {
@@ -23,7 +24,14 @@ export async function privateApiFetch(
   });
   try {
     return await Promise.race([
-      fetch(input, { ...init, signal: controller.signal }),
+      fetch(input, { ...init, signal: controller.signal }).then(async (response) => {
+        const body = await response.arrayBuffer();
+        return new Response(body.byteLength ? body : null, {
+          headers: response.headers,
+          status: response.status,
+          statusText: response.statusText,
+        });
+      }),
       timeout,
     ]);
   } finally {

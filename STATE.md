@@ -166,6 +166,8 @@ Last verified: 25.08.2026, Europe/Berlin.
 - Abschlussprüfung dieser Grenze: Root 131/131, Lint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export und isolierter Produktionsbuild sind grün. Dashboard 58/61, 0 Desktop-/390×844-Überlauf; mobile `Woche`-Navigation öffnete die echte Wochenplanung. Secret-/Inhaltsaudit: 0 konkrete Secretmuster, 0 absolute Vault-Pfade außerhalb Dokumentation und 0 getrackte private Env-/DB-/WAL-/SHM-Dateien.
 - Shared-Store-Recovery ist auch auf den verbleibenden sichtbaren Kernflächen bedienbar: Kommando, Bereiche, Projekte, Heute, Journal, Companion und Inbox zeigen einen quellenbezogenen Retry, löschen unverifizierte Bestände und laden bei Fokus/Online nur aus einem echten Fehlerzustand neu. Keine lokale Ersatzquelle und kein periodischer Entwurfsreset wurde eingeführt.
 - Verifikation des quellenbezogenen Retry-Inkrements: Root 133/133, Lint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export und isolierter Produktionsbuild sind grün. Dashboard 59/62, Desktop und 390×844 ohne horizontalen Überlauf; die echte mobile Inbox öffnete über `Erfassen` und zeigte online keinen falschen Retry.
+- Die Acht-Sekunden-Grenze umfasst nun den vollständigen privaten Antwortkörper, nicht nur Header. Ein deterministischer Hänge-Stream endet mit generischer Timeout-Evidenz; Shared-Mutationen wechseln bei 401/403/5xx in Offline, leeren unverifizierte Controls und werden nicht still wiederholt.
+- Verifikation der vollständigen Antwortgrenze: Root 136/136, Lint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export und isolierter Produktionsbuild sind grün. Dashboard 60/63, keine Offline-Warnung und 0 Desktop-/390×844-Überlauf; der Hänge-Body-Test nutzte ausschließlich einen lokalen Stream-Stub.
 
 ## User boundaries
 
