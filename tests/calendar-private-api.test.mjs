@@ -66,3 +66,14 @@ test("calendar UI creates the private session before protected reads and shows n
   assert.match(page, /onClick=\{beginCalendarConnect\}/);
   assert.match(page, /onClick=\{shareCalendarSession\}/);
 });
+
+test("OAuth redirects are cache-free and consume the short-lived state cookie", async () => {
+  const [connect, callback] = await Promise.all([route("connect"), route("callback")]);
+  assert.match(connect, /response\.headers\.set\("Cache-Control", "no-store, private"\)/);
+  assert.match(connect, /httpOnly: true/);
+  assert.match(connect, /maxAge: 600/);
+  assert.match(callback, /const protectRedirect/);
+  assert.match(callback, /response\.headers\.set\("Cache-Control", "no-store, private"\)/);
+  assert.equal((callback.match(/response\.cookies\.delete\("agentic_os_oauth_state"\)/g) || []).length, 2);
+  assert.match(callback, /open\(stored\) !== state/);
+});

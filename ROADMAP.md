@@ -31,6 +31,7 @@
 - Planner GET/generate/review responses now share one `no-store, private` boundary for success, authentication denial and validation errors; anonymous GET/POST/PATCH probes all stopped at 401 before data or Google access.
 - Local session issuance now explicitly preserves `no-store, private` after setting the HttpOnly/SameSite cookie; runtime probes verified 200 for trusted localhost and 403 for an invalid host without printing token values.
 - Project workspace, Agent workflow GET/POST/PATCH and the content-minimal daily Calendar route now use private response helpers on every success/auth/error path; anonymous runtime probes all stopped at 401 cache-free.
+- Google OAuth start and callback redirects now preserve `no-store, private` on their final response; callback success and failure both consume the short-lived state cookie. Invalid/no-session probes caused no OAuth or token exchange.
 - Unified daily workspace with shared tasks, persistent habits and encrypted journal completion.
 - Real content-free shared-store audit in Knowledge; static activity claims removed.
 - Real shared life-area records for faith, health, finance, relationships and split career; encrypted private fields, honest empty states and reversible archive.
