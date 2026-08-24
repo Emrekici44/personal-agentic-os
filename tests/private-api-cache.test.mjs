@@ -37,3 +37,14 @@ test("visible integration copy no longer claims a production mock state", async 
   assert.match(page, /eingeschränkt,\s*offline oder unkonfiguriert markiert/);
   assert.doesNotMatch(page, /Alles andere bleibt klar als Mock/);
 });
+
+test("local session issuance is private and cache-free on success and denial", async () => {
+  const source = await readFile(new URL("../app/api/state/session/route.ts", import.meta.url), "utf8");
+  assert.match(source, /trustedPrivateHost/);
+  assert.match(source, /Cache-Control':'no-store, private'/);
+  assert.match(source, /status:403,headers/);
+  assert.match(source, /authenticated:true,privateOnly:true\},\{headers\}/);
+  assert.match(source, /httpOnly:true/);
+  assert.match(source, /sameSite:'strict'/);
+  assert.match(source, /response\.headers\.set\('Cache-Control','no-store, private'\)/);
+});

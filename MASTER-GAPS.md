@@ -69,6 +69,7 @@ Die gebündelten Details stehen in `PENDING-DECISIONS.md`. Kein Punkt hier block
 - Command-Center-Quellen werden unabhängig ausgewertet: ein Parser-/Netzfehler in Calendar, Planner, Vault oder OpenAI verändert nur den zugehörigen Status. Interne englische State-Werte werden nicht mehr als sichtbare Bedienkopie ausgegeben.
 - Das Health Center trennt Öffnen und Handeln semantisch: `Details & sichere Schritte` zeigt nur Evidenz/Anleitung und behauptet keinen Reconnect. Sichtbare Connectorzustände sind übersetzt, eine Aktivierung bleibt technisch und textlich ausgeschlossen.
 - Planner-API-Antworten sind auch im Fehlerpfad cachefrei/privat. Anonyme GET-/POST-/PATCH-Aufrufe enden einheitlich mit 401 vor Request-Body-Auswertung, Datenzugriff oder externer Kalenderkommunikation.
+- Die lokale Session-Ausgabe ist ebenfalls vollständig cachefrei: Hostprüfung, HttpOnly/SameSite-Cookie und finaler `no-store, private`-Header gelten auf Erfolg und Ablehnung. Laufzeitnachweis erfolgte ohne Ausgabe des signierten Cookie-Werts.
 - Produktmodule enthalten keine eingebetteten Kalender-, Ereignis-, Fokusblock- oder Provider-Mocks mehr; Testverträge prüfen echte Guards ohne sie als Nutzerdatenpfad bereitzuhalten.
 - ChatGPT Pro ist kein API-Zugang. Companion Mode ist ein manueller Übergabepfad.
 - SQLite ist operative Quelle, Obsidian dauerhafte Wissensquelle und Google Calendar externe Ereignisquelle, bis Emre eine andere Migration ausdrücklich freigibt.
