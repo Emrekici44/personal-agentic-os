@@ -11,3 +11,11 @@ test('shared operational records expose authenticated CRUD and keep skills metad
   assert.match(store,/INSERT INTO audit_log/);
 });
 test('vault normalization is preview-only and preserves existing notes',()=>{assert.match(vault,/previewVaultNormalization/);assert.match(vault,/existingNotesModified:0/);assert.match(vault,/proposedMoves:0/);assert.match(vault,/proposedRenames:0/);assert.match(vault,/sensitiveWritesRequireApproval:true/);assert.match(route,/no-store, private/);assert.match(route,/writesPerformed:false/)});
+
+test('shared theme preference is authenticated, validated and audited',async()=>{
+  const preferences=await readFile(new URL('../app/api/state/preferences/[id]/route.ts',import.meta.url),'utf8');
+  assert.match(preferences,/verifyLocalSession/);
+  assert.match(store,/preferenceIds=\['theme'\]/);
+  assert.match(store,/\['dark','light'\]/);
+  assert.match(store,/preference\.update/);
+});

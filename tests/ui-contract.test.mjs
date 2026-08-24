@@ -60,6 +60,31 @@ test("does not present generic action buttons without a handler as active", asyn
   assert.match(page, /aria-disabled=\{!onClick\}/);
   assert.match(page, /disabled=\{!onClick\}/);
   assert.match(css, /\.btn:disabled/);
+  assert.doesNotMatch(page, /Neuer Projekt-Chat vorbereitet|sichere Details geöffnet/);
+  assert.doesNotMatch(page, /Kurzes Training Push|DIESEN TERMIN JETZT SCHREIBEN/);
+  assert.match(page, /Nächste 8 Tage lesen/);
+  assert.match(page, /Kein Write vorbereitet/);
+});
+
+test("shares an accessible light and dark preference across desktop and mobile web", async () => {
+  const [page, css, mobileConfig] = await Promise.all([
+    readFile(pagePath, "utf8"),
+    readFile(cssPath, "utf8"),
+    readFile(new URL("../apps/mobile/app.json", import.meta.url), "utf8"),
+  ]);
+  assert.match(page, /api\/state\/preferences\/theme/);
+  assert.match(page, /data-theme=\{theme\}/);
+  assert.match(page, /aria-label=\{theme === "dark" \? "Light Mode aktivieren"/);
+  assert.match(css, /\.os\[data-theme="light"\]/);
+  assert.match(mobileConfig, /"userInterfaceStyle": "automatic"/);
+});
+
+test("marks remaining illustrative domain data instead of presenting it as real", async () => {
+  const page = await readFile(pagePath, "utf8");
+  assert.match(page, /DemoBanner/);
+  for (const boundary of ["keine echten persönlichen Daten", "keine Health-Verbindung", "kein Konto verbunden", "keine privaten Beziehungsdaten"]) {
+    assert.match(page, new RegExp(boundary, "i"));
+  }
 });
 
 test("keeps the iPhone shell safe-area aware and resistant to touch and zoom bugs", async () => {

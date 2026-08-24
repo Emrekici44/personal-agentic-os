@@ -21,52 +21,57 @@ type View =
   | "brain"
   | "settings";
 const areas = [
-  ["faith", "Glaube", "#a887d4", "5 Gebete · Qurʾān S. 184", I.MoonStar],
+  ["faith", "Glaube", "#a887d4", "Übersichtsvorlage", I.MoonStar],
   [
     "career",
     "Karriere",
     "#df9a52",
-    "2 Wege · 3 Meilensteine",
+    "Zwei berufliche Wege",
     I.BriefcaseBusiness,
   ],
   [
     "health",
     "Gesundheit",
     "#5fae8d",
-    "3 Trainings · Erholung gut",
+    "Noch keine Datenquelle",
     I.HeartPulse,
   ],
   [
     "finance",
     "Finanzen",
     "#6098c8",
-    "Budget 68% · Sparziel 42%",
+    "Noch kein Konto verbunden",
     I.WalletCards,
   ],
   [
     "relations",
     "Beziehungen",
     "#dc7f91",
-    "2 Kontakte · 1 Geburtstag",
+    "Private Beispielansicht",
     I.UsersRound,
   ],
-  ["projects", "Projekte", "#d1a33c", "4 aktiv · 6 geparkt", I.LayoutGrid],
+  ["projects", "Projekte", "#d1a33c", "Gemeinsame Daten öffnen", I.LayoutGrid],
 ] as const;
-const nav: any[] = [
-  ["home", "Kommando", I.Gauge],
-  ["inbox", "Inbox", I.Inbox],
-  ["areas", "Lebensbereiche", I.Orbit],
-  ["journal", "Journal", I.NotebookPen],
-  ["habits", "Habits & Aufgaben", I.ListChecks],
-  ["projects", "Projekte", I.PanelsTopLeft],
-  ["agents", "Agenten", I.Bot],
-  ["skills", "Skills", I.Sparkles],
-  ["chat", "Chats & Modelle", I.MessagesSquare],
-  ["brain", "Wissen", I.Network],
-  ["integrations", "Verbindungen", I.PlugZap],
-  ["settings", "Einstellungen", I.Settings2],
+const navGroups: any[] = [
+  ["FOKUS", [
+    ["home", "Kommando", I.Gauge],
+    ["inbox", "Inbox", I.Inbox],
+    ["journal", "Heute & Journal", I.NotebookPen],
+    ["habits", "Aufgaben & Routinen", I.ListChecks],
+    ["projects", "Projekte", I.PanelsTopLeft],
+  ]],
+  ["SYSTEM", [
+    ["agents", "Agenten", I.Bot],
+    ["skills", "Skills", I.Sparkles],
+    ["chat", "Chats & Modelle", I.MessagesSquare],
+    ["brain", "Wissen", I.Network],
+    ["integrations", "Verbindungen", I.PlugZap],
+    ["settings", "Einstellungen", I.Settings2],
+  ]],
 ];
+const nav: any[] = navGroups.flatMap(([, items]) => items);
 const viewIds = new Set<View>([
+  "areas",
   ...nav.map(([id]) => id as View),
   ...areas.map(([id]) => id as View),
 ]);
@@ -98,6 +103,7 @@ export default function App() {
   const [v, setV] = useState<View>("home"),
     [menu, setMenu] = useState(false),
     [toast, setToast] = useState(""),
+    [theme, setTheme] = useState<"dark" | "light">("dark"),
     [journal, setJournal] = useState(""),
     [mood, setMood] = useState("ruhig"),
     [vaultOnline, setVaultOnline] = useState(false),
@@ -125,10 +131,30 @@ export default function App() {
       .then((response) => response.json())
       .then((status) => setVaultOnline(status.status === "online"))
       .catch(() => setVaultOnline(false));
+    fetch("/api/state/session", { method: "POST" })
+      .then(() => fetch("/api/state/preferences/theme", { cache: "no-store" }))
+      .then((response) => response.json())
+      .then((preference) => setTheme(preference.value === "light" ? "light" : "dark"))
+      .catch(() => setTheme("dark"));
   }, []);
   const note = (s: string) => {
     setToast(s);
     setTimeout(() => setToast(""), 2400);
+  };
+  const changeTheme = async (next: "dark" | "light") => {
+    setTheme(next);
+    try {
+      await fetch("/api/state/session", { method: "POST" });
+      const response = await fetch("/api/state/preferences/theme", {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ value: next }),
+      });
+      if (!response.ok) throw new Error();
+      note(`${next === "light" ? "Light" : "Dark"} Mode gemeinsam gespeichert`);
+    } catch {
+      note("Theme ist nur für diese Sitzung aktiv");
+    }
   };
   const showView = useCallback((next: View) => {
     if (!viewIds.has(next)) return;
@@ -184,7 +210,7 @@ export default function App() {
   }, [menu]);
   const title = nav.find((n) => n[0] === v)?.[1] || brand.name;
   return (
-    <div className="os">
+    <div className="os" data-theme={theme}>
       <aside
         aria-label="Hauptnavigation"
         className={menu ? "open" : ""}
@@ -201,21 +227,25 @@ export default function App() {
           </button>
         </div>
         <nav>
-          {nav.map(([id, n, Icon]) => (
-            <a
-              aria-current={v === id ? "page" : undefined}
-              className={v === id ? "active" : ""}
-              href={`#${id}`}
-              onClick={(event) => {
-                event.preventDefault();
-                navigate(id);
-              }}
-              key={id}
-            >
-              <Icon />
-              {n}
-              {id === "inbox" && <em>4</em>}
-            </a>
+          {navGroups.map(([group, items]) => (
+            <div className="navGroup" key={group}>
+              <small>{group}</small>
+              {items.map(([id, n, Icon]: any[]) => (
+                <a
+                  aria-current={v === id ? "page" : undefined}
+                  className={v === id ? "active" : ""}
+                  href={`#${id}`}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    navigate(id);
+                  }}
+                  key={id}
+                >
+                  <Icon />
+                  {n}
+                </a>
+              ))}
+            </div>
           ))}
         </nav>
         <div className="privacy">
@@ -238,7 +268,7 @@ export default function App() {
             <I.Menu />
           </button>
           <div>
-            <small>SONNTAG · 23. AUGUST</small>
+            <small>{new Intl.DateTimeFormat("de-DE", { weekday: "long", day: "2-digit", month: "long", timeZone: "Europe/Berlin" }).format(new Date()).toUpperCase()}</small>
             <h1>{title}</h1>
           </div>
           <button
@@ -249,6 +279,14 @@ export default function App() {
             <I.Search />
             Suchen
           </button>
+          <button
+            aria-label={theme === "dark" ? "Light Mode aktivieren" : "Dark Mode aktivieren"}
+            className="themeSwitch"
+            onClick={() => changeTheme(theme === "dark" ? "light" : "dark")}
+            title={theme === "dark" ? "Light Mode" : "Dark Mode"}
+          >
+            {theme === "dark" ? <I.Sun /> : <I.Moon />}
+          </button>
           <span className="avatar">E</span>
         </header>
         <section
@@ -258,7 +296,7 @@ export default function App() {
           tabIndex={-1}
         >
           {v === "home" && <Home go={navigate} vaultOnline={vaultOnline} />}{" "}
-          {v === "areas" && <Areas go={navigate} />} {v === "faith" && <Faith note={note} />}
+          {v === "areas" && <Areas go={navigate} />} {v === "faith" && <Faith />}
           {v === "career" && <Career />}
           {v === "finance" && <Finance />}
           {v === "health" && <Health />}
@@ -286,6 +324,8 @@ export default function App() {
           {v === "settings" && (
             <Settings
               brand={brand}
+              theme={theme}
+              changeTheme={changeTheme}
               save={(x: any) => {
                 setBrand(x);
                 store.set("brand", x);
@@ -338,6 +378,9 @@ function Intro({ eyebrow, title, children, action }: any) {
     </div>
   );
 }
+const DemoBanner = ({ children = "Diese Kennzahlen sind Gestaltungsbeispiele – keine echten persönlichen Daten." }: any) => (
+  <div className="demoBanner" role="note"><I.Info />{children}</div>
+);
 function Home({ go, vaultOnline }: any) {
   const { records: tasks, state: taskState } = useSharedRecords("tasks");
   const [calendarState, setCalendarState] = useState("loading");
@@ -349,53 +392,31 @@ function Home({ go, vaultOnline }: any) {
       )
       .catch(() => setCalendarState("offline"));
   }, []);
-  const openTasks = tasks.filter((task: any) => task.status !== "done" && !task.archived_at);
+  const openTasks = tasks.filter((task: any) => !task.done && task.status !== "archived");
   return (
     <>
       <Intro eyebrow="DEIN SYSTEM AUF EINEN BLICK" title="Guten Abend, Emre.">
         <p>Was braucht heute wirklich deine Aufmerksamkeit?</p>
       </Intro>
+      <DemoBanner>Nur die Kennzahlen auf den Lebensbereichskarten sind noch Gestaltungsbeispiele. Fokus, Aufgaben und Verbindungsstatus stammen aus echten Quellen.</DemoBanner>
       <div className="focusrow">
         <Card className="now">
           <div className="row">
-            <Tag>HEUTIGER FOKUS</Tag>
-            <span className="pulse">Ruhiger Fokus</span>
+            <Tag>NÄCHSTER KLARER SCHRITT</Tag>
+            <span className="pulse">Gemeinsamer Datenkern</span>
           </div>
-          <h3>Wochenplanung bewusst abschließen</h3>
-          <p>Drei Ergebnisse, geschützte Erholung und 36% freie Kapazität.</p>
-          <div className="steps">
-            <span className="done">
-              <I.Check />
-              Kalender gelesen
-            </span>
-            <span className="done">
-              <I.Check />
-              Prioritäten gewählt
-            </span>
-            <span>Freigabe ausstehend</span>
-          </div>
-          <Btn onClick={() => go("integrations")}>
-            Plan prüfen <I.ArrowRight />
+          <h3>{openTasks[0]?.title || "Noch keine Aufgabe priorisiert"}</h3>
+          <p>{openTasks[0] ? `Bereich: ${openTasks[0].life_area || openTasks[0].area || "noch nicht zugeordnet"}` : "Erfasse eine konkrete Aufgabe; Agentic OS erfindet keine Priorität für dich."}</p>
+          <Btn onClick={() => go("habits")}>
+            Aufgaben öffnen <I.ArrowRight />
           </Btn>
         </Card>
         <Card className="day">
-          <Tag>HEUTE</Tag>
-          {[
-            ["11:00", "Wochenplanung", "focus"],
-            ["17:30", "Training", "health"],
-            ["20:30", "Reflexion", "faith"],
-          ].map((x) => (
-            <div className="event" key={x[0]}>
-              <time>{x[0]}</time>
-              <i className={x[2]} />
-              <span>
-                <b>{x[1]}</b>
-                <small>
-                  {x[2] === "health" ? "Danach kein Deep Work" : "Geschützt"}
-                </small>
-              </span>
-            </div>
-          ))}
+          <Tag>HEUTE · ECHTE QUELLEN</Tag>
+          <div className="event"><I.CheckSquare /><span><b>{openTasks.length} offene Aufgaben</b><small>Laptop Shared Store</small></span></div>
+          <div className="event"><I.CalendarDays /><span><b>Google Calendar · {calendarState}</b><small>Termine werden erst in der Kalenderansicht gelesen</small></span></div>
+          <div className="event"><I.Network /><span><b>Obsidian · {vaultOnline ? "online" : "unconfigured"}</b><small>Read-only Wissensindex</small></span></div>
+          <Btn soft onClick={() => go("integrations")}>Verbindungen prüfen</Btn>
         </Card>
       </div>
       <SystemProgress go={go} />
@@ -417,14 +438,6 @@ function Home({ go, vaultOnline }: any) {
             </span>
             <b>{n}</b>
             <small>{s}</small>
-            <i>
-              <em
-                style={{
-                  width:
-                    id === "career" ? "72%" : id === "finance" ? "58%" : "81%",
-                }}
-              />
-            </i>
           </button>
         ))}
       </div>
@@ -450,7 +463,7 @@ function Home({ go, vaultOnline }: any) {
         <Card>
           <Tag>SYSTEMSTATUS</Tag>
           {[
-            ["Wochenplaner", "online"],
+            ["Wochenplaner", "unconfigured"],
             ["Google Calendar", calendarState],
             ["OpenAI", "unconfigured"],
             ["Obsidian", vaultOnline ? "online" : "unconfigured"],
@@ -463,12 +476,9 @@ function Home({ go, vaultOnline }: any) {
           ))}
         </Card>
         <Card className="capacity">
-          <Tag>WOCHENKAPAZITÄT</Tag>
-          <div className="donut">
-            <b>64%</b>
-            <span>geplant</span>
-          </div>
-          <p>36% bleiben als Puffer geschützt.</p>
+          <Tag>DATENWAHRHEIT</Tag>
+          <h3>Keine erfundene Auslastung</h3>
+          <p>Kapazität und Puffer erscheinen erst, wenn der Wochenplaner reale Kalender- und Aufgabendaten ausgewertet hat.</p>
         </Card>
       </div>
     </>
@@ -562,6 +572,7 @@ function Areas({ go }: any) {
           verbunden durch ein System.
         </p>
       </Intro>
+      <DemoBanner>Bereichskarten und Kennzahlen sind Layoutbeispiele. Echte Daten erscheinen erst nach bewusster Erfassung oder Verbindung.</DemoBanner>
       <div className="area-grid">
         {areas.map(([id, n, c, s, Icon], i) => (
           <Card className="areaHero" key={id}>
@@ -595,7 +606,7 @@ function Areas({ go }: any) {
     </>
   );
 }
-function Faith({ note }: any) {
+function Faith() {
   return (
     <div className="domain faithDomain">
       <Intro
@@ -607,6 +618,7 @@ function Faith({ note }: any) {
           keine religiöse Autorität.
         </p>
       </Intro>
+      <DemoBanner>Gebetszeiten, Fortschritt und Duʿās sind respektvoll gekennzeichnete Beispielwerte. Es wurden keine persönlichen Glaubensdaten geladen.</DemoBanner>
       <div className="prayers">
         {["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"].map((p, i) => (
           <div className={i < 3 ? "complete" : ""} key={p}>
@@ -647,9 +659,9 @@ function Faith({ note }: any) {
               {x}
             </div>
           ))}
-          <button className="link" onClick={() => note("Duʿā-Erfassung geöffnet · bleibt lokal")}>
+          <button className="link" disabled title="Erfassung wird mit dem sicheren Wissens-Write-Flow verbunden">
             <I.Plus />
-            Duʿā hinzufügen
+            Duʿā-Erfassung noch nicht verfügbar
           </button>
         </Card>
         <Card>
@@ -669,6 +681,7 @@ function Career() {
       <Intro eyebrow="KARRIERE" title="Stabilität heute. Freiheit morgen.">
         <p>Zwei Wege, bewusst koordiniert statt gegeneinander ausgespielt.</p>
       </Intro>
+      <DemoBanner>Ziele und Fortschrittswerte sind Beispiele. Projekte und gemeinsame Aufgaben sind die aktuell echten Datenquellen.</DemoBanner>
       <div className="careerSplit">
         <section>
           <div className="pathTitle">
@@ -743,6 +756,7 @@ function Health() {
           medizinische Beratung.
         </p>
       </Intro>
+      <DemoBanner>Fitness-, Ernährungs- und Erholungswerte sind Beispiele; keine Health-Verbindung ist aktiv.</DemoBanner>
       <div className="healthTop">
         {[
           ["Trainingswoche", "3 / 4", "Einheiten"],
@@ -848,6 +862,7 @@ function Finance() {
       >
         <p>Beispieldaten · keine Bank verbunden · niemals Transaktionen.</p>
       </Intro>
+      <DemoBanner>Alle Beträge sind Beispieldaten. Es ist kein Konto verbunden und Agentic OS führt niemals Transaktionen aus.</DemoBanner>
       <div className="moneytop">
         {[
           ["Nettovermögen", "€ 42.860", "+3,2%"],
@@ -934,6 +949,7 @@ function Relations() {
       >
         <p>Notizen bleiben verborgen, bis du eine Person bewusst öffnest.</p>
       </Intro>
+      <DemoBanner>Personen, Termine und Kontaktimpulse sind Platzhalter. Es wurden keine privaten Beziehungsdaten geladen.</DemoBanner>
       <div className="relationgrid">
         <Card className="constellation">
           <Tag>DEINE KONSTELLATION</Tag>
@@ -1134,7 +1150,7 @@ function Habits() {
           ))}
         </Card>
         <Card>
-          <Tag>SANFTE KONTINUITÄT</Tag>
+          <Tag>KONTINUITÄTSVORSCHAU · BEISPIEL</Tag>
           <div className="weekdots">
             {["M", "D", "M", "D", "F", "S", "S"].map((d, i) => (
               <i className={i < 5 ? "done" : ""} key={i}>
@@ -1151,13 +1167,14 @@ function Habits() {
 }
 function Journal({ text, setText, mood, setMood, note }: any) {
   const { records: entries, create } = useSharedRecords("journal_metadata");
+  const [energy, setEnergy] = useState(3);
   const insertPrompt = (prompt: string) => {
     const separator = text.trim() ? "\n\n" : "";
     setText(`${text}${separator}${prompt}\n`);
   };
   return (
     <>
-      <Intro eyebrow="TAGESJOURNAL" title="Sonntag, 23. August">
+      <Intro eyebrow="TAGESJOURNAL" title={new Intl.DateTimeFormat("de-DE", { weekday: "long", day: "2-digit", month: "long", timeZone: "Europe/Berlin" }).format(new Date())}>
         <p>Ein ruhiger Ort für das, was war und was bleiben darf.</p>
       </Intro>
       <div className="journalgrid">
@@ -1177,7 +1194,7 @@ function Journal({ text, setText, mood, setMood, note }: any) {
             <button onClick={() => insertPrompt("Was darf ich loslassen?")}>Was darf ich loslassen?</button>
             <button onClick={() => insertPrompt("Was nehme ich mit?")}>Was nehme ich mit?</button>
           </div>
-          <Btn onClick={async () => {await create({title:`Journal ${new Date().toISOString().slice(0,10)}`,entryDate:new Date().toISOString().slice(0,10),mood,energy:3,text,status:'active'});setText('');note("Journal-Metadaten gemeinsam gespeichert · Textfeld verschlüsselt")}}>
+          <Btn onClick={async () => {await create({title:`Journal ${new Date().toISOString().slice(0,10)}`,entryDate:new Date().toISOString().slice(0,10),mood,energy,text,status:'active'});setText('');note("Journal-Metadaten gemeinsam gespeichert · Textfeld verschlüsselt")}}>
             Eintrag abschließen
           </Btn>
         </Card>
@@ -1201,10 +1218,10 @@ function Journal({ text, setText, mood, setMood, note }: any) {
             ))}
           </div>
           <label>
-            Energie <input type="range" min="1" max="5" defaultValue="3" />
+            Energie · {energy}/5 <input type="range" min="1" max="5" value={energy} onChange={(event) => setEnergy(Number(event.target.value))} />
           </label>
           <div className="linked">
-            <Tag>VERKNÜPFT</Tag>
+            <Tag>VERKNÜPFUNGSVORSCHAU · BEISPIEL</Tag>
             <span>
               <I.Calendar />3 Termine
             </span>
@@ -1347,15 +1364,15 @@ function Skills() {
   );
 }
 function Chats({ note }: any) {
-  const [model, setModel] = useState("gpt-5.4"),
-    [msg, setMsg] = useState(""),
-    [selected, setSelected] = useState(0);
-  const conversations = [
-    ["Wochenplanung KW 35", "Agentic OS"],
-    ["Angebot schärfen", "Selbstständigkeit"],
-    ["Training & Erholung", "Health Baseline"],
-    ["Tagesreflexion", "Glaube"],
-  ];
+  const [summary, setSummary] = useState("");
+  const { records: captures, state, create } = useSharedRecords("inbox_items");
+  const saveSummary = async () => {
+    const value = summary.trim();
+    if (value.length < 2) return note("Bitte zuerst eine ausgewählte Zusammenfassung einfügen");
+    await create({ title: value.slice(0, 120), content: value, itemType: "ChatGPT-Zusammenfassung", status: "active", source: "manual-companion-import" });
+    setSummary("");
+    note("Ausgewählte Zusammenfassung im gemeinsamen Eingang gespeichert");
+  };
   return (
     <>
       <Intro
@@ -1385,75 +1402,17 @@ function Chats({ note }: any) {
           ChatGPT öffnen <I.ExternalLink />
         </a>
       </Card>
-      <div className="chatlayout">
-        <Card className="conversations">
-          <div className="row">
-            <Tag>PROJEKT-CHATS</Tag>
-            <button aria-label="Neuen Projekt-Chat vorbereiten" onClick={() => note("Neuer Projekt-Chat vorbereitet")}>
-              <I.Plus />
-            </button>
-          </div>
-          {conversations.map((x, i) => (
-            <button
-              aria-pressed={selected === i}
-              className={selected === i ? "active" : ""}
-              key={x[0]}
-              onClick={() => setSelected(i)}
-            >
-              <I.MessageCircle />
-              <span>
-                <b>{x[0]}</b>
-                <small>{x[1]} · heute</small>
-              </span>
-            </button>
-          ))}
-        </Card>
-        <Card className="chatbox">
-          <div className="chathead">
-            <span>
-              <b>{conversations[selected][0]}</b>
-              <small>Wochenplaner · Mock provider</small>
-            </span>
-            <label>
-              Modell
-              <select value={model} onChange={(e) => setModel(e.target.value)}>
-                <option>gpt-5.4</option>
-                <option>gpt-5.4-mini</option>
-              </select>
-            </label>
-          </div>
-          <div className="messages">
-            <div className="ai">
-              <I.Bot />
-              <p>
-                Ich habe drei realistische Outcomes und 36% Puffer vorbereitet.
-                Soll ich dir die Zeitblöcke erklären?
-              </p>
-            </div>
-            <div className="user">Ja, beginne mit der Karriere-Priorität.</div>
-          </div>
-          <div className="composer">
-            <textarea
-              value={msg}
-              onChange={(e) => setMsg(e.target.value)}
-              placeholder="Nachricht …"
-            />
-            <button
-              onClick={() => {
-                setMsg("");
-                note("Mock: keine Anfrage an OpenAI gesendet");
-              }}
-            >
-              <I.ArrowUp />
-            </button>
-          </div>
-          <small className="mockline">
-            <I.Shield />
-            Mock · kein API-Key · keine Daten übertragen
-          </small>
+      <div className="chatlayout companionLayout">
+        <Card className="chatbox companionCapture">
+          <Tag>BEWUSSTE ÜBERNAHME · KEIN SCRAPING</Tag>
+          <h3>Eine ausgewählte ChatGPT-Zusammenfassung erfassen</h3>
+          <p>Füge nur den Inhalt ein, den Agentic OS dauerhaft strukturieren darf. Es gibt keinen automatischen Zugriff auf deinen Chatverlauf.</p>
+          <textarea value={summary} onChange={(event) => setSummary(event.target.value)} placeholder="Zusammenfassung oder nächste Schritte aus ChatGPT …" />
+          <Btn onClick={saveSummary}>In gemeinsamen Eingang übernehmen</Btn>
+          <small className="mockline"><I.Shield />Manueller Import · lokal gespeichert · {state === "online" ? `${captures.filter((item: any) => item.itemType === "ChatGPT-Zusammenfassung").length} erfasst` : "Store nicht erreichbar"}</small>
         </Card>
         <Card className="modelcard">
-          <Tag>OPTIONAL · NUTZUNGSBASIERT</Tag>
+          <Tag>OPENAI API · OPTIONAL · NUTZUNGSBASIERT</Tag>
           <div className="provider">
             <i className="unconfigured" />
             <span>
@@ -1465,12 +1424,7 @@ function Chats({ note }: any) {
             ChatGPT Pro gewährt keinen API-Zugriff. Die serverseitige Grenze
             bleibt ohne Schlüssel und ausdrückliche Kostenfreigabe gesperrt.
           </p>
-          <Btn
-            soft
-            onClick={() => note("Siehe sichere Einrichtung in SETUP.md")}
-          >
-            Sicher einrichten
-          </Btn>
+          <span className="connectionNote">Aktivierung bleibt gesperrt, bis Kostenlimit und ausdrückliche Freigabe vorliegen.</span>
         </Card>
       </div>
     </>
@@ -1561,10 +1515,9 @@ function Inbox({ note }: any) {
   );
 }
 function Integrations({ note }: any) {
-  const [loaded, setLoaded] = useState(false),
-    [proposed, setProposed] = useState(false),
-    [liveCalendars, setLiveCalendars] = useState<any[]>([]),
-    [eventPreview, setEventPreview] = useState<any>(null),
+  const [liveCalendars, setLiveCalendars] = useState<any[]>([]),
+    [selectedCalendars, setSelectedCalendars] = useState<string[]>([]),
+    [calendarRead, setCalendarRead] = useState<any>({ state: "idle", events: [] }),
     [vaultStatus, setVaultStatus] = useState<any>({ status: "unconfigured" }),
     [calendarStatus, setCalendarStatus] = useState<any>({
       configured: false,
@@ -1584,17 +1537,27 @@ function Integrations({ note }: any) {
       );
     fetch("/api/calendar/calendars", { cache: "no-store" })
       .then((response) => response.json())
-      .then((data) => setLiveCalendars(data.calendars || []))
+      .then((data) => {
+        const calendars = data.calendars || [];
+        setLiveCalendars(calendars);
+        setSelectedCalendars(
+          calendars.filter((calendar: any) => calendar.selected).slice(0, 6).map((calendar: any) => calendar.id),
+        );
+      })
       .catch(() => setLiveCalendars([]));
   }, []);
-  const prepareFirstEvent = async () => {
-    const target = liveCalendars.find((calendar) => calendar.writable && /training|gesundheit|health|fitness/i.test(calendar.summary)) || liveCalendars.find((calendar) => calendar.writable && calendar.primary);
-    if (!target) return note("Kein eindeutig beschreibbarer Trainings- oder Primärkalender verfügbar");
-    const change = { action: "create", calendarId: target.id, title: "Kurzes Training Push", start: "2026-08-24T21:00:00+02:00", end: "2026-08-24T21:30:00+02:00", idempotencyKey: "agentic-os:2026-08-24:kurzes-training-push" };
-    const response = await fetch("/api/calendar/write-proposal", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ change, selectedCalendarIds: [target.id] }) });
-    const proposal = await response.json();
-    if (!response.ok) return note(proposal.error || "Vorschlag konnte nicht erstellt werden");
-    setEventPreview({ ...proposal, calendarName: target.summary, timezone: "Europe/Berlin" });
+  const readWeek = async () => {
+    if (!selectedCalendars.length) return note("Bitte mindestens einen Kalender auswählen");
+    setCalendarRead({ state: "loading", events: [] });
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(start);
+    end.setDate(end.getDate() + 8);
+    const query = new URLSearchParams({ start: start.toISOString(), end: end.toISOString() });
+    selectedCalendars.forEach((id) => query.append("calendar", id));
+    const response = await fetch(`/api/calendar/events?${query}`, { cache: "no-store" });
+    const result = await response.json();
+    setCalendarRead(response.ok ? { state: "online", ...result } : { state: "error", events: [], error: result.error || "Lesen fehlgeschlagen" });
   };
   return (
     <>
@@ -1643,67 +1606,37 @@ function Integrations({ note }: any) {
         <div className="flow">
           <div>
             <b>1 · Kalender</b>
-            <label>
-              <input type="checkbox" defaultChecked />
-              Arbeit & Pendeln
-            </label>
-            <label>
-              <input type="checkbox" defaultChecked />
-              Project
-            </label>
-            <label>
-              <input type="checkbox" defaultChecked />
-              Training
-            </label>
-            <Btn soft onClick={() => setLoaded(true)}>
-              Testwoche lesen
+            {liveCalendars.map((calendar) => (
+              <label key={calendar.id}>
+                <input
+                  checked={selectedCalendars.includes(calendar.id)}
+                  onChange={() => setSelectedCalendars((current) => current.includes(calendar.id) ? current.filter((id) => id !== calendar.id) : [...current, calendar.id])}
+                  type="checkbox"
+                />
+                {calendar.summary} · {calendar.writable ? "schreibbar" : "nur lesen"}
+              </label>
+            ))}
+            <Btn soft onClick={calendarStatus.connected && calendarRead.state !== "loading" ? readWeek : undefined}>
+              Nächste 8 Tage lesen
             </Btn>
           </div>
           <div>
-            <b>2 · Bounded read</b>
+            <b>2 · Begrenzter Abruf</b>
             <p>
-              {loaded
-                ? "5 Termine · maximal 8 Tage"
-                : "Noch keine Daten gelesen"}
+              {calendarRead.state === "online"
+                ? `${calendarRead.events.length} Termine · ${calendarRead.label} · maximal 8 Tage`
+                : calendarRead.state === "loading" ? "Kalender werden gelesen …" : calendarRead.error || "Noch keine Daten gelesen"}
             </p>
-            <Btn soft onClick={() => loaded && setProposed(true)}>
-              Blöcke vorschlagen
-            </Btn>
           </div>
           <div>
-            <b>3 · Approval</b>
-            <p>
-              {proposed
-                ? "2 exakte Vorschläge · 0 Writes · einzeln freizugeben"
-                : "Keine Änderung vorbereitet"}
-            </p>
-            <Btn
-              disabled={!eventPreview}
-              onClick={async () => {
-                if (!eventPreview) return;
-                const response = await fetch("/api/calendar/write", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ approvalToken: eventPreview.approvalToken, confirmation: "DIESEN_TERMIN_JETZT_SCHREIBEN" }) });
-                const result = await response.json();
-                note(response.ok ? "Termin nach Einzelbestätigung geschrieben · Audit gespeichert" : result.error || "Kalenderwrite abgelehnt");
-              }}
-            >
-              {eventPreview ? "DIESEN TERMIN JETZT SCHREIBEN" : "Einzelwrite erst nach exakter Vorschau"}
-            </Btn>
+            <b>3 · Schreibschutz</b>
+            <p>Kein Write vorbereitet. Erst ein konkreter Vorschlag erzeugt eine einzeln freizugebende Aktion.</p>
           </div>
         </div>
         <small>
           <I.ShieldCheck />
           Keine Hintergrundwrites. Create/Update nur nach exakter Einzelvorschau und Bestätigung; Duplikatschutz + Audit aktiv. Deletes bleiben deaktiviert.
         </small>
-        {calendarStatus.eventWriteReady && (
-          <div className="setupBoundary">
-            <I.CalendarDays />
-            <span>
-              <b>Erster kontrollierter Vorschautest</b>
-              <button onClick={prepareFirstEvent}>Vorschau erzeugen · nichts schreiben</button>
-              {eventPreview && <span role="status" aria-live="polite">{eventPreview.calendarName} · Kurzes Training Push · 24.08.2026 · 21:00–21:30 · Europe/Berlin · Create · 0 Writes · Duplikatschutz aktiv · Freigabe gültig bis {new Date(eventPreview.expiresAt).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Berlin" })} Europe/Berlin</span>}
-            </span>
-          </div>
-        )}
       </Card>
       <div className="connections">
         {[
@@ -1715,9 +1648,9 @@ function Integrations({ note }: any) {
             vaultStatus.status === "online" ? `${vaultStatus.noteCount} Markdown-Notizen · Read-only` : "Read-only Vorschau",
           ],
           ["OpenAI", "Modelle & Chats", "unconfigured", "Kein API-Key"],
-          ["Health", "Training", "offline", "Keine Datenquelle"],
+          ["Health", "Training", "unconfigured", "Keine Datenquelle"],
           ["Finance", "Konten", "unconfigured", "Read-only only"],
-          ["Tailscale", "Privater Fernzugriff", "unconfigured", "Tailnet-only · kein Funnel"],
+          ["Tailscale", "Privater Fernzugriff", "offline", "Einrichtung vorhanden · Laufzeitstatus hier nicht verifiziert"],
         ].map((x, i) => (
           <Card key={x[0]}>
             <div className="row">
@@ -1745,9 +1678,7 @@ function Integrations({ note }: any) {
               <dt>Aktivität</dt>
               <dd>{x[0] === "Obsidian" && vaultStatus.status === "online" ? "Metadatenindex gelesen · 0 Writes" : "Keine externen Aktionen"}</dd>
             </dl>
-            <button onClick={() => note(`${x[0]}: sichere Details geöffnet`)}>
-              Details <I.ChevronRight />
-            </button>
+            <span className="connectionNote">Keine weitere Aktion in dieser Ansicht</span>
           </Card>
         ))}
       </div>
@@ -1889,7 +1820,7 @@ function Brain() {
     </>
   );
 }
-function Settings({ brand, save }: any) {
+function Settings({ brand, save, theme, changeTheme }: any) {
   const [d, setD] = useState(brand);
   return (
     <>
@@ -1900,6 +1831,15 @@ function Settings({ brand, save }: any) {
         </p>
       </Intro>
       <div className="settingsGrid">
+        <Card>
+          <Tag>DARSTELLUNG · GEMEINSAM</Tag>
+          <h3>Light & Dark Mode</h3>
+          <p>Die Auswahl liegt im privaten Shared Store und gilt für Desktop und iPhone.</p>
+          <div className="themeChoices" role="group" aria-label="Farbschema">
+            <button aria-pressed={theme === "dark"} onClick={() => changeTheme("dark")}><I.Moon /> Dark</button>
+            <button aria-pressed={theme === "light"} onClick={() => changeTheme("light")}><I.Sun /> Light</button>
+          </div>
+        </Card>
         <Card>
           <Tag>IDENTITÄT</Tag>
           <label>

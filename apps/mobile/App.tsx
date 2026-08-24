@@ -5,7 +5,7 @@ import Companion from "./src/Companion";
 export default function App() {
   return (
     <SafeAreaProvider>
-      <StatusBar style="light" />
+      <StatusBar style="auto" />
       <Companion />
     </SafeAreaProvider>
   );

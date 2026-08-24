@@ -21,9 +21,6 @@ export default function RootLayout({
   return (
     <html lang="de">
       <body>
-        <a className="zeroMode" href="/usage">
-          KOSTENKONTROLLE <span>Lokal & kostenlos als Standard</span>
-        </a>
         {children}
       </body>
     </html>
