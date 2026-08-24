@@ -92,6 +92,8 @@ Project root: `outputs/agentic-os`. Private source remote: `https://github.com/E
 - Full verification for preference recovery: Root 123/123, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed. Online Settings had both Theme controls enabled, no false Retry and 0 desktop/390×844 overflow; live progress rendered 52/55.
 - Integration Health and Calendar status/catalog now reload together after the verified runtime-online signal. Health failures have a scoped retry; the callback contains only status/catalog loaders and performs no OAuth, event read or write.
 - Full verification for integration recovery: Root 124/124, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed. Eight real connector cards rendered with no false Retry and 0 desktop/390×844 overflow; progress rendered 53/56 and no OAuth/event read/write ran.
+- Knowledge metadata, local content-light audit and Vault proposal inventory now reload together after verified runtime recovery. `loadWriteFlow` clears in-session approval/confirmation first; the recovery callback has no proposal generation, approval or Vault-write path.
+- Full verification for Knowledge recovery: Root 125/125, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed. The real 27-note read-only index rendered with 0 desktop/390×844 overflow; progress rendered 54/57 and no diff/approval/Vault mutation ran.
 
 ## Immediate continuation
 

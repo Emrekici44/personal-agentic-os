@@ -391,6 +391,13 @@ export const systemProgress = {
       status: "complete",
     },
     {
+      id: "knowledge-runtime-recovery",
+      label: "Wissensquellen nach Runtime-Ausfall neu prüfen",
+      evidence: "Vault-Metadaten + Audit + Diffinventar · Sitzungstoken verworfen · 0 Vault-Writes",
+      href: "#brain",
+      status: "complete",
+    },
+    {
       id: "ongoing-local-gap-audit",
       label: "Nächste lokale Bedien-/Recovery-Lücke prüfen",
       evidence: "Nur reversible lokale Änderungen · keine externen Writes, Migrationen, Installationen oder Kosten",

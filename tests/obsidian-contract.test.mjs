@@ -46,3 +46,12 @@ test("Knowledge UI exposes a metadata-only search and a future write approval ga
   assert.match(page, /Schreibzugriff gesperrt/);
   assert.match(page, /Vorschau, ausdrückliche Freigabe und Audit/);
 });
+
+test("knowledge sources recover together and invalidate session-only approval state", async () => {
+  const page = await readFile(pagePath, "utf8");
+  assert.match(page, /const recoverKnowledge[\s\S]*loadVault\(\)[\s\S]*loadAudit\(\)[\s\S]*loadWriteFlow\(\)/);
+  assert.match(page, /agentic-os:runtime-online[\s\S]*recoverKnowledge/);
+  assert.match(page, /loadWriteFlow=useCallback[\s\S]*setApprovalToken\(""\)[\s\S]*setConfirmation\(""\)/);
+  const recovery = page.match(/const recoverKnowledge[\s\S]*?window\.addEventListener\("agentic-os:runtime-online", recoverKnowledge\)/)?.[0] || "";
+  assert.doesNotMatch(recovery, /generateVaultProposal|approveVaultPreview|writeProposalRequest|fetch\(/);
+});

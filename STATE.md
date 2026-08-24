@@ -117,6 +117,7 @@ Last verified: 25.08.2026, Europe/Berlin.
 - Shared Theme and Branding preferences now expose and require their exact shared version as well. Concurrent device changes return 409 and reload the authoritative preference; transport failure reverts the unsaved Theme instead of claiming cross-device synchronization.
 - Shared preference availability is explicit in the shell and Settings. Loading/Offline disables Theme and Branding writes, exposes a scoped retry and automatically reloads both preferences after the signed runtime reports recovery; there is still no device-local operational fallback.
 - Integration Health and Calendar status/catalog now subscribe to the same verified runtime-online signal and reload together. Health errors expose a scoped retry; this recovery path performs only status/catalog reads and cannot start OAuth, event reads or writes.
+- Knowledge recovery now reloads the read-only Vault metadata index, content-light local audit and Vault proposal inventory together after verified runtime recovery. The inventory reload clears session-only approval tokens and confirmation text before reading; it cannot generate/approve a proposal or mutate the Vault.
 
 ## Verification
 
@@ -154,6 +155,7 @@ Last verified: 25.08.2026, Europe/Berlin.
 - Gemeinsame Einstellungs-Konflikte: Root 123/123, Lint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export und isolierter Produktionsbuild sind grün. Die Einstellungsansicht zeigt beide echten Theme-Controls und bleibt auf Desktop/390×844 ohne horizontalen Überlauf; keine Einstellung wurde zur Prüfung verändert.
 - Darstellungs-Recovery: Die vollständige Matrix bleibt bei Root 123/123 plus Lint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export und isoliertem Produktionsbuild grün. Online waren beide Theme-Controls aktiv, kein falscher Retry sichtbar und Desktop/390×844 ohne Überlauf; Dashboard 52/55.
 - Integrations-Recovery: Root 124/124, Lint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export und isolierter Produktionsbuild sind grün. Online renderten acht echte Connector-Karten, kein falscher Retry und 0 Desktop/390×844-Überlauf; Dashboard 53/56. Es wurde kein OAuth, Eventread oder Write ausgelöst.
+- Wissens-Recovery: Root 125/125, Lint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export und isolierter Produktionsbuild sind grün. Der reale 27-Notizen-Read-only-Index rendert auf Desktop/390×844 ohne Überlauf; Dashboard 54/57. Es wurde weder Diff erzeugt/freigegeben noch der Vault verändert.
 
 ## User boundaries
 

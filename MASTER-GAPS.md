@@ -86,6 +86,7 @@ Die gebündelten Details stehen in `PENDING-DECISIONS.md`. Kein Punkt hier block
 - Auch Theme und Branding sind jetzt versionsgesichert. Ein paralleler Desktop-/iPhone-Stand erhält 409 und lädt die gemeinsame Einstellung neu; ein Transportfehler lässt keine nicht synchronisierte Darstellung als vermeintlich gemeinsamen Stand zurück.
 - Nach einem Offline-Start bleibt die Darstellungsquelle nicht dauerhaft veraltet: Settings zeigt Loading/Offline, sperrt Theme/Branding, bietet einen Retry und lädt nach verifiziertem Runtime-Reconnect automatisch. Ein lokaler visueller Startwert wird nie als gemeinsam gespeicherte Einstellung bezeichnet.
 - Das Integrationszentrum aktualisiert nach Runtime-Recovery Health-Evidenz und Calendar-Status/Katalog gemeinsam; ein eigener Health-Retry ersetzt den früheren toten Fehlertext. Dieser Pfad startet weder OAuth noch Eventabruf oder Write.
+- Der Wissensbereich lädt nach Runtime-Recovery Vault-Metadatenindex, inhaltsarmen Audit und Diffinventar gemeinsam neu. Sitzungstoken/Bestätigung werden davor verworfen; der Callback kann weder Vorschläge erzeugen/freigeben noch den Vault verändern.
 - Produktmodule enthalten keine eingebetteten Kalender-, Ereignis-, Fokusblock- oder Provider-Mocks mehr; Testverträge prüfen echte Guards ohne sie als Nutzerdatenpfad bereitzuhalten.
 - ChatGPT Pro ist kein API-Zugang. Companion Mode ist ein manueller Übergabepfad.
 - SQLite ist operative Quelle, Obsidian dauerhafte Wissensquelle und Google Calendar externe Ereignisquelle, bis Emre eine andere Migration ausdrücklich freigibt.

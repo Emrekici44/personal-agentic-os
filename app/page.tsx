@@ -1973,6 +1973,13 @@ function Brain() {
     void loadVault();
     void loadAudit();
     void loadWriteFlow();
+    const recoverKnowledge = () => {
+      void loadVault();
+      void loadAudit();
+      void loadWriteFlow();
+    };
+    window.addEventListener("agentic-os:runtime-online", recoverKnowledge);
+    return () => window.removeEventListener("agentic-os:runtime-online", recoverKnowledge);
   }, [loadAudit, loadVault, loadWriteFlow]);
 
   const connected = vault.status === "online";
