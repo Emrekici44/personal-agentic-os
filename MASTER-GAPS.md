@@ -25,6 +25,8 @@ Stand: 24.08.2026, Europe/Berlin. Diese Liste verwendet nur diskrete Zustände. 
 | Priorität | Restpunkt | Sicherer nächster vertikaler Schritt | Abnahmekriterium |
 | --- | --- | --- | --- |
 Alle derzeit im Ledger beschriebenen lokal reversiblen Vertikalschnitte sind umgesetzt. Der nächste lokale Schritt ist ein erneuter Restlücken-/Recovery-Audit; alle externen oder mutierenden Punkte bleiben unten gebündelt.
+
+Der Recovery-Audit ist ebenfalls umgesetzt: Einstellungen prüfen den privaten Store, Connector-Verträge und Backup-Inventar nur lesend und zeigen einen sicheren Wiederanlaufpfad. Restore/Reconnect bleiben getrennte Grenzen.
 Der lokale Bedienaudit ist abgeschlossen: 16 Kernansichten wurden auf Desktop und 390×844 ohne horizontalen Überlauf geprüft; alle sichtbaren aktiven mobilen Buttons erreichen mindestens 32 px in beiden Dimensionen, Menü/Journal-Impulse mindestens 44 px. Der physische Expo-Nachtest bleibt eine gebündelte Nutzeraktion.
 
 ## Nutzerentscheidung oder externe Grenze

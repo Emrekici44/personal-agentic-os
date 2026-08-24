@@ -9,7 +9,7 @@ export type ProgressItem = {
 };
 
 export const systemProgress = {
-  currentPhase: "Lokale MASTER-GAPS abgearbeitet · Recovery- und Restlückenaudit aktiv",
+  currentPhase: "Lokale MASTER-GAPS und Recovery-Audit abgeschlossen · gebündelte Nutzergrenzen offen",
   lastVerifiedAt: "24.08.2026 · Europe/Berlin",
   items: [
     {
@@ -276,6 +276,13 @@ export const systemProgress = {
       label: "Private Projektressourcen ohne Dateizugriff",
       evidence: "Validierte Web-/Dateiverweise · Ziel verschlüsselt · kein Öffnen/Kopieren/Upload",
       href: "#projects",
+      status: "complete",
+    },
+    {
+      id: "read-only-recovery-diagnosis",
+      label: "Private Wiederanlaufdiagnose",
+      evidence: "Store/WAL/Schema · Connector-Health · Backup-Inventar · 0 Restore/Reconnect/Writes",
+      href: "#settings",
       status: "complete",
     },
     {

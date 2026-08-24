@@ -34,6 +34,7 @@
 - Final local UI audit covered 16 core views on desktop and 390×844. It fixed undersized mobile menu/journal prompt targets to 44 px; the repeat run found no horizontal overflow or active control below 32×32 px. Physical iPhone acceptance of this newest increment remains explicitly pending.
 - Calendar status, catalog, bounded reads, OAuth entry and encrypted local token sharing now require the same signed private session and return `no-store, private`. Disconnected production routes return honest empty/unavailable states instead of mock events, and both obsolete mock proposal/approval endpoints return 410 without actions.
 - Project workspaces now include shared resource references: allowlisted web links and local file references with a visible short title, encrypted private target, project linkage, explicit reveal and no file open/copy/upload primitive. Validation was executed against an isolated temporary store; no user record or file was created.
+- Settings now has a signed, read-only recovery diagnosis. It checks Shared Store/WAL/schema, connector-health evidence and local backup availability, presents an ordered restart/check/preview runbook, and cannot reconnect, restore or write externally.
 
 ## Complete – Bedienwahrheit and responsive refinement
 

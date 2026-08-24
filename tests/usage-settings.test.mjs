@@ -2,10 +2,11 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-const [page, usage, store] = await Promise.all([
+const [page, usage, store, css] = await Promise.all([
   readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
   readFile(new URL("../app/usage/page.tsx", import.meta.url), "utf8"),
   readFile(new URL("../lib/shared-store.ts", import.meta.url), "utf8"),
+  readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
 ]);
 
 test("branding is a validated shared preference rather than a device-only claim", () => {
@@ -37,4 +38,13 @@ test("settings expose local backup and restore preview without an apply action",
   assert.match(page, /Integrität & Konflikte prüfen/);
   assert.match(page, /Restore bleibt bis zur exakten Freigabe gesperrt/);
   assert.match(page, /Das Backup enthält keinen Schlüssel und wird nicht hochgeladen/);
+});
+
+test("settings provide a private read-only recovery diagnosis without side effects", () => {
+  for (const endpoint of ["/api/state/status", "/api/integrations/health", "/api/state/backups"]) assert.match(page, new RegExp(endpoint.replaceAll("/", "\\/")));
+  for (const truth of ["DIAGNOSE · NUR LESEN", "Lokale Diagnose ausführen", "Kein Restore, kein Reconnect und kein externer Write", "Agentic OS über den Desktop-Shortcut neu starten", "Zum Health Center"]) assert.match(page, new RegExp(truth));
+  assert.match(page, /externalWritesPerformed:false,restorePerformed:false/);
+  assert.doesNotMatch(page, /apply_restore|executeRestore|restoreStore/);
+  assert.match(css, /\.recoveryEvidence/);
+  assert.match(css, /@media\(max-width:720px\)\{\.recoveryEvidence\{grid-template-columns:1fr/);
 });

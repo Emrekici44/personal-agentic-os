@@ -4,6 +4,8 @@
 
 Follow the README. Settings → Backup creates a private SQLite snapshot under the git-ignored local state folder; nothing is downloaded or uploaded. A selected snapshot can be checked for integrity, schema and record-count conflicts, but cannot currently be applied. Dedicated launch instructions are in `DESKTOP.md`, `MOBILE.md`, and `REMOTE-ACCESS.md`.
 
+For a safe restart check, open Settings → `Wiederanlauf sicher prüfen`. It only reads the private store, connector-health and backup inventory. If it fails, restart through the Desktop shortcut, run the diagnosis again, then inspect Health Center; do not attempt a restore until its exact preview and separate user approval exist.
+
 ## Default ChatGPT Companion Mode
 
 Use the installed ChatGPT app/subscription for conversations. Use Agentic OS for structured projects, tasks, notes, dashboards, tracking, and visualizations. Agentic OS cannot read the ChatGPT conversation history. To transfer useful context, open Universal Inbox → ChatGPT Companion Capture, request or write a structured summary in ChatGPT, and paste only the selected summary into Agentic OS. Embedded OpenAI API mode remains unconfigured and disabled behind cost ceilings and the kill switch.

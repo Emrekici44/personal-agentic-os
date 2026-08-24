@@ -2018,6 +2018,7 @@ function Settings({ brand, save, theme, changeTheme, note }: any) {
   const [selectedBackup, setSelectedBackup] = useState("");
   const [restorePreview, setRestorePreview] = useState<any>(null);
   const [backupBusy, setBackupBusy] = useState(false);
+  const [diagnosis,setDiagnosis]=useState<any>({state:"idle"});
   useEffect(() => setD(brand), [brand]);
   const loadBackups = useCallback(async () => {
     try {
@@ -2066,6 +2067,7 @@ function Settings({ brand, save, theme, changeTheme, note }: any) {
       note(error instanceof Error ? error.message : "Restore-Vorschau fehlgeschlagen");
     } finally { setBackupBusy(false); }
   };
+  const runRecoveryCheck=async()=>{setDiagnosis({state:"loading"});try{const session=await fetch("/api/state/session",{method:"POST"});if(!session.ok)throw new Error("Private Sitzung nicht erreichbar");const [storeResponse,healthResponse,backupResponse]=await Promise.all([fetch("/api/state/status",{cache:"no-store"}),fetch("/api/integrations/health",{cache:"no-store"}),fetch("/api/state/backups",{cache:"no-store"})]);const [storeResult,healthResult,backupResult]=await Promise.all([storeResponse.json(),healthResponse.json(),backupResponse.json()]);if(!storeResponse.ok||!healthResponse.ok||!backupResponse.ok)throw new Error("Mindestens eine private Diagnosequelle ist nicht erreichbar");const connectors=healthResult.connectors||[],online=connectors.filter((item:any)=>item.status==="online").length,degraded=connectors.filter((item:any)=>item.status==="degraded"||item.status==="offline").length;setDiagnosis({state:"ready",checkedAt:healthResult.checkedAt,storeOnline:Boolean(storeResult.online),schemaVersion:storeResult.schemaVersion,wal:Boolean(storeResult.wal),connectorCount:connectors.length,onlineConnectors:online,degradedConnectors:degraded,backupCount:backupResult.backups?.length||0,latestBackupAt:backupResult.backups?.[0]?.createdAt||null,externalWritesPerformed:false,restorePerformed:false})}catch(error){setDiagnosis({state:"error",error:error instanceof Error?error.message:"Lokale Diagnose fehlgeschlagen",externalWritesPerformed:false,restorePerformed:false})}};
   const brandingValid = d.name.trim().length >= 2 && /^[A-ZÄÖÜ0-9]{1,3}$/i.test(d.short.trim()) && /^#[0-9a-f]{6}$/i.test(d.accent);
   return (
     <>
@@ -2178,6 +2180,15 @@ function Settings({ brand, save, theme, changeTheme, note }: any) {
             </div>
           )}
           <button className="btn" disabled type="button">Restore bleibt bis zur exakten Freigabe gesperrt</button>
+        </Card>
+        <Card className="recoveryCard">
+          <div className="row"><div><Tag>DIAGNOSE · NUR LESEN</Tag><h3>Wiederanlauf sicher prüfen</h3></div><i className={`badge ${diagnosis.state==="ready"?"online":diagnosis.state==="error"?"offline":"unconfigured"}`}>{diagnosis.state==="ready"?"Geprüft":diagnosis.state==="loading"?"Prüft":diagnosis.state==="error"?"Fehler":"Bereit"}</i></div>
+          <p>Prüft nur den privaten Datenkern, Connector-Health und vorhandene lokale Backups. Kein Restore, kein Reconnect und kein externer Write.</p>
+          <Btn soft onClick={diagnosis.state!=="loading"?runRecoveryCheck:undefined}><I.Stethoscope/>{diagnosis.state==="loading"?"Diagnose läuft …":"Lokale Diagnose ausführen"}</Btn>
+          {diagnosis.state==="ready"&&<div className="recoveryEvidence" role="status"><span><I.Database/><b>Shared Store</b><small>{diagnosis.storeOnline?`Online · Schema v${diagnosis.schemaVersion} · ${diagnosis.wal?"WAL aktiv":"WAL nicht belegt"}`:"Offline"}</small></span><span><I.PlugZap/><b>Verbindungen</b><small>{diagnosis.onlineConnectors}/{diagnosis.connectorCount} online · {diagnosis.degradedConnectors} eingeschränkt</small></span><span><I.Archive/><b>Backups</b><small>{diagnosis.backupCount?`${diagnosis.backupCount} lokal · zuletzt ${new Intl.DateTimeFormat("de-DE",{dateStyle:"short",timeStyle:"short"}).format(new Date(diagnosis.latestBackupAt))}`:"Noch kein lokales Backup"}</small></span></div>}
+          {diagnosis.state==="error"&&<p className="plannerError" role="alert"><I.TriangleAlert/>{diagnosis.error}</p>}
+          <ol className="recoverySteps"><li>Agentic OS über den Desktop-Shortcut neu starten.</li><li>Diese Diagnose erneut ausführen und Verbindungen im Health Center prüfen.</li><li>Nur bei Datenproblem ein Backup vergleichen; Restore bleibt bis zur exakten Freigabe gesperrt.</li></ol>
+          <a className="btn soft" href="#integrations">Zum Health Center</a>
         </Card>
         <Card>
           <Tag>DATENGRENZEN</Tag>
