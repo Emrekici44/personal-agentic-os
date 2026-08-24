@@ -98,8 +98,8 @@ function useSharedRecords(kind:string){
   const load=useCallback(async()=>{try{await fetch('/api/state/session',{method:'POST'});const response=await fetch(`/api/state/records/${kind}`,{cache:'no-store'});if(!response.ok)throw new Error();const data=await response.json();setRecords(data.records||[]);setState('online')}catch{setState('error')}},[kind]);
   useEffect(()=>{load()},[load]);
   const create=async(data:any)=>{const response=await fetch(`/api/state/records/${kind}`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(data)});const result=await response.json();if(!response.ok)throw new Error(result.error||'Speichern fehlgeschlagen');await load();return result};
-  const update=async(data:any)=>{const response=await fetch(`/api/state/records/${kind}`,{method:'PATCH',headers:{'content-type':'application/json'},body:JSON.stringify(data)});const result=await response.json();if(!response.ok)throw new Error(result.error||'Aktualisieren fehlgeschlagen');await load();return result};
-  const archive=async(id:string)=>{const response=await fetch(`/api/state/records/${kind}?id=${encodeURIComponent(id)}`,{method:'DELETE'});const result=await response.json();if(!response.ok)throw new Error(result.error||'Archivieren fehlgeschlagen');await load();return result};
+  const update=async(data:any)=>{const response=await fetch(`/api/state/records/${kind}`,{method:'PATCH',headers:{'content-type':'application/json'},body:JSON.stringify(data)});const result=await response.json();if(!response.ok){if(response.status===409)await load();throw new Error(result.error||'Aktualisieren fehlgeschlagen')}await load();return result};
+  const archive=async(id:string)=>{const version=records.find(record=>record.id===id)?.version;const response=await fetch(`/api/state/records/${kind}?id=${encodeURIComponent(id)}&version=${encodeURIComponent(String(version??""))}`,{method:'DELETE'});const result=await response.json();if(!response.ok){if(response.status===409)await load();throw new Error(result.error||'Archivieren fehlgeschlagen')}await load();return result};
   return{records,state,create,update,archive,reload:load};
 }
 export default function App() {
@@ -110,6 +110,7 @@ export default function App() {
     [journal, setJournal] = useState(""),
     [mood, setMood] = useState("ruhig"),
     [vaultOnline, setVaultOnline] = useState(false),
+    [runtimeHealth, setRuntimeHealth] = useState<any>({ state: "checking", checkedAt: null }),
     [brand, setBrand] = useState({
       name: "Agentic OS",
       short: "AOS",
@@ -165,6 +166,26 @@ export default function App() {
     setToast(s);
     setTimeout(() => setToast(""), 2400);
   };
+  const checkRuntimeHealth = useCallback(async () => {
+    try {
+      const session = await fetch("/api/state/session", { method: "POST" });
+      if (!session.ok) throw new Error();
+      const response = await fetch("/api/state/status", { cache: "no-store" });
+      if (!response.ok) throw new Error();
+      const result = await response.json();
+      setRuntimeHealth({ state: result.online ? "online" : "offline", checkedAt: new Date().toISOString() });
+    } catch {
+      setRuntimeHealth({ state: "offline", checkedAt: new Date().toISOString() });
+    }
+  }, []);
+  useEffect(() => {
+    void checkRuntimeHealth();
+    const interval = window.setInterval(checkRuntimeHealth, 30_000);
+    const recheck = () => void checkRuntimeHealth();
+    window.addEventListener("online", recheck);
+    window.addEventListener("focus", recheck);
+    return () => { window.clearInterval(interval); window.removeEventListener("online", recheck); window.removeEventListener("focus", recheck); };
+  }, [checkRuntimeHealth]);
   const changeTheme = async (next: "dark" | "light") => {
     setTheme(next);
     try {
@@ -338,6 +359,7 @@ export default function App() {
           </button>
           <span className="avatar">E</span>
         </header>
+        {runtimeHealth.state === "offline" && <div className="runtimeOffline" role="status"><I.WifiOff/><span><b>Gemeinsamer Datenkern nicht erreichbar</b>Eingaben bleiben in geöffneten Feldern, werden aber nicht als synchron gespeichert. Es gibt keinen stillen lokalen Ersatzstand.</span><button onClick={checkRuntimeHealth} type="button"><I.RefreshCw/>Erneut prüfen</button></div>}
         <section
           aria-label={title}
           className="content"

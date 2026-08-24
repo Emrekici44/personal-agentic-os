@@ -38,6 +38,7 @@ Project root: `outputs/agentic-os`. Private source remote: `https://github.com/E
 - Shared tasks also support up to 20 validated checklist items. The desktop/mobile editor and direct item toggle were checked with an unsaved local draft, then cancelled; no fake record was persisted.
 - Inbox has shared open/assigned/completed/all filters, title-only search, direct complete/reopen and two-step archive. The real empty store rendered 0/0/0 and all controls were exercised on desktop/390×844 without creating data.
 - ChatGPT Companion captures only a user-selected title/summary plus optional area/project into encrypted Inbox storage. Its local library can search and reorganize real captures. Three provider cards tell the truth: manual subscription mode, API disabled/cost-gated, local model unverified. Empty-state validation created no data.
+- Shared record updates and archives now require the current SQLite row version. Stale clients receive 409 and reload; an isolated temporary DB runtime test confirmed the newer row survives stale update/archive attempts. The app shell checks runtime health every 30 seconds/focus/online and shows a retry banner instead of maintaining a hidden device-local copy.
 
 ## Immediate continuation
 

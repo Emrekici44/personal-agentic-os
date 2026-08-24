@@ -9,7 +9,7 @@ export type ProgressItem = {
 };
 
 export const systemProgress = {
-  currentPhase: "Lokale Companion-Organisation bereit · Offline-/Konflikt- und Bedienaudit aktiv",
+  currentPhase: "Offline- und Versionskonflikte abgesichert · abschließender Bedienaudit aktiv",
   lastVerifiedAt: "24.08.2026 · Europe/Berlin",
   items: [
     {
@@ -239,8 +239,15 @@ export const systemProgress = {
     {
       id: "offline-conflict-audit",
       label: "Offline-/Konflikt- und abschließender Bedienaudit",
-      evidence: "Lesbare Fehlerzustände · kein Silent Merge · Desktop/390×844 Controls",
+      evidence: "409 bei veralteter Version · Runtime-Retry ohne lokalen Fallback · temporärer DB-Test grün",
       href: "#settings",
+      status: "complete",
+    },
+    {
+      id: "final-control-audit-current",
+      label: "Abschließender globaler Bedienaudit",
+      evidence: "Prominente Controls, Statuswahrheit, Desktop/390×844 und physischer Expo-Nachtest bündeln",
+      href: "#home",
       status: "active",
     },
     {

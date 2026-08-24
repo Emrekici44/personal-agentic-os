@@ -30,6 +30,7 @@
 - Tasks now include up to 20 validated, stable-ID checklist items. Subitems can be edited in the shared task editor and completed directly from Today; no schema/data migration or code-capable payload is involved.
 - Inbox review now provides truthful open/assigned/completed/all views, title-only local filtering, direct complete/reopen and two-step reversible archive from triage. All state remains in the encrypted shared source and no filter dispatches an agent or external action.
 - ChatGPT Companion now captures only a user-chosen title/summary with optional real project and life-area metadata, stores explicit no-model/no-history provenance, and provides a searchable local library with reassignment. Provider cards separate active manual subscription workflow, disabled usage-based API and unverified local runtime.
+- Shared CRUD now rejects stale update/archive versions with HTTP 409 and reloads the authoritative row, while a visible runtime-health banner replaces any temptation to write a silent device-local fallback. An isolated temporary-database test proves no stale overwrite or archive occurs.
 
 ## Complete – Bedienwahrheit and responsive refinement
 

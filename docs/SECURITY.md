@@ -32,4 +32,5 @@
 - Relationship, faith, financial, and health demo data is labeled; real sensitive data requires deliberate import/connection boundaries.
 - The current SQLite store is a local bridge, not a cloud claim. The PostgreSQL PoC binds only to loopback, has no committed password, does not autostart, and contains no migrated data. A cloud database requires separate account, data-transfer, cost and migration approval.
 - Shared preferences use the same signed private API and append an audit entry. They contain presentation state only, not secrets.
+- Shared CRUD updates and archives use optimistic concurrency from structured SQLite row versions. A stale desktop/iPhone version returns HTTP 409 and reloads current data; JSON payload metadata can never override the authoritative row ID/version/timestamp. The global runtime check shows an explicit offline banner and never creates a silent per-device fallback copy.
 - Graphify is not installed. Any pilot must pin a version, exclude sensitive Vault areas, inspect scope first and avoid semantic/provider transmission until separately approved.

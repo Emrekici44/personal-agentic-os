@@ -127,6 +127,16 @@ test("ChatGPT Companion organizes only deliberate local summaries and tells prov
   assert.doesNotMatch(page, /fetch\([^\n]+chatgpt\.com[^\n]+history/i);
 });
 
+test("shared clients expose offline truth and reload after version conflicts", async () => {
+  const page = await readFile(pagePath, "utf8");
+  assert.match(page, /checkRuntimeHealth/);
+  assert.match(page, /setInterval\(checkRuntimeHealth, 30_000\)/);
+  assert.match(page, /Gemeinsamer Datenkern nicht erreichbar/);
+  assert.match(page, /keinen stillen lokalen Ersatzstand/);
+  assert.match(page, /response\.status===409\)await load\(\)/);
+  assert.match(page, /Erneut prüfen/);
+});
+
 test("knowledge search stays inside the signed metadata-only vault preview", async () => {
   const [page, route] = await Promise.all([
     readFile(pagePath, "utf8"),

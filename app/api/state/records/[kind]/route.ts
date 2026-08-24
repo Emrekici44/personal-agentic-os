@@ -39,7 +39,8 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const body = await request.json();
     return NextResponse.json(updateRecord(kind, String(body.id || ""), kind === "agents" ? validateAgentConfig(body) : body));
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Aktualisieren fehlgeschlagen" }, { status: 400 });
+    const message = error instanceof Error ? error.message : "Aktualisieren fehlgeschlagen";
+    return NextResponse.json({ error: message, conflict: message.startsWith("Datenkonflikt") }, { status: message.startsWith("Datenkonflikt") ? 409 : 400 });
   }
 }
 
@@ -49,9 +50,11 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     if (!auth(request)) throw new Error("Lokale Sitzung erforderlich");
     if (!isCrudKind(kind)) throw new Error("Unbekannter Datentyp");
     const id = request.nextUrl.searchParams.get("id");
+    const version = Number(request.nextUrl.searchParams.get("version"));
     if (!id) throw new Error("ID fehlt");
-    return NextResponse.json(archiveRecord(kind, id));
+    return NextResponse.json(archiveRecord(kind, id, version));
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Archivieren fehlgeschlagen" }, { status: 400 });
+    const message = error instanceof Error ? error.message : "Archivieren fehlgeschlagen";
+    return NextResponse.json({ error: message, conflict: message.startsWith("Datenkonflikt") }, { status: message.startsWith("Datenkonflikt") ? 409 : 400 });
   }
 }

@@ -66,6 +66,10 @@ Last verified: 24.08.2026, Europe/Berlin.
 - Die Providerkarte trennt sichtbar drei Wahrheiten: manueller Companion-Modus aktiv, OpenAI API unkonfiguriert/nutzungsbasiert mit Kill Switch und lokales Modell nicht verifiziert. Es gibt weder ChatGPT-Verlaufs-/Limit-/Modellzugriff noch eine API-Anfrage.
 - Companion-Browser-Abnahme: vollständige Erfassungsfelder, ehrliche leere Bibliothek, drei Providerzustände und deaktiviertes Leer-Speichern rendern auf Desktop/390×844 ohne Überlauf; keine Zusammenfassung wurde erzeugt.
 - Nach der Companion-Erweiterung sind Root 76/76, TypeScript, ESLint, Electron 2/2, Expo TypeScript/Lint/Web-Export und Next-Produktionsbuild grün.
+- Gemeinsame Updates und Archive verlangen jetzt die exakte strukturierte SQLite-Zeilenversion. Ein veralteter Desktop-/iPhone-Stand erhält HTTP 409, lädt den aktuellen Bestand neu und überschreibt ihn nicht. ID, Version und Zeitstempel stammen beim Lesen zwingend aus strukturierten Spalten statt aus dem JSON-Payload.
+- Ein isolierter Laufzeittest mit temporärer Datenbank hat Erstupdate, abgelehntes veraltetes Zweitupdate, abgelehntes veraltetes Archiv und unveränderten aktuellen Datensatz verifiziert. Der temporäre Testbestand wurde danach entfernt; Emres echte Datenbank blieb unberührt.
+- Die gemeinsame Shell prüft den lokalen Datenkern beim Start, bei Fokus/Online-Ereignis und alle 30 Sekunden. Bei Ausfall erscheint eine explizite Retry-Fläche; es entsteht keine stille lokale Ersatzkopie. Der echte Onlinezustand renderte auf Desktop/390×844 ohne Banner oder Überlauf.
+- Nach der Offline-/Konflikthärtung sind Root 78/78 einschließlich isoliertem temporärem Datenbanktest, TypeScript, ESLint, Electron 2/2, Expo TypeScript/Lint/Web-Export und Next-Produktionsbuild grün.
 
 ## Verification
 

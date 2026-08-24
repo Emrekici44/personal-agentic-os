@@ -8,7 +8,7 @@ Stand: 24.08.2026, Europe/Berlin. Diese Liste verwendet nur diskrete Zustände. 
 | --- | --- | --- |
 | Web, Electron, Expo | Eine gemeinsame responsive Next-Oberfläche; gehärtete Electron-Shell; physische iPhone-Navigation abgenommen | Electron ist ein verifizierter Entwicklungsstarter, noch kein signierter Windows-Installer |
 | Privater Zugriff | Tailscale Serve über privates HTTPS/MagicDNS, kein Funnel | Laptop muss laufen und wach bleiben |
-| Gemeinsamer Datenkern | Signierte private API, lokales SQLite/WAL, versionierte Migrationen, AES-256-GCM-Feldschutz, Audit und Backups | SQLite ist die aktuelle Brücke, nicht Emres gewünschter Endzustand |
+| Gemeinsamer Datenkern | Signierte private API, lokales SQLite/WAL, versionierte Migrationen, AES-256-GCM-Feldschutz, Audit, Backups und 409-Versionskonflikte statt Silent Merge | SQLite ist die aktuelle Brücke, nicht Emres gewünschter Endzustand |
 | Heute | Echte gemeinsame Aufgaben mit Priorität/Fälligkeit/Bereich/Projekt und flexibler Checkliste; tägliche/wöchentliche Habits; verschlüsseltes Journal; Calendar-Tageszahl ohne Titel | Keine Hintergrund-Erinnerungen oder Systembenachrichtigungen |
 | Projekte | Echte Details, Aufgaben, Inbox, nächste Aktion, Wochenplanbezug und inhaltsarmer Verlauf | Dateien sind noch nicht als verwaltete lokale Projektobjekte implementiert |
 | Wochenplanung | Reale Calendar-/Task-/Inbox-/Projektquellen, max. drei Outcomes, 35% Puffer, Training-/Belegungsschutz, Review | Faith-/Relationship-Schutz bleibt unverifiziert, solange keine passenden Nutzerdaten vorhanden sind |
@@ -24,8 +24,7 @@ Stand: 24.08.2026, Europe/Berlin. Diese Liste verwendet nur diskrete Zustände. 
 | --- | --- | --- | --- |
 | 1 | Private API-Oberfläche vollständig vereinheitlichen | Alle wissens-/providerbezogenen Status- und Preview-Routen hinter die signierte lokale Sitzung legen | 401 ohne Sitzung, `no-store, private`, bestehende UI grün |
 | 2 | Projektdateien und Dokumentverweise | Zunächst nur validierte Referenz-Metadaten/Links, kein stilles Kopieren oder Öffnen | Ehrlicher Dateiverweis; keine Vault-/Dateisystemmutation |
-| 3 | Offline-/Konfliktverhalten | Lesbarer Offlinezustand und explizite Konfliktvorschau für späteres Serverziel | Kein Silent Merge und keine Datenmigration |
-| 4 | Vollständiger Bedienaudit | Prominente Controls erneut auf Desktop/390×844 und im nächsten physischen Expo-Stand prüfen | Echte Aktion oder sichtbar gesperrt; keine irreführenden Toasts |
+| 3 | Vollständiger Bedienaudit | Prominente Controls erneut auf Desktop/390×844 und im nächsten physischen Expo-Stand prüfen | Echte Aktion oder sichtbar gesperrt; keine irreführenden Toasts |
 
 ## Nutzerentscheidung oder externe Grenze
 
