@@ -84,6 +84,8 @@ Project root: `outputs/agentic-os`. Private source remote: `https://github.com/E
 - Full verification for structured read recovery: Root 117/117, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed; live progress rendered 48/51.
 - Shared mutations that pair operational state with audit now use one exported SQLite transaction service at every production API caller. A temporary isolated database with failing audit triggers proved both create and update roll back completely; no real record or external system was touched.
 - Full verification for atomic mutations: Root 119/119, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed; live progress rendered 49/52.
+- Skill definitions/reviews, Agent workflow transitions and Weekly Planner reviews now carry an exact shared version. Stale clients receive 409 and reload the shared source; isolated tests prove the newer decision survives. Initial Weekly Plan responses now expose version 1 consistently.
+- Full verification for procedure-state conflicts: Root 121/121, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed. Live progress rendered 50/53 with 0 desktop/390×844 horizontal overflow.
 
 ## Immediate continuation
 
@@ -92,6 +94,7 @@ Project root: `outputs/agentic-os`. Private source remote: `https://github.com/E
 3. Seed real shared projects/tasks/inbox only through Emre's normal UI; never create personal examples for testing.
 4. Any selected focus block must still enter the exact single-event approval screen; never test the final write without Emre's action-time confirmation.
 5. Do not add a restore/Vault-Apply executor, PostgreSQL target, Graphify runtime, provider, connector, file copy or autostart unless its exact pending decision is approved.
+6. Continue the local gap audit after the procedure-conflict increment; no new user decision was introduced, so `PENDING-DECISIONS.md` remains authoritative and unchanged.
 
 ## Non-negotiable boundaries
 

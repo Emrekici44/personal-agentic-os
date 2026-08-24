@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { executeLocalSkill, skillProcedureCatalog, skillSafetyContract } from "@/lib/local-skills.mjs";
-import { publicApiError } from "@/lib/public-api-error";
+import { publicApiError, publicConflict } from "@/lib/public-api-error";
 import {
   archiveSkillDefinition,
   createSkillDefinition,
@@ -17,7 +17,7 @@ import {
 
 const responseHeaders = { "Cache-Control": "no-store, private" };
 const authorized = (request: NextRequest) => verifyLocalSession(request.cookies.get("agentic_os_local_session")?.value);
-const reject = (error: unknown, status = 400) => { const fallback = "Skill-Anfrage konnte lokal nicht sicher verarbeitet werden", message = publicApiError(error, fallback), retrySafe = status === 400 && message === fallback; return NextResponse.json({ error: message, retrySafe, writesPerformed: false }, { status: retrySafe ? 503 : status, headers: responseHeaders }); };
+const reject = (error: unknown, status = 400) => { const fallback = "Skill-Anfrage konnte lokal nicht sicher verarbeitet werden", message = publicApiError(error, fallback), conflict = publicConflict(error), retrySafe = status === 400 && !conflict && message === fallback; return NextResponse.json({ error: message, conflict, retrySafe, writesPerformed: false }, { status: conflict ? 409 : retrySafe ? 503 : status, headers: responseHeaders }); };
 
 function loadAllowedSources(allowedSources: string[]) {
   const snapshot: Record<string, unknown[]> = {};
@@ -80,8 +80,8 @@ export async function PATCH(request: NextRequest) {
   try {
     const body = await request.json();
     if (body.action === "update_definition") return NextResponse.json({ definition: withStoreTransaction(() => updateSkillDefinition(String(body.skillId || ""), body.definition)), externalActionsPerformed: false }, { headers: responseHeaders });
-    if (body.action === "archive_definition") return NextResponse.json({ result: withStoreTransaction(() => archiveSkillDefinition(String(body.skillId || ""))), externalActionsPerformed: false }, { headers: responseHeaders });
-    if (body.action === "review_run") return NextResponse.json({ run: withStoreTransaction(() => reviewSkillRun(String(body.runId || ""))), externalActionsPerformed: false }, { headers: responseHeaders });
+    if (body.action === "archive_definition") return NextResponse.json({ result: withStoreTransaction(() => archiveSkillDefinition(String(body.skillId || ""), Number(body.version))), externalActionsPerformed: false }, { headers: responseHeaders });
+    if (body.action === "review_run") return NextResponse.json({ run: withStoreTransaction(() => reviewSkillRun(String(body.runId || ""), Number(body.version))), externalActionsPerformed: false }, { headers: responseHeaders });
     throw new Error("Unbekannte Skill-Aktion");
   } catch (error) {
     return reject(error);

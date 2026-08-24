@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { agentWorkflowProfiles, buildAgentWorkflowProposal, isAgentWorkflowId } from "@/lib/agent-workflows";
-import { publicApiError } from "@/lib/public-api-error";
+import { publicApiError, publicConflict } from "@/lib/public-api-error";
 import { latestWeeklyPlan, listAgentWorkflowRuns, listRecords, saveAgentWorkflowRun, transitionAgentWorkflowRun, verifyLocalSession, withStoreTransaction } from "@/lib/shared-store";
 
 const authorized = (request: NextRequest) => verifyLocalSession(request.cookies.get("agentic_os_local_session")?.value);
@@ -36,7 +36,7 @@ export async function PATCH(request: NextRequest) {
     const body = await request.json();
     return respond({ run: withStoreTransaction(() => transitionAgentWorkflowRun(String(body.runId || ""), body.action, body)), externalActionsPerformed: false, nextExternalAction: "not_available" });
   } catch (error) {
-    const fallback = "Workflow-Status konnte lokal nicht sicher gespeichert werden", message = publicApiError(error, fallback), retrySafe = message === fallback;
-    return respond({ error: message, retrySafe, externalActionsPerformed: false }, { status: retrySafe ? 503 : 400 });
+    const fallback = "Workflow-Status konnte lokal nicht sicher gespeichert werden", message = publicApiError(error, fallback), conflict = publicConflict(error), retrySafe = !conflict && message === fallback;
+    return respond({ error: message, conflict, retrySafe, externalActionsPerformed: false }, { status: conflict ? 409 : retrySafe ? 503 : 400 });
   }
 }

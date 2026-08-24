@@ -113,6 +113,7 @@ Last verified: 25.08.2026, Europe/Berlin.
 - Session, OAuth-state and Google-token cookies now share one request-aware `Secure` policy. Direct HTTPS is accepted; forwarded HTTPS counts only when the normalized request host matches the configured private Tailscale host. Plain localhost remains usable and a spoofed forwarded host cannot alter the policy.
 - Private read recovery is now structured across Shared Store status/records, Audit, Archive, Backups, shared Preferences, Project workspace, Planner history, Agent runs and Skills. A local source failure returns cache-free 503 JSON, clears the inventory/selection evidence and marks it unverified; clients can retry without treating an outage as a truthful empty store or framework error page.
 - Multi-step local mutations now enter an explicit SQLite `BEGIN IMMEDIATE` transaction at the repository/service boundary. Shared record create/update, Preferences, Skill definitions/runs, Agent workflow runs, Planner review and Vault preview state commit their data and content-light audit together. An isolated trigger-forced audit failure proved create/update rollback with no surviving partial record.
+- Skill definitions, Skill reviews, Agent workflow transitions and Weekly Planner reviews now require the exact shared row version. A stale desktop/iPhone decision returns 409, changes nothing and reloads the authoritative laptop source; a newly created Weekly Plan now exposes its initial version consistently.
 
 ## Verification
 
@@ -146,6 +147,7 @@ Last verified: 25.08.2026, Europe/Berlin.
 - HTTPS-Cookie-Policy: Root 115/115, Lint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export und isolierter Produktionsbuild grün. Dashboard zeigt 47/50 diskrete Punkte; die Browserprüfung bestätigte den laufenden Stand. Der private Host ist im aktuellen Shell-Prozess nicht konfiguriert, daher bleibt ein Live-Header-Check ehrlich offen statt behauptet.
 - Strukturierte Read-Recovery: Root 117/117, Lint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export und isolierter Produktionsbuild grün. Dashboard zeigt 48/51 diskrete Punkte. Die Prüfung erzeugte keine Datensätze und führte keine externe Aktion aus.
 - Atomare Shared-Mutationen: Root 119/119, Lint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export und isolierter Produktionsbuild grün. Dashboard zeigt 49/52 diskrete Punkte. Die Rollback-Probe lief ausschließlich in einem temporären Verzeichnis und wurde entfernt.
+- Mehrgeräte-Konflikte für Prozedurzustände: Root 121/121, Lint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export und isolierter Produktionsbuild sind grün. Dashboard zeigt 50/53 diskrete Punkte; Desktop und 390×844 haben 0 horizontalen Überlauf.
 
 ## User boundaries
 

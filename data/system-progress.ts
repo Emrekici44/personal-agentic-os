@@ -363,6 +363,13 @@ export const systemProgress = {
       status: "complete",
     },
     {
+      id: "procedure-version-conflicts",
+      label: "Mehrgeräte-Konflikte für Workflows absichern",
+      evidence: "Skills, Skill-Läufe, Agentenläufe und Wochenplan · exakte Version + 409 · Client lädt gemeinsame Quelle neu",
+      href: "#agents",
+      status: "complete",
+    },
+    {
       id: "ongoing-local-gap-audit",
       label: "Nächste lokale Bedien-/Recovery-Lücke prüfen",
       evidence: "Nur reversible lokale Änderungen · keine externen Writes, Migrationen, Installationen oder Kosten",

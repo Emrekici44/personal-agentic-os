@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { refreshedAccessToken } from "@/lib/google-calendar";
 import { readCalendarCatalog, readGoogleCalendarWindow } from "@/lib/google-calendar-read";
 import { buildWeeklyPlan, weeklyWindow } from "@/lib/weekly-planner";
-import { publicApiError } from "@/lib/public-api-error";
+import { publicApiError, publicConflict } from "@/lib/public-api-error";
 import { latestWeeklyPlan, listRecords, listWeeklyPlanSummaries, reviewWeeklyPlan, saveWeeklyPlan, verifyLocalSession, withStoreTransaction } from "@/lib/shared-store";
 
 const headers = { "Cache-Control": "no-store, private" };
@@ -74,7 +74,7 @@ export async function PATCH(request: NextRequest) {
     return respond({ plan, history: listWeeklyPlanSummaries(), calendarWritesPrepared: false, writesPerformed: false });
   } catch (error) {
     const fallback = "Auswahl konnte lokal nicht sicher gespeichert werden";
-    const message = publicApiError(error, fallback);
-    return respond({ error: message, retrySafe: message === fallback, writesPerformed: false }, { status: message === fallback ? 503 : 400 });
+    const message = publicApiError(error, fallback), conflict = publicConflict(error), retrySafe = !conflict && message === fallback;
+    return respond({ error: message, conflict, retrySafe, writesPerformed: false }, { status: conflict ? 409 : retrySafe ? 503 : 400 });
   }
 }
