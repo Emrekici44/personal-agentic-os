@@ -103,6 +103,15 @@ test("journal links only real shared counts and a content-minimal daily calendar
   assert.doesNotMatch(route, /summary|description|location|attendees/);
 });
 
+test("universal inbox provides real encrypted triage instead of fake file capture", async () => {
+  const page = await readFile(pagePath, "utf8");
+  for (const label of ["Triage öffnen", "Lebensbereich", "Projekt", "Agentenreferenz", "Triage speichern", "Dateiverweis"]) assert.match(page, new RegExp(label));
+  assert.match(page, /kein Datei-Upload oder Kopieren/i);
+  assert.match(page, /useSharedRecords\("projects"\)/);
+  assert.match(page, /useSharedRecords\("agents"\)/);
+  assert.doesNotMatch(page, /\["Idee", "Aufgabe", "Notiz", "ChatGPT-Notiz", "Link", "Datei"\]/);
+});
+
 test("uses real shared life-area records and honest external connection boundaries", async () => {
   const page = await readFile(pagePath, "utf8");
   assert.match(page, /function AreaRecordWorkspace/);

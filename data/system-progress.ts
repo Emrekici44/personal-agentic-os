@@ -188,6 +188,13 @@ export const systemProgress = {
       status: "complete",
     },
     {
+      id: "inbox-triage",
+      label: "Private Universal-Inbox mit echter Triage",
+      evidence: "Bereich/Projekt/Agent/Status · verschlüsselter Inhalt · Dateiverweis ohne Upload",
+      href: "#inbox",
+      status: "complete",
+    },
+    {
       id: "master-gap-audit",
       label: "Restlücken gegen den vollständigen Masterauftrag prüfen",
       evidence: "Controls, Statuswahrheit, responsive Clients, Doku und sichere nächste Schritte",

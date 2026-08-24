@@ -31,6 +31,7 @@ Project root: `outputs/agentic-os`. Private source remote: `https://github.com/E
 - Faith, Health, Finance and Relationships now render specialized summaries from real encrypted `area_records`. With the current empty store they show 0/empty instead of invented progress, money or people. Editors expose validated domain fields; practical tests opened/cancelled without mutation.
 - Branding and theme are shared preferences. Settings includes an explicit local backup action and review-only restore comparison. Usage & Limits reads live OpenAI-policy, connector-health, storage and backup status while leaving unsupported ChatGPT/quota counters unavailable instead of estimating them.
 - Journal no longer shows illustrative linked counts. It reads real shared Tasks/Habits and a title-free one-day Google Calendar count; private history details come from encrypted `sensitive_enc`. Current content-free inventory: 0 journal rows and 0 legacy plaintext rows, so no migration occurred.
+- Inbox now captures into encrypted `content` and supports shared review/triage to life area, real project, real agent reference and status. `Dateiverweis` is text only. Current inventory: 0 Inbox rows and 0 legacy plaintext rows; validation was completed without creating fake user records.
 
 ## Immediate continuation
 

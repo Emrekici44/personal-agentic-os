@@ -56,6 +56,16 @@ test('journal text is encrypted and excluded from public JSON for new writes',()
   assert.match(store,/legacyJournalPlaintextRows/);
 });
 
+test('inbox content is encrypted and triage references are server validated',()=>{
+  assert.match(store,/kind==='inbox_items'\)delete visible\.content/);
+  assert.match(store,/delete publicData\.content/);
+  assert.match(store,/encryptSensitive\(\{content:data\.content\}\)/);
+  assert.match(store,/assertInboxShape\(data\)/);
+  assert.match(store,/Zugeordneter Agent wurde nicht gefunden/);
+  assert.match(store,/Ungültiger Lebensbereich/);
+  assert.match(store,/legacyInboxPlaintextRows/);
+});
+
 test('audit feed exposes only action metadata behind the private session',async()=>{
   const [store,route]=await Promise.all([
     readFile(new URL('../lib/shared-store.ts',import.meta.url),'utf8'),

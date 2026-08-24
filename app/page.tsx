@@ -1353,14 +1353,35 @@ function Chats({ note }: any) {
 }
 function Inbox({ note }: any) {
   const [type, setType] = useState("Idee"),
-    [txt, setTxt] = useState("");
+    [txt, setTxt] = useState(""),
+    [triageId, setTriageId] = useState(""),
+    [triageDraft, setTriageDraft] = useState<any>(null);
   const { records: entries, state, create, update } = useSharedRecords("inbox_items");
+  const { records: projects } = useSharedRecords("projects");
+  const { records: agents } = useSharedRecords("agents");
+  const types = ["Idee", "Aufgabe", "Notiz", "ChatGPT-Notiz", "Link", "Dateiverweis"];
+  const areaOptions = [["Inbox", "Noch offen"], ["faith", "Glaube"], ["career", "Karriere"], ["health", "Gesundheit"], ["finance", "Finanzen"], ["relations", "Beziehungen"], ["projects", "Projekte"]];
+  const selectedEntry = entries.find((entry: any) => entry.id === triageId);
   const capture = async () => {
     const value = txt.trim();
     if (!value) return;
-    await create({ title: value, itemType: type.toLowerCase(), status: "active", area: "Inbox" });
-    setTxt("");
-    note(`${type} im gemeinsamen Eingang gespeichert`);
+    try {
+      await create({ title: value.slice(0, 120), content: value, itemType: type.toLowerCase(), status: "active", area: "Inbox", projectId: "", agentId: "" });
+      setTxt("");
+      note(`${type} privat im gemeinsamen Eingang gespeichert`);
+    } catch (error) { note(error instanceof Error ? error.message : "Erfassen fehlgeschlagen"); }
+  };
+  const openTriage = (entry: any) => {
+    setTriageId(entry.id);
+    setTriageDraft({ area: entry.area || "Inbox", projectId: entry.projectId || "", agentId: entry.agentId || "", status: entry.status || "active", content: entry.content || entry.title });
+  };
+  const saveTriage = async () => {
+    if (!selectedEntry || !triageDraft) return;
+    try {
+      await update({ ...selectedEntry, ...triageDraft });
+      setTriageId(""); setTriageDraft(null);
+      note("Inbox-Zuordnung gemeinsam gespeichert");
+    } catch (error) { note(error instanceof Error ? error.message : "Triage fehlgeschlagen"); }
   };
   return (
     <>
@@ -1389,7 +1410,7 @@ function Inbox({ note }: any) {
       </Card>
       <Card className="captureAll">
         <div className="capturetypes">
-          {["Idee", "Aufgabe", "Notiz", "ChatGPT-Notiz", "Link", "Datei"].map((x) => (
+          {types.map((x) => (
             <button
               className={type === x ? "active" : ""}
               onClick={() => setType(x)}
@@ -1402,13 +1423,11 @@ function Inbox({ note }: any) {
         <textarea
           value={txt}
           onChange={(e) => setTxt(e.target.value)}
-          placeholder={`${type} schnell erfassen …`}
+          placeholder={type === "Dateiverweis" ? "Lokalen Dateipfad oder Beschreibung erfassen · keine Datei wird hochgeladen …" : `${type} schnell erfassen …`}
         />
         <div className="row">
-          <span>Später in Bereich, Projekt oder Agent triagieren.</span>
-          <Btn
-            onClick={capture}
-          >
+          <span>{type === "Dateiverweis" ? "Nur ein privater Verweis; kein Datei-Upload oder Kopieren." : "Danach real in Bereich, Projekt oder Agent triagieren."}</span>
+          <Btn onClick={txt.trim().length >= 2 ? capture : undefined}>
             Erfassen <I.ArrowRight />
           </Btn>
         </div>
@@ -1416,6 +1435,7 @@ function Inbox({ note }: any) {
       {state === "online" && entries.length === 0 && (
         <Card><Tag>ECHTE DATENQUELLE · LEER</Tag><h3>Dein Eingang ist leer</h3><p>Neue Einträge erscheinen in Desktop und iPhone.</p></Card>
       )}
+      {state === "error" && <Card><Tag>OFFLINE</Tag><h3>Gemeinsamer Eingang nicht erreichbar</h3><p>Es werden keine lokalen Ersatz- oder Beispieldaten angezeigt.</p></Card>}
       <div className="inboxlist">
         {entries.map((x: any) => (
           <Card key={x.id}>
@@ -1423,15 +1443,29 @@ function Inbox({ note }: any) {
             <span>
               <b>{x.title}</b>
               <small>
-                {x.itemType || "Notiz"} · {x.area || "Inbox"}
+                {x.itemType || "Notiz"} · {areaOptions.find(([id]) => id === (x.area || "Inbox"))?.[1] || x.area}
+                {x.projectId ? ` · Projekt: ${projects.find((project: any) => project.id === x.projectId)?.title || "nicht mehr verfügbar"}` : ""}
+                {x.agentId ? ` · Agent: ${agents.find((agent: any) => agent.id === x.agentId)?.name || "nicht mehr verfügbar"}` : ""}
               </small>
             </span>
-            <button onClick={() => update({ ...x, status: "planned" })}>
-              Als geprüft markieren <I.Check />
+            <button aria-expanded={triageId === x.id} onClick={() => triageId === x.id ? (setTriageId(""), setTriageDraft(null)) : openTriage(x)}>
+              {triageId === x.id ? "Triage schließen" : "Triage öffnen"} <I.SlidersHorizontal />
             </button>
           </Card>
         ))}
       </div>
+      {selectedEntry && triageDraft && <Card className="inboxTriage">
+        <div className="row"><div><Tag>TRIAGE · GEMEINSAM</Tag><h3>{selectedEntry.title}</h3></div><button aria-label="Triage schließen" onClick={() => { setTriageId(""); setTriageDraft(null); }}><I.X /></button></div>
+        <p>Ordne nur zu; Agentic OS startet dadurch weder einen Agenten noch eine externe Aktion.</p>
+        <div className="triageGrid">
+          <label>Lebensbereich<select value={triageDraft.area} onChange={(event) => setTriageDraft({ ...triageDraft, area: event.target.value })}>{areaOptions.map(([id, name]) => <option key={id} value={id}>{name}</option>)}</select></label>
+          <label>Projekt<select value={triageDraft.projectId} onChange={(event) => setTriageDraft({ ...triageDraft, projectId: event.target.value })}><option value="">Kein Projekt</option>{projects.map((project: any) => <option key={project.id} value={project.id}>{project.title}</option>)}</select></label>
+          <label>Agentenreferenz<select value={triageDraft.agentId} onChange={(event) => setTriageDraft({ ...triageDraft, agentId: event.target.value })}><option value="">Kein Agent</option>{agents.map((agent: any) => <option key={agent.id} value={agent.id}>{agent.name || agent.title}</option>)}</select></label>
+          <label>Stand<select value={triageDraft.status} onChange={(event) => setTriageDraft({ ...triageDraft, status: event.target.value })}><option value="active">Zu prüfen</option><option value="planned">Eingeplant</option><option value="completed">Abgeschlossen</option></select></label>
+          <label className="wide">Privater Inhalt<textarea maxLength={8000} value={triageDraft.content} onChange={(event) => setTriageDraft({ ...triageDraft, content: event.target.value })} /></label>
+        </div>
+        <div className="editorActions"><Btn onClick={triageDraft.content.trim().length >= 2 ? saveTriage : undefined}>Triage speichern</Btn><button onClick={() => { setTriageId(""); setTriageDraft(null); }}>Abbrechen</button></div>
+      </Card>}
     </>
   );
 }

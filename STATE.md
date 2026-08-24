@@ -48,6 +48,8 @@ Last verified: 24.08.2026, Europe/Berlin.
 - Usage & Limits lädt echte Provider-, Integrations-, Speicher- und Backup-Evidenz. ChatGPT-Planlimits und Integrationsquoten bleiben ausdrücklich manuell/nicht verfügbar; OpenAI API ist unkonfiguriert, mit aktivem Kill Switch und 0-Euro-Grenzen. Google Calendar wird aus dem Live-Health-Vertrag statt als Mock dargestellt.
 - Die Journal-Verknüpfungsbeispiele wurden entfernt. Der Tagesbereich zeigt nun echte offene Tasks, echte heutige Habits und eine auf einen Berlin-Tag begrenzte Google-Calendar-Anzahl aus bis zu 12 ausgewählten Kalendern. Der Server fordert dabei nur ID/Start/Ende an und gibt keine Titel aus; im praktischen Read wurden 9 heutige Ereignisse gezählt und 0 Writes ausgeführt.
 - Journaltext wird bei neuen Creates/Updates vor dem öffentlichen JSON entfernt und ausschließlich feldverschlüsselt gespeichert. Das reale Inventar ergab 0 Journaldatensätze und 0 Legacy-Klartextzeilen, daher war keine Bestandsmigration nötig. Die gemeinsame Historie besitzt jetzt eine echte private Detailansicht statt „folgt“.
+- Die Universal Inbox besitzt jetzt echte gemeinsame Triage nach Lebensbereich, bestehendem Projekt, bestehender Agentenreferenz und Bearbeitungsstand. Projekt-/Agent-IDs werden serverseitig gegen aktive Datensätze validiert. „Datei“ wurde durch den ehrlichen `Dateiverweis` ohne Upload/Kopie ersetzt; leeres Erfassen ist sichtbar gesperrt.
+- Voller Inbox-Inhalt wird bei neuen Creates/Updates ausschließlich feldverschlüsselt gespeichert; im öffentlichen JSON bleibt nur ein kurzer operativer Titel. Das reale Inventar meldet 0 Inbox-Datensätze und 0 Legacy-Klartextzeilen, sodass keine Migration oder Nutzerentscheidung nötig war.
 
 ## Verification
 
@@ -67,6 +69,7 @@ Last verified: 24.08.2026, Europe/Berlin.
 - Bereichsbrowser-Abnahme: Glaube zeigt 0/5 statt erfundener Praxis; leerer Gebetseditor kann nicht speichern und wurde abgebrochen. Gesundheit, Finanzen und Beziehungen zeigen ehrliche leere Analyse-/Konstellationszustände. Beziehungen bleiben auf 390×844 ohne horizontalen Überlauf. Root 63/63, TypeScript, ESLint, Produktionsbuild, Electron 2/2 und Expo TypeScript/Lint/Web-Export sind grün.
 - Einstellungsbrowser-Abnahme: Shared Branding, lokales Backup, Restore-Sperre und Datengrenzen rendern mit Live-Schema v8. Ein echtes lokales Backup wurde erstellt und Integrität `ok` geprüft; Restore blieb gesperrt. Usage & Limits zeigte auf 390×844 0 horizontalen Überlauf, echte Calendar-/Storage-Evidenz und keine erfundenen Plan-Zähler.
 - Journalbrowser-Abnahme: echter Calendar-Read meldete 9 heutige Ereignisse ohne Titel, Tasks/Habits stammen aus dem Shared Store und alle alten Beispielzähler sind entfernt. Desktop und 390×844 blieben ohne horizontalen Überlauf; der aktuelle Privacy-Check meldete 0 Legacy-Klartextzeilen.
+- Inboxbrowser-Abnahme: sechs wahrheitsgemäße Capture-Typen inklusive `Dateiverweis`, deaktiviertes Leer-Erfassen, ehrlicher leerer Shared-Store-Zustand und 0 horizontaler Überlauf auf Desktop/390×844. Die Triage-Verträge sind ohne Erzeugen erfundener Nutzerdaten getestet.
 - Git: Spezialisierte Lebensbereiche sind als `6a7ff8273526ceede71daa72b25b3a2481047602` auf privatem `main`; der Settings-/Backup-/Usage-Meilenstein befindet sich in der abschließenden Matrix vor seinem eigenen Push.
 
 ## User boundaries

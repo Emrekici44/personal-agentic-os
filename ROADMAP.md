@@ -23,6 +23,7 @@
 - Specialized real-data domain workspaces: voluntary prayer/Qurʾān tracking without location guidance, organizational training/recovery/nutrition, manual finance overview without transactions/advice, and private people/birthday/follow-up constellation without messaging. All specialty fields are encrypted.
 - Shared validated branding and theme preferences, real provider/integration/storage evidence in Usage & Limits, and local SHA-256/integrity-checked SQLite snapshots with restore-conflict preview. Restore apply remains intentionally absent.
 - Daily Journal uses real shared task/habit counts, a one-day content-minimal Calendar count and an encrypted private history detail. All illustrative linkage counters are removed; current-store privacy inventory found no legacy plaintext journal rows.
+- Universal Inbox supports real shared capture and validated triage to life area, existing project and existing agent reference. Full content is encrypted, empty capture is disabled and file handling is truthfully limited to a text reference with no upload.
 
 ## Complete – Bedienwahrheit and responsive refinement
 
