@@ -99,7 +99,7 @@ export const systemProgress = {
     {
       id: "ui-truth",
       label: "Globale Bedienwahrheit und responsive UX",
-      evidence: "AST-Buttonaudit · echte Tagesdaten · keine eingebetteten Kalender-/Provider-Mocks im Produktcode",
+      evidence: "AST-Buttonaudit · live Planner/Calendar/Vault/OpenAI-Status · keine eingebetteten Produkt-Mocks",
       href: "#home",
       status: "complete",
     },

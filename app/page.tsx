@@ -110,7 +110,6 @@ export default function App() {
     [theme, setTheme] = useState<"dark" | "light">("dark"),
     [journal, setJournal] = useState(""),
     [mood, setMood] = useState("ruhig"),
-    [vaultOnline, setVaultOnline] = useState(false),
     [runtimeHealth, setRuntimeHealth] = useState<any>({ state: "checking", checkedAt: null }),
     [brand, setBrand] = useState({
       name: "Agentic OS",
@@ -132,11 +131,6 @@ export default function App() {
     };
     setBrand(migratedBrand);
     store.set("brand", migratedBrand);
-    fetch("/api/state/session", { method: "POST" })
-      .then(() => fetch("/api/obsidian/status", { cache: "no-store" }))
-      .then((response) => response.json())
-      .then((status) => setVaultOnline(status.status === "online"))
-      .catch(() => setVaultOnline(false));
     fetch("/api/state/session", { method: "POST" })
       .then(() =>
         Promise.all([
@@ -368,7 +362,7 @@ export default function App() {
           ref={contentRef}
           tabIndex={-1}
         >
-          {v === "home" && <Home go={navigate} vaultOnline={vaultOnline} />}{" "}
+          {v === "home" && <Home go={navigate} />}{" "}
           {v === "areas" && <Areas go={navigate} />} {v === "faith" && <Faith note={note} />}
           {v === "career" && <Career note={note} />}
           {v === "finance" && <Finance note={note} />}
@@ -453,28 +447,40 @@ function Intro({ eyebrow, title, children, action }: any) {
 function RetryNotice({ message, onRetry, label = "Erneut laden" }: { message: string; onRetry: () => void; label?: string }) {
   return <div className="inlineRecovery" role="alert"><I.WifiOff/><span>{message}</span><button onClick={onRetry} type="button"><I.RefreshCw/>{label}</button></div>;
 }
-function Home({ go, vaultOnline }: any) {
+function Home({ go }: any) {
   const { records: tasks, state: taskState } = useSharedRecords("tasks");
   const [calendarState, setCalendarState] = useState("loading");
   const [plannerState, setPlannerState] = useState<any>({ state: "loading", plan: null });
-  useEffect(() => {
-    void (async () => {
-      try {
-        const session = await fetch("/api/state/session", { method: "POST" });
-        if (!session.ok) throw new Error();
-        const [calendarResponse, plannerResponse] = await Promise.all([
-          fetch("/api/calendar/status", { cache: "no-store" }),
-          fetch("/api/planner", { cache: "no-store" }),
-        ]);
-        const [status, planner] = await Promise.all([calendarResponse.json(), plannerResponse.json()]);
-        setCalendarState(calendarResponse.ok ? (status.connected ? "online" : status.configured ? "offline" : "unconfigured") : "offline");
-        setPlannerState({ state: plannerResponse.ok ? (planner.plan ? "online" : "unconfigured") : "offline", plan: planner.plan || null });
-      } catch {
-        setCalendarState("offline");
-        setPlannerState({ state: "offline", plan: null });
-      }
-    })();
+  const [vaultState, setVaultState] = useState("loading");
+  const [openaiApiState, setOpenaiApiState] = useState("loading");
+  const loadHomeSources = useCallback(async () => {
+    try {
+      const session = await fetch("/api/state/session", { method: "POST" });
+      if (!session.ok) throw new Error();
+      const [calendarResponse, plannerResponse, vaultResponse, openaiResponse] = await Promise.all([
+        fetch("/api/calendar/status", { cache: "no-store" }),
+        fetch("/api/planner", { cache: "no-store" }),
+        fetch("/api/obsidian/status", { cache: "no-store" }),
+        fetch("/api/openai/status", { cache: "no-store" }),
+      ]);
+      const [status, planner, vault, openai] = await Promise.all([calendarResponse.json(), plannerResponse.json(), vaultResponse.json(), openaiResponse.json()]);
+      setCalendarState(calendarResponse.ok ? (status.connected ? "online" : status.configured ? "offline" : "unconfigured") : "offline");
+      setPlannerState({ state: plannerResponse.ok ? "online" : "offline", plan: planner.plan || null });
+      setVaultState(vaultResponse.ok && vault.status === "online" ? "online" : vault.configured ? "offline" : "unconfigured");
+      setOpenaiApiState(openaiResponse.ok && openai.mode === "api" && openai.configured && !openai.killSwitch ? "online" : openai.mode === "api" || openai.configured ? "offline" : "unconfigured");
+    } catch {
+      setCalendarState("offline");
+      setPlannerState({ state: "offline", plan: null });
+      setVaultState("offline");
+      setOpenaiApiState("offline");
+    }
   }, []);
+  useEffect(() => {
+    void loadHomeSources();
+    const recover=()=>void loadHomeSources();
+    window.addEventListener("agentic-os:runtime-online",recover);
+    return()=>window.removeEventListener("agentic-os:runtime-online",recover);
+  }, [loadHomeSources]);
   const openTasks = tasks.filter((task: any) => !task.done && task.status !== "archived");
   return (
     <>
@@ -498,7 +504,7 @@ function Home({ go, vaultOnline }: any) {
           <Tag>HEUTE · ECHTE QUELLEN</Tag>
           <div className="event"><I.CheckSquare /><span><b>{openTasks.length} offene Aufgaben</b><small>Laptop Shared Store</small></span></div>
           <div className="event"><I.CalendarDays /><span><b>Google Calendar · {calendarState}</b><small>Termine werden erst in der Kalenderansicht gelesen</small></span></div>
-          <div className="event"><I.Network /><span><b>Obsidian · {vaultOnline ? "online" : "unconfigured"}</b><small>Read-only Wissensindex</small></span></div>
+          <div className="event"><I.Network /><span><b>Obsidian · {vaultState}</b><small>Read-only Wissensindex</small></span></div>
           <Btn soft onClick={() => go("integrations")}>Verbindungen prüfen</Btn>
         </Card>
       </div>
@@ -548,8 +554,8 @@ function Home({ go, vaultOnline }: any) {
           {[
             ["Wochenplaner", plannerState.state],
             ["Google Calendar", calendarState],
-            ["OpenAI", "unconfigured"],
-            ["Obsidian", vaultOnline ? "online" : "unconfigured"],
+            ["OpenAI API", openaiApiState],
+            ["Obsidian", vaultState],
           ].map((x) => (
             <div className="statusline" key={x[0]}>
               <i className={x[1]} />

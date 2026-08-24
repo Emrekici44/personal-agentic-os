@@ -145,6 +145,16 @@ test("shared clients expose offline truth and reload after version conflicts", a
   assert.match(page, /workflowState\.state==="online"&&!busy/);
 });
 
+test("command center derives planner, vault and OpenAI API status from live private endpoints", async () => {
+  const page = await readFile(pagePath, "utf8");
+  for (const endpoint of ["/api/calendar/status", "/api/planner", "/api/obsidian/status", "/api/openai/status"]) assert.match(page, new RegExp(endpoint.replaceAll("/", "\\/")));
+  assert.match(page, /function Home\(\{ go \}: any\)/);
+  assert.match(page, /plannerResponse\.ok \? "online" : "offline"/);
+  assert.match(page, /openai\.mode === "api" && openai\.configured && !openai\.killSwitch/);
+  assert.match(page, /window\.addEventListener\("agentic-os:runtime-online",recover\)/);
+  assert.doesNotMatch(page, /\["OpenAI", "unconfigured"\]/);
+});
+
 test("knowledge search stays inside the signed metadata-only vault preview", async () => {
   const [page, route] = await Promise.all([
     readFile(pagePath, "utf8"),

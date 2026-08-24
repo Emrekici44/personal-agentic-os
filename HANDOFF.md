@@ -14,6 +14,7 @@ Project root: `outputs/agentic-os`. Private source remote: `https://github.com/E
 - Electron and the local Next dev service are currently usable. The verified desktop shortcut/launcher remains unchanged.
 - Calendar reads are safe; no pending write proposal exists.
 - The production Calendar core no longer contains embedded calendars/events/focus proposals or a legacy approval helper, and the provider module no longer exports an unused mock mode. The live Google/Planner/write-guard paths are unchanged; tests now target their real contracts.
+- Home now refreshes Calendar, Planner, Vault and OpenAI API status from signed private endpoints on entry and verified reconnect. Practical evidence showed Planner/Calendar/Vault Online and OpenAI API Unconfigured; 390×844 had no overflow or alert. No source data or connection was changed.
 - Calendar status, calendar list, bounded event read, OAuth entry and local encrypted-token handoff now reject unsigned clients with 401 and private no-store responses. Disconnected clients receive no demo calendars/events; obsolete mock proposal and approval routes are retired with 410.
 - Existing Vault notes remain unchanged.
 - PostgreSQL PoC is files-only and deliberately inactive. Docker/Podman/psql were not installed.

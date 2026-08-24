@@ -51,6 +51,7 @@ Die gebündelten Details stehen in `PENDING-DECISIONS.md`. Kein Punkt hier block
 ## Wahrheitsregeln
 
 - Grün/Online bedeutet eine aktuelle technische Prüfung, nicht nur vorhandene Konfiguration.
+- Die Startseite bezieht Planner-, Calendar-, Vault- und OpenAI-API-Status aus aktuellen privaten Endpunkten und trennt Erreichbarkeit von vorhandenen Nutzerdatensätzen.
 - Leere reale Quellen bleiben leer; die Anwendung erzeugt keine persönlichen Beispiele.
 - Produktmodule enthalten keine eingebetteten Kalender-, Ereignis-, Fokusblock- oder Provider-Mocks mehr; Testverträge prüfen echte Guards ohne sie als Nutzerdatenpfad bereitzuhalten.
 - ChatGPT Pro ist kein API-Zugang. Companion Mode ist ein manueller Übergabepfad.
