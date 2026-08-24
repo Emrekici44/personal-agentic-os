@@ -59,6 +59,7 @@ Die gebündelten Details stehen in `PENDING-DECISIONS.md`. Kein Punkt hier block
 - Deterministische Agenten- und Skill-Läufe folgen derselben Recovery-Wahrheit: alte Runs/Definitionen verschwinden nach Transportfehlern aus aktiven Controls; Retry lädt den privaten Stand neu, ohne lokale Ersatzläufe oder autonome Fortsetzung.
 - Der Wochenplaner hält keine alte exakte Kalenderfreigabe über einen Reload/Offlinewechsel hinweg. Bei unklarem Write-Ergebnis wird nicht erneut gesendet; Statusprüfung und neue exakte Vorschau sind Pflicht.
 - Vault-Metadaten, Audit, Diffvorschauen und kurzlebige Vorschau-Token überleben keinen unbestätigten Reloadzustand. Der echte Apply-Pfad bleibt technisch nicht vorhanden; Recovery kann daher keinen Vault-Write auslösen.
+- Backup-/Archiv-Inventare zeigen Loading/Offline statt erfundener `0`; Auswahl und Restore-Vorschau werden vor Retry verworfen. Ein unbekanntes Backup-Ergebnis wird nicht still wiederholt, Restore-Apply bleibt gesperrt.
 - Produktmodule enthalten keine eingebetteten Kalender-, Ereignis-, Fokusblock- oder Provider-Mocks mehr; Testverträge prüfen echte Guards ohne sie als Nutzerdatenpfad bereitzuhalten.
 - ChatGPT Pro ist kein API-Zugang. Companion Mode ist ein manueller Übergabepfad.
 - SQLite ist operative Quelle, Obsidian dauerhafte Wissensquelle und Google Calendar externe Ereignisquelle, bis Emre eine andere Migration ausdrücklich freigibt.

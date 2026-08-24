@@ -2075,30 +2075,28 @@ function Settings({ brand, save, theme, changeTheme, note }: any) {
   const [restoreArchiveArmed,setRestoreArchiveArmed]=useState("");
   useEffect(() => setD(brand), [brand]);
   const loadBackups = useCallback(async () => {
+    setBackupState({ state: "loading", backups: [], store: null });
+    setSelectedBackup(""); setRestorePreview(null);
     try {
-      await fetch("/api/state/session", { method: "POST" });
+      const session = await fetch("/api/state/session", { method: "POST" });
+      if (!session.ok) throw new Error("Private Sitzung nicht erreichbar");
       const response = await fetch("/api/state/backups", { cache: "no-store" });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "Backup-Status nicht verfügbar");
       setBackupState({ state: "online", ...result });
-      setSelectedBackup((current) => current || result.backups?.[0]?.fileName || "");
+      setSelectedBackup(result.backups?.[0]?.fileName || "");
     } catch (error) {
       setBackupState({ state: "error", backups: [], store: null });
       note(error instanceof Error ? error.message : "Backup-Status nicht verfügbar");
     }
   }, [note]);
-  const loadArchive=useCallback(async()=>{try{await fetch("/api/state/session",{method:"POST"});const response=await fetch("/api/state/archive",{cache:"no-store"}),result=await response.json();if(!response.ok)throw new Error(result.error);setArchiveState({state:"online",records:result.records||[]})}catch(error){setArchiveState({state:"error",records:[],error:error instanceof Error?error.message:"Archiv nicht erreichbar"})}},[]);
+  const loadArchive=useCallback(async()=>{setArchiveState({state:"loading",records:[]});setRestoreArchiveArmed("");try{const session=await fetch("/api/state/session",{method:"POST"});if(!session.ok)throw new Error("Private Sitzung nicht erreichbar");const response=await fetch("/api/state/archive",{cache:"no-store"}),result=await response.json();if(!response.ok)throw new Error(result.error);setArchiveState({state:"online",records:result.records||[]})}catch(error){setArchiveState({state:"error",records:[],error:error instanceof Error?error.message:"Archiv nicht erreichbar"})}},[]);
   useEffect(() => { loadBackups(); loadArchive(); }, [loadArchive,loadBackups]);
+  const backupRequest=async(method:"POST"|"PATCH",body:any)=>{if(backupState.state!=="online")throw new Error("Privates Backup-Inventar ist nicht schreibbereit");let response:Response;try{response=await fetch("/api/state/backups",{method,headers:{"content-type":"application/json"},body:JSON.stringify(body)})}catch{setBackupState({state:"error",backups:[],store:null});setSelectedBackup("");setRestorePreview(null);throw new Error("Backup-Ergebnis nicht bestätigt. Inventar vor erneutem Versuch prüfen.")}let result:any;try{result=await response.json()}catch{setBackupState({state:"error",backups:[],store:null});setSelectedBackup("");setRestorePreview(null);throw new Error("Ungültige Antwort der Backup-Quelle")}if(!response.ok)throw new Error(result.error||"Backup-Anfrage abgelehnt");return result};
   const createBackup = async () => {
     setBackupBusy(true);
     try {
-      const response = await fetch("/api/state/backups", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ action: "create_backup" }),
-      });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "Backup fehlgeschlagen");
+      await backupRequest("POST", { action: "create_backup" });
       note("Lokales Backup geprüft und erstellt");
       await loadBackups();
     } catch (error) {
@@ -2107,15 +2105,9 @@ function Settings({ brand, save, theme, changeTheme, note }: any) {
   };
   const inspectRestore = async () => {
     if (!selectedBackup) return;
-    setBackupBusy(true);
+    setBackupBusy(true); setRestorePreview(null);
     try {
-      const response = await fetch("/api/state/backups", {
-        method: "PATCH",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ action: "preview_restore", fileName: selectedBackup }),
-      });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "Restore-Vorschau fehlgeschlagen");
+      const result = await backupRequest("PATCH", { action: "preview_restore", fileName: selectedBackup });
       setRestorePreview(result);
       note("Restore nur geprüft · keine Daten ersetzt");
     } catch (error) {
@@ -2204,7 +2196,7 @@ function Settings({ brand, save, theme, changeTheme, note }: any) {
           <dl className="settingsFacts">
             <dt>Engine</dt><dd>{backupState.store?.engine || "Nicht geprüft"}</dd>
             <dt>Schema</dt><dd>{backupState.store?.schemaVersion ? `v${backupState.store.schemaVersion}` : "—"}</dd>
-            <dt>Backups</dt><dd>{backupState.backups?.length ?? 0}</dd>
+            <dt>Backups</dt><dd>{backupState.state === "online" ? backupState.backups.length : backupState.state === "loading" ? "Wird geprüft" : "Nicht erreichbar"}</dd>
           </dl>
           <Btn onClick={!backupBusy && backupState.state === "online" ? createBackup : undefined}>
             <I.Archive /> {backupBusy ? "Prüfung läuft" : "Lokales Backup jetzt erstellen"}
@@ -2214,7 +2206,7 @@ function Settings({ brand, save, theme, changeTheme, note }: any) {
         <Card className="backupCard">
           <Tag>RESTORE · VORSCHAU</Tag>
           <h3>Vorher vergleichen, nie still ersetzen</h3>
-          {backupState.backups?.length ? (
+          {backupState.state === "loading" ? <p role="status">Backup-Inventar wird geladen …</p> : backupState.state === "error" ? <p role="alert">Restore-Vorschau bleibt gesperrt, bis das private Inventar erneut geprüft ist.</p> : backupState.backups?.length ? (
             <>
               <label>
                 Lokales Backup
@@ -2229,7 +2221,7 @@ function Settings({ brand, save, theme, changeTheme, note }: any) {
               <Btn soft onClick={!backupBusy ? inspectRestore : undefined}>Integrität & Konflikte prüfen</Btn>
             </>
           ) : <p className="settingsEmpty">Noch kein lokales Backup vorhanden.</p>}
-          {restorePreview && (
+          {backupState.state === "online" && restorePreview && (
             <div className="restorePreview" role="status">
               <b><I.ShieldCheck /> Integrität {restorePreview.integrity}</b>
               <span>Schema v{restorePreview.schemaVersion} · {restorePreview.changedTables.length} Tabellen mit Abweichungen</span>
@@ -2252,7 +2244,7 @@ function Settings({ brand, save, theme, changeTheme, note }: any) {
           <p>Hier lassen sich lokale Datensätze einzeln in ihren vorherigen Status zurückholen. Das ist kein Datenbank-Restore und löst keine externe Aktion aus.</p>
           {archiveState.state==="online"&&archiveState.records.length===0&&<div className="honestEmpty"><I.ArchiveRestore/><span><b>Lokales Archiv ist leer</b>Es werden keine gelöschten oder Beispiel-Datensätze gezeigt.</span></div>}
           {archiveState.state==="error"&&<RetryNotice message={archiveState.error} onRetry={loadArchive} label="Archiv neu laden"/>}
-          <div className="archiveRecords">{archiveState.records.map((record:any)=>{const restoreKey=`${record.kind}:${record.id}:${record.version}`,armed=restoreArchiveArmed===restoreKey;return <div key={`${record.kind}:${record.id}`}><I.Archive/><span><b>{record.title}</b><small>{({projects:"Projekt",tasks:"Aufgabe",habits:"Habit",journal_metadata:"Journal",inbox_items:"Inbox",agents:"Agent",skills:"Skill",area_records:"Lebensbereich"} as Record<string,string>)[record.kind]||record.kind} · archiviert {new Intl.DateTimeFormat("de-DE",{dateStyle:"short",timeStyle:"short"}).format(new Date(record.archivedAt))}</small></span><div className="archiveRestoreActions">{!armed?<button onClick={()=>setRestoreArchiveArmed(restoreKey)} type="button">Wiederherstellen …</button>:<><button className="dangerQuiet" onClick={()=>restoreArchiveRecord(record)} type="button">Wiederherstellung bestätigen</button><button onClick={()=>setRestoreArchiveArmed("")} type="button">Abbrechen</button></>}</div></div>})}</div>
+          <div className="archiveRecords">{archiveState.state === "online" && archiveState.records.map((record:any)=>{const restoreKey=`${record.kind}:${record.id}:${record.version}`,armed=restoreArchiveArmed===restoreKey;return <div key={`${record.kind}:${record.id}`}><I.Archive/><span><b>{record.title}</b><small>{({projects:"Projekt",tasks:"Aufgabe",habits:"Habit",journal_metadata:"Journal",inbox_items:"Inbox",agents:"Agent",skills:"Skill",area_records:"Lebensbereich"} as Record<string,string>)[record.kind]||record.kind} · archiviert {new Intl.DateTimeFormat("de-DE",{dateStyle:"short",timeStyle:"short"}).format(new Date(record.archivedAt))}</small></span><div className="archiveRestoreActions">{!armed?<button onClick={()=>setRestoreArchiveArmed(restoreKey)} type="button">Wiederherstellen …</button>:<><button className="dangerQuiet" onClick={()=>restoreArchiveRecord(record)} type="button">Wiederherstellung bestätigen</button><button onClick={()=>setRestoreArchiveArmed("")} type="button">Abbrechen</button></>}</div></div>})}</div>
           <small className="settingsHint"><I.ShieldCheck/>Versionskonflikte werden abgewiesen; verknüpfte archivierte Projekte oder Agenten müssen zuerst selbst wiederhergestellt werden.</small>
         </Card>
         <Card>

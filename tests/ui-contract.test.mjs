@@ -223,6 +223,17 @@ test("vault previews and audit history fail closed across reload and transport l
   assert.match(page, /audit\.status === "online" && audit\.entries\.map/);
 });
 
+test("backup and archive recovery never render unavailable inventory as empty", async () => {
+  const page = await readFile(pagePath, "utf8");
+  assert.match(page, /setBackupState\(\{ state: "loading", backups: \[\], store: null \}\)/);
+  assert.match(page, /setSelectedBackup\(""\); setRestorePreview\(null\)/);
+  assert.match(page, /backupState\.state!=="online"\)throw new Error\("Privates Backup-Inventar ist nicht schreibbereit"\)/);
+  assert.match(page, /Backup-Ergebnis nicht bestätigt\. Inventar vor erneutem Versuch prüfen\./);
+  assert.match(page, /backupState\.state === "online" \? backupState\.backups\.length : backupState\.state === "loading" \? "Wird geprüft" : "Nicht erreichbar"/);
+  assert.match(page, /backupState\.state === "online" && restorePreview/);
+  assert.match(page, /archiveState\.state === "online" && archiveState\.records\.map/);
+});
+
 test("knowledge search stays inside the signed metadata-only vault preview", async () => {
   const [page, route] = await Promise.all([
     readFile(pagePath, "utf8"),
