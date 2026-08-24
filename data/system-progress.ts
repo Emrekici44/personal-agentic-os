@@ -9,7 +9,7 @@ export type ProgressItem = {
 };
 
 export const systemProgress = {
-  currentPhase: "Sichere lokale Skill-Prozeduren bereit · Obsidian-Diffworkflow folgt",
+  currentPhase: "Obsidian-Diffworkflow sicher vorbereitet · Integrationszentrum wird vertieft",
   lastVerifiedAt: "24.08.2026 · Europe/Berlin",
   items: [
     {
@@ -150,6 +150,13 @@ export const systemProgress = {
       label: "Sichere wiederverwendbare lokale Skills",
       evidence: "Versionierte Definitionen · feste Prozeduren · verschlüsselte Vorschauen · 0 Netzwerk/Modelle/externe Writes",
       href: "#skills",
+      status: "complete",
+    },
+    {
+      id: "obsidian-write-preview",
+      label: "Kontrollierter Obsidian-Diffworkflow bis zur Nutzergrenze",
+      evidence: "Exakter Diff · Pfad/Hash/Konflikt · Backup/Restore · 15-Minuten-Token · Apply technisch gesperrt · 0 Vault-Writes",
+      href: "#brain",
       status: "complete",
     },
     {

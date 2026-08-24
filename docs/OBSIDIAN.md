@@ -17,9 +17,16 @@ The UI receives metadata, counts, and relationships. It does not receive note bo
 
 `.obsidian`, trash, caches, `.git`, `node_modules`, attachments/assets, non-Markdown files, symbolic links, and oversized notes are excluded. The adapter follows no symbolic link and exposes no absolute vault path through its health endpoint.
 
-## Write boundary
+## Controlled write preparation
 
-The adapter imports no write, rename, move, delete, or overwrite operation. `writesEnabled` is always `false`; the UI visibly states that a future write requires an exact diff, explicit user approval, audit entry, and backup. That future synchronization workflow is not implied by this read-only connection.
+The read-only index remains unchanged. A separate signed private proposal API can prepare two encrypted review artifacts without writing to the vault:
+
+- a complete new Markdown note under the fixed `00 Agentic OS/Inbox` or `00 Agentic OS/System` boundary; or
+- missing stable frontmatter for one note selected from the current read-only index, with its body guaranteed byte-for-byte unchanged.
+
+Each artifact binds the current note count, a normalized relative `.md` path inside the configured vault, symlink rejection, expected SHA-256 file state, conflict result, exact diff, backup manifest and manual restore strategy. Content and target path are encrypted in the ignored operational store. Audit entries contain only proposal type, state, conflict flag and write counters.
+
+The 15-minute token is stored only as a hash. The exact phrase `OBSIDIAN DIFF FREIGEBEN` can move a conflict-free preview to `approved_pending_apply` after revalidation. This is not a write approval: `applyAvailable` remains false, no Apply endpoint exists, and the proposal module imports no write, copy, rename, delete or directory-creation primitive. A real apply remains a later user-controlled decision listed in `PENDING-DECISIONS.md`.
 
 ## Local launch
 

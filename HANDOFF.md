@@ -24,6 +24,8 @@ Project root: `outputs/agentic-os`. Private source remote: `https://github.com/E
 - The current real store has 0 agent workflow runs because verification intentionally did not create fabricated personal data. Emre can later select a workflow, enter a real concern and create the first local proposal from the normal Agenten page.
 - Skills use four audited local procedure templates and a dedicated signed private API. Definition CRUD, reversible archive, encrypted preview output, review and history are ready. The current real store has 0 skill definitions/runs because UI validation intentionally did not fabricate data.
 - Agent cards show only transparent references to persisted executable skills; a reference never starts a silent chain.
+- Knowledge now contains a complete preview-only Obsidian change workflow. It can prepare a new Agentic-OS Inbox/System note or missing-frontmatter normalization with exact diff, expected hash, conflict check, backup/restore plan and expiring token. `approved_pending_apply` is only a review status: no Apply route or filesystem write primitive exists.
+- Practical testing did not create a fake proposal. The real Vault remained exactly 27 Markdown files; its content manifest SHA-256 after verification is `F368D92A1064A853F6DD17C740ED057B516E9755BABE25F2910A5943F6DD2AB2`.
 
 ## Immediate continuation
 

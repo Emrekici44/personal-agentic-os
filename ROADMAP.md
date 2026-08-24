@@ -18,6 +18,7 @@
 - Professional shared project workspace with real overview/detail, validated project metadata, linked tasks and inbox, weekly-plan evidence, content-light audit history and responsive desktop/mobile controls.
 - Five real local agent workflows: project coach, faith/reflection, health planning, finance overview and relationship care; real Shared Store evidence, encrypted run/resume state, review/pause/resume, content-light audit and zero external/background actions.
 - Safe reusable local skills: fixed deterministic procedures, pinned input/source contracts, versioned definitions, transparent agent references, encrypted preview history and technical denial of arbitrary code, shell, network, models, files, external writes and silent chains.
+- Controlled Obsidian write preparation: exact new-note/frontmatter diff, validated in-vault target, current hash/conflict gate, explicit backup/restore plan, encrypted proposal history and expiring preview approval. Apply remains technically absent until Emre grants a later exact action approval.
 
 ## Complete – Bedienwahrheit and responsive refinement
 
@@ -36,6 +37,6 @@
 
 1. Choose PostgreSQL target and data-residency tradeoff.
 2. Produce SQLite → PostgreSQL inventory, field mapping, conflict preview and tested rollback; request explicit migration approval.
-3. Build Obsidian Inbox → normalization → exact diff → backup → approved write; request approval before touching existing notes.
+3. Review an exact Obsidian preview when useful; a real apply/restore executor remains a separate explicit user decision and must preserve all existing notes unless its exact diff is approved.
 4. Evaluate each new connector independently; no implicit OAuth scope expansion or paid activation.
 5. Seed real shared tasks/projects/inbox items through the normal UI so the planner can propose the first useful three-outcome week; each eventual Calendar event still requires its own action-time approval.

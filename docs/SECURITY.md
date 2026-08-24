@@ -9,7 +9,7 @@
 - Each event create/update is bound to a selected calendar, an exact diff, a 15-minute approval token, the literal per-action confirmation `DIESEN_TERMIN_JETZT_SCHREIBEN`, and an idempotency key checked before create. Audit metadata is stored only under git-ignored `local-state/`.
 - Obsidian integration begins with an inventory and read-only preview. Existing vault files are never modified without separate confirmation.
 - The live Obsidian adapter is server-only and imports no write primitive. It skips internals, trash, caches, attachments, non-Markdown, oversized files, and symlinks; health responses omit absolute paths, note bodies, and frontmatter values.
-- A future Obsidian write-back must be a separate preview/diff → explicit approval → backup → write → audit workflow. The current endpoint always reports `writesEnabled: false`.
+- Obsidian write preparation is a separate signed preview service. It validates in-vault Markdown targets, rejects traversal/symlinks, binds current hashes, encrypts exact diffs and records content-free audit metadata. Its expiring token can approve only the preview status; `applyAvailable` remains false and no filesystem write primitive or Apply endpoint exists.
 - Finance connectors are read-only; transactions are outside system scope.
 - Health outputs are organizational and not medical advice.
 - Private hosting must require authentication, HTTPS, secure cookies, CSRF protection, rate limiting, encrypted secrets, and tested account deletion/export.
