@@ -106,6 +106,7 @@ Last verified: 25.08.2026, Europe/Berlin.
 - Calendar-Recovery trennt jetzt drei unabhängige Wahrheiten: erreichbarer Statusendpunkt, Tokenprüfung und Kalenderkatalog. Ein Katalogfehler verdeckt weder die OAuth-Konfiguration noch den sicheren Retry; eine unklare Tokenprüfung sperrt Reconnect und Reads bis zur erneuten Prüfung. Integration Health bleibt bei diesem Teilfehler erreichbar und zeigt niemals gleichzeitig `Online` und einen fehlenden Token.
 - Jeder Google-Transportpfad besitzt jetzt ein gemeinsames lokales 8-Sekunden-Limit: OAuth-Tokenaustausch/-Refresh, Katalog, begrenzte Reads, Tageszahl, Planner-Adapter sowie die bereits freigabegesteuerte Write-/Duplikatprüfung. Der Katalog fängt Timeout/Netzfehler als private, inhaltsfreie 502-Evidenz ab; er gibt weder Rohfehler noch Ersatzdaten aus.
 - Calendar-Freigaben sind jetzt echte einmalige Shared-Store-Entscheidungen: Die exakte Änderung wird verschlüsselt in der vorhandenen `approvals`-Tabelle registriert, beim Write atomar gegen Inhalt/Frist/Klasse geprüft und auf `consumed` gesetzt. Ein Replay desselben versiegelten Tokens wird vor jeder Google-Kommunikation abgewiesen. Der Laufzeittest verwendete ausschließlich eine temporäre isolierte Datenbank.
+- Der kontrollierte Write unterscheidet jetzt `not_started`, `duplicate_prevented`, `rejected`, `unknown`, `written_unverified`, `written_audit_unconfirmed` und `written_verified`. Nach Write-Beginn wird inhaltsarm zurückgelesen und lokal auditiert; Timeout/unklares Ergebnis ist niemals retry-fähig und verlangt Kalenderprüfung plus neue exakte Vorschau. Auch der Duplikatfall erhält eine echte lokale Audit-ID statt einer fremden Event-ID.
 
 ## Verification
 
@@ -133,6 +134,7 @@ Last verified: 25.08.2026, Europe/Berlin.
 - Nach der Aufgaben-/Habit-Erweiterung sind Root 74/74, TypeScript, ESLint, Produktionsbuild, Electron 2/2 und Expo TypeScript/Lint/Web-Export grün. `git diff --check`, Secret- und verbotene-Inhaltsprüfung sind sauber.
 - Calendar-Recovery-Browserabnahme: die verbundene Quelle zeigt `EVENTS LIVE · KONTROLLIERT`, acht reale Kalenderrollen und keinen widersprüchlichen Tokenfehler. Desktop sowie 390×844 hatten keine Console-Warnung und keinen horizontalen Überlauf; es wurde kein Kalender gelesen, OAuth gestartet oder Write vorbereitet.
 - Transport-Browserprobe: derselbe private Integrationspfad lieferte weiterhin `Online` und acht Kalenderrollen ohne Console-Warnung. Die Probe bestand nur aus dem vorhandenen Katalog-Read; kein Eventabruf, OAuth-Start oder Write wurde ausgelöst.
+- Anonyme Write-Laufzeitprobe: 401, `no-store, private`, `written=false`, `approvalConsumed=false`; Request-Body, Approval-Ledger und Google-Transport wurden nicht erreicht.
 
 ## User boundaries
 

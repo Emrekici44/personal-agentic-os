@@ -136,6 +136,11 @@ test("weekly planner UI is guided and keeps writes behind the exact approval sta
   assert.match(page, /href={`#\$\{id}`}/);
   assert.match(proposalRoute, /verifyLocalSession/);
   assert.match(writeRoute, /verifyLocalSession/);
+  assert.match(page, /result\.outcome==="unknown"/);
+  assert.match(page, /result\.written===true/);
+  assert.match(page, /result\.approvalConsumed/);
+  assert.match(writeRoute, /verificationRequired: true/);
+  assert.match(writeRoute, /readBackVerified: verified/);
   assert.match(tokenStore, /refresh_token/);
   assert.match(tokenStore, /storeTokenBundle\(JSON\.stringify\(next\)\)/);
 });

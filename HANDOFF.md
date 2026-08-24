@@ -73,6 +73,7 @@ Project root: `outputs/agentic-os`. Private source remote: `https://github.com/E
 - Calendar recovery now treats the private status endpoint, Google token refresh and calendar catalog as independent evidence. Connected UI was verified on desktop/390×844 with no contradictory token warning, overflow or console error. The test intentionally performed no event read, OAuth navigation or calendar write.
 - Google transport is uniformly bounded to 8 seconds, including token exchange/refresh, catalog, event/day/planner reads and guarded write transport. The catalog has its own generic private 502 recovery response. A live catalog probe still returned eight calendar roles without starting OAuth, reading events or writing.
 - Calendar approvals now use the existing SQLite `approvals` ledger: encrypted exact diff, 15-minute expiry, transactional one-use consumption and content-light audit. A temporary-store runtime test proved mismatch/replay rejection and no plaintext event title in the DB; no real approval or calendar action was created.
+- Calendar writes now expose explicit non-retryable recovery outcomes, perform a content-minimal read-back after Google success and distinguish missing read-back or audit from a rejected/not-started request. The UI clears the consumed approval and requires Calendar inspection plus a new exact proposal for unknown/partial outcomes. Only an anonymous 401 probe was run; no real write path executed.
 
 ## Immediate continuation
 

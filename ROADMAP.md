@@ -65,6 +65,7 @@
 - Calendar recovery now keeps endpoint, token-refresh and catalog checks independent. A catalog outage no longer erases a reachable OAuth/configuration state; an uncertain token check exposes a retry-only degraded state and blocks reconnection/read controls until evidence is fresh. Integration Health survives that connector-local failure.
 - All Google HTTP transports are now time-bounded through one 8-second helper. Catalog timeout/network failure returns a private, content-free degraded response; no raw provider error, mock fallback, implicit OAuth restart or write is introduced.
 - Exact Calendar approval tokens are now backed by the existing local approvals ledger. Exact changes are encrypted, scope/expiry/diff are revalidated transactionally and the approval becomes single-use before any Google write transport. Isolated runtime proof confirms changed diffs and replay are rejected.
+- Calendar execution now models each recovery outcome explicitly. Successful Google responses are read back with content-minimal fields and audited; an unknown or partially verified result is non-retryable, clears the one-use approval and directs the user to inspect Calendar before generating a new exact proposal.
 
 ## Complete – Bedienwahrheit and responsive refinement
 
