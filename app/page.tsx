@@ -130,7 +130,8 @@ export default function App() {
     };
     setBrand(migratedBrand);
     store.set("brand", migratedBrand);
-    fetch("/api/obsidian/status", { cache: "no-store" })
+    fetch("/api/state/session", { method: "POST" })
+      .then(() => fetch("/api/obsidian/status", { cache: "no-store" }))
       .then((response) => response.json())
       .then((status) => setVaultOnline(status.status === "online"))
       .catch(() => setVaultOnline(false));
@@ -1784,11 +1785,14 @@ function Integrations({ note }: any) {
 function Brain() {
   const [vault, setVault] = useState<any>({ status: "loading" });
   const [audit, setAudit] = useState<any>({ status: "loading", entries: [] });
+  const [knowledgeQuery,setKnowledgeQuery]=useState("");
   const [writeFlow,setWriteFlow]=useState<any>({state:"loading",proposals:[]}),[writeMode,setWriteMode]=useState<"new_system_note"|"normalize_existing_note">("new_system_note"),[writeDraft,setWriteDraft]=useState<any>({title:"",body:"",noteType:"inbox",privacy:"private",relativePath:"",lifeArea:""}),[activeProposalId,setActiveProposalId]=useState(""),[approvalToken,setApprovalToken]=useState(""),[confirmation,setConfirmation]=useState(""),[writeBusy,setWriteBusy]=useState(false),[writeError,setWriteError]=useState("");
   const loadVault = useCallback(async () => {
     setVault((current: any) => ({ ...current, status: "loading" }));
     try {
+      await fetch("/api/state/session", { method: "POST" });
       const response = await fetch("/api/obsidian/status", { cache: "no-store" });
+      if (!response.ok) throw new Error();
       setVault(await response.json());
     } catch {
       setVault({ status: "degraded", error: "Lokaler Vault-Index nicht erreichbar" });
@@ -1814,6 +1818,8 @@ function Brain() {
   }, [loadAudit, loadVault, loadWriteFlow]);
 
   const connected = vault.status === "online";
+  const normalizedQuery=knowledgeQuery.trim().toLocaleLowerCase("de-DE");
+  const knowledgeResults=connected?(vault.notes||[]).filter((note:any)=>!normalizedQuery||`${note.title} ${note.relativePath} ${(note.frontmatterKeys||[]).join(" ")}`.toLocaleLowerCase("de-DE").includes(normalizedQuery)).sort((a:any,b:any)=>String(b.modifiedAt).localeCompare(String(a.modifiedAt))).slice(0,15):[];
   const graphNodes = connected
     ? [
         ...new Set(
@@ -1901,6 +1907,12 @@ function Brain() {
             <span><b>Schreibzugriff gesperrt</b>Jede spätere Änderung braucht Vorschau, ausdrückliche Freigabe und Audit.</span>
           </div>
           <Btn soft onClick={loadVault}>Read-only Index neu laden</Btn>
+        </Card>
+        <Card className="knowledgeSearch">
+          <div className="row"><div><Tag>METADATEN-SUCHE · READ-ONLY</Tag><h3>Vault-Wissen finden</h3></div><I.Search /></div>
+          <label><span className="srOnly">Vault-Metadaten durchsuchen</span><input disabled={!connected} onChange={event=>setKnowledgeQuery(event.target.value)} placeholder={connected?"Titel, Pfad oder Frontmatter-Feld …":"Vault-Index nicht verfügbar"} type="search" value={knowledgeQuery}/></label>
+          <small>{connected?`${knowledgeResults.length} von ${vault.noteCount} Notizen angezeigt · keine Volltextkörper gelesen`:`Suche bleibt leer, bis der private Index erreichbar ist.`}</small>
+          <div className="knowledgeResults">{knowledgeResults.map((note:any)=><div key={note.relativePath}><I.FileText/><span><b>{note.title}</b><small>{note.relativePath}</small></span><em>{(note.links||[]).length} Links</em></div>)}{connected&&knowledgeResults.length===0&&<p>Keine passende Notizmetadaten gefunden.</p>}</div>
         </Card>
         <Card className="vaultWriteFlow">
           <div className="row"><div><Tag>CONTROLLED WRITE · PREVIEW ONLY</Tag><h3>Exakten Vault-Diff vorbereiten</h3></div><i className="badge unconfigured">APPLY GESPERRT</i></div>

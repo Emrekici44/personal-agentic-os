@@ -112,6 +112,19 @@ test("universal inbox provides real encrypted triage instead of fake file captur
   assert.doesNotMatch(page, /\["Idee", "Aufgabe", "Notiz", "ChatGPT-Notiz", "Link", "Datei"\]/);
 });
 
+test("knowledge search stays inside the signed metadata-only vault preview", async () => {
+  const [page, route] = await Promise.all([
+    readFile(pagePath, "utf8"),
+    readFile(new URL("../app/api/obsidian/status/route.ts", import.meta.url), "utf8"),
+  ]);
+  assert.match(route, /verifyLocalSession/);
+  assert.match(route, /no-store, private/);
+  assert.match(page, /METADATEN-SUCHE · READ-ONLY/);
+  assert.match(page, /frontmatterKeys/);
+  assert.match(page, /keine Volltextkörper gelesen/);
+  assert.doesNotMatch(page, /note\.body/);
+});
+
 test("uses real shared life-area records and honest external connection boundaries", async () => {
   const page = await readFile(pagePath, "utf8");
   assert.match(page, /function AreaRecordWorkspace/);

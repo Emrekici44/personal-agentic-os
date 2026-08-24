@@ -9,7 +9,7 @@ export type ProgressItem = {
 };
 
 export const systemProgress = {
-  currentPhase: "Gemeinsame Einstellungen, lokales Backup und Usage-Wahrheit bereit · Abschlussaudit aktiv",
+  currentPhase: "Private Vault-Metadatensuche bereit · vollständiger Restlückenaudit aktiv",
   lastVerifiedAt: "24.08.2026 · Europe/Berlin",
   items: [
     {
@@ -199,6 +199,13 @@ export const systemProgress = {
       label: "Eigene Agenten transparent konfigurieren",
       evidence: "Zweck/Bereiche/Companion/Status · API-Modell gesperrt · keine Ausführung behauptet",
       href: "#agents",
+      status: "complete",
+    },
+    {
+      id: "knowledge-metadata-search",
+      label: "Private Wissenssuche im Emre Vault",
+      evidence: "27 Notizen · Titel/Pfad/Frontmatter-Schlüssel · keine Notiztexte · 0 Writes",
+      href: "#brain",
       status: "complete",
     },
     {

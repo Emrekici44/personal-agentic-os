@@ -1,10 +1,17 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 import { readVaultPreview, vaultConfigured } from "@/lib/obsidian-vault";
+import { verifyLocalSession } from "@/lib/shared-store";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  if (!verifyLocalSession(request.cookies.get("agentic_os_local_session")?.value)) {
+    return NextResponse.json(
+      { error: "Lokale Sitzung erforderlich", readOnly: true, writesEnabled: false },
+      { headers: { "cache-control": "no-store, private" }, status: 401 },
+    );
+  }
   if (!vaultConfigured()) {
     return NextResponse.json(
       {
@@ -14,7 +21,7 @@ export async function GET() {
         status: "unconfigured",
         writesEnabled: false,
       },
-      { headers: { "cache-control": "no-store" } },
+      { headers: { "cache-control": "no-store, private" } },
     );
   }
 
@@ -22,7 +29,7 @@ export async function GET() {
     const preview = await readVaultPreview();
     return NextResponse.json(
       { ...preview, configured: true },
-      { headers: { "cache-control": "no-store" } },
+      { headers: { "cache-control": "no-store, private" } },
     );
   } catch {
     return NextResponse.json(
@@ -34,7 +41,7 @@ export async function GET() {
         status: "degraded",
         writesEnabled: false,
       },
-      { headers: { "cache-control": "no-store" }, status: 503 },
+      { headers: { "cache-control": "no-store, private" }, status: 503 },
     );
   }
 }
