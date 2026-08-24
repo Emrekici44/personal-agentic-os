@@ -9,7 +9,7 @@ export type ProgressItem = {
 };
 
 export const systemProgress = {
-  currentPhase: "Bedienwahrheit & responsive Verifikation",
+  currentPhase: "Meilenstein geprüft · physischer Retest offen",
   lastVerifiedAt: "24.08.2026 · Europe/Berlin",
   items: [
     {
@@ -108,7 +108,14 @@ export const systemProgress = {
       label: "Desktop-/Expo-Abnahme und privater Push",
       evidence: "Tests, Builds, Inhaltsaudit und physischer Retest",
       href: "#settings",
-      status: "active",
+      status: "complete",
+    },
+    {
+      id: "iphone-retest",
+      label: "Aktualisierte Oberfläche auf dem iPhone bestätigen",
+      evidence: "Browser 390×844 grün · physisches Gerät benötigt Emre",
+      href: "#home",
+      status: "user_action",
     },
   ] as ProgressItem[],
 };

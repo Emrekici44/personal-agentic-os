@@ -28,6 +28,7 @@ Last verified: 24.08.2026, Europe/Berlin.
 - Electron security checks: 2/2 passed. Expo TypeScript, lint and static web export passed.
 - Browser: desktop 1280-wide and mobile 390×844 had no horizontal overflow or console errors. Mobile bottom navigation, drawer and theme toggle worked. Live bounded Calendar read returned a count only; no event details were surfaced in artifacts.
 - Electron: current window visually and accessibly loaded the refreshed dashboard; Obsidian and Calendar both reported Online from verified sources.
+- Git: commits `1901733` and `7208f76` are on private `main`; local HEAD and `origin/main` matched after push.
 
 ## User boundaries
 
