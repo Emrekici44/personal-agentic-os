@@ -1,1 +1,1 @@
-declare module '@/lib/calendar-core.mjs'{export const MOCK_CALENDARS:any[];export function assertBoundedWindow(a:any,b:any):any;export function readMockEvents(x:any):any[];export function proposeFocusBlocks(x:any[]):any[];export function validateApproval(x:any):any[]}
+declare module '@/lib/calendar-core.mjs'{export function assertBoundedWindow(a:any,b:any):any}

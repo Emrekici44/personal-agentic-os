@@ -11,6 +11,7 @@
 - Real shared projects/tasks/inbox/agent/skill/journal-metadata flows.
 - Global progress checklist without invented percentages.
 - Global native-button audit enforced by AST test; private Tailscale/Expo hydration guard physically accepted on iPhone.
+- Production truth audit removed the final embedded Calendar/event/focus fixtures and unused mock-provider export. Test contracts now exercise only the bounded read guard and the real Planner/Calendar write boundaries.
 - Unified daily workspace with shared tasks, persistent habits and encrypted journal completion.
 - Real content-free shared-store audit in Knowledge; static activity claims removed.
 - Real shared life-area records for faith, health, finance, relationships and split career; encrypted private fields, honest empty states and reversible archive.

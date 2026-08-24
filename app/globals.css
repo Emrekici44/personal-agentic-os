@@ -1483,14 +1483,14 @@ header h1 {
   background: var(--ink);
   color: #fff;
 }
-.mockline {
+.companionTruth {
   display: flex;
   gap: 5px;
   justify-content: center;
   color: var(--muted);
   padding: 0 0 10px;
 }
-.mockline svg {
+.companionTruth svg {
   width: 12px;
 }
 .provider {
@@ -3962,8 +3962,6 @@ textarea::placeholder {
 }
 
 .projectOpen,.skillRecord{appearance:none;background:transparent;border:0;color:inherit;font:inherit;text-align:left;width:100%;padding:0}
-.demoBanner{margin:-10px 0 22px;padding:10px 12px;border:1px solid rgba(241,185,80,.22);border-radius:7px;background:rgba(241,185,80,.07);color:#d6bd84;font-size:10px;line-height:1.5;display:flex;align-items:flex-start;gap:8px}
-.demoBanner svg{width:15px;height:15px;flex:0 0 15px;margin-top:1px}
 .connectionNote{display:block;margin-top:12px;color:var(--muted);font-size:9px;line-height:1.5}
 .companionCapture textarea{width:100%;min-height:160px;margin:14px 0;resize:vertical}
 .projectOpen:focus-visible,.skillRecord:focus-visible{outline:2px solid var(--accent,#27d3ff);outline-offset:4px}

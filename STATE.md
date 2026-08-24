@@ -19,6 +19,7 @@ Last verified: 24.08.2026, Europe/Berlin.
 
 - Global control audit: every native JSX `button` has a real handler or an explicit disabled boundary; the rule is enforced by an AST-based regression test.
 - Removed: obsolete first-event proposal/write control, fake Calendar week read, fake project-chat creation, fake model conversation and fake connector-details toasts.
+- Removed from production modules: the last embedded Calendar/event/focus fixtures, legacy mock approval helper and unused `mock` provider mode. Calendar core now contains only the bounded-window guard; Planner behavior is covered by its real generator contracts, and Companion remains explicitly manual with no provider claim.
 - Added: real Calendar list + bounded read, manual ChatGPT-summary import, truthful home status, grouped desktop navigation and responsive shared theme.
 - PostgreSQL server evaluation and an unstarted loopback-only PoC are documented. Docker/Podman/psql are absent; no install, account or migration occurred.
 - Graphify 0.17.2 TypeScript line was evaluated from official repository/package material; it remains uninstalled and non-core.

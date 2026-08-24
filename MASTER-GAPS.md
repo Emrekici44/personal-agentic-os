@@ -50,6 +50,7 @@ Die gebündelten Details stehen in `PENDING-DECISIONS.md`. Kein Punkt hier block
 
 - Grün/Online bedeutet eine aktuelle technische Prüfung, nicht nur vorhandene Konfiguration.
 - Leere reale Quellen bleiben leer; die Anwendung erzeugt keine persönlichen Beispiele.
+- Produktmodule enthalten keine eingebetteten Kalender-, Ereignis-, Fokusblock- oder Provider-Mocks mehr; Testverträge prüfen echte Guards ohne sie als Nutzerdatenpfad bereitzuhalten.
 - ChatGPT Pro ist kein API-Zugang. Companion Mode ist ein manueller Übergabepfad.
 - SQLite ist operative Quelle, Obsidian dauerhafte Wissensquelle und Google Calendar externe Ereignisquelle, bis Emre eine andere Migration ausdrücklich freigibt.
 - Keine kostenpflichtige oder öffentliche Fähigkeit wird still aktiviert.
