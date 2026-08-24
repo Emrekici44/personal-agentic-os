@@ -9,7 +9,7 @@ export type ProgressItem = {
 };
 
 export const systemProgress = {
-  currentPhase: "Evidenzbasiertes Integrationszentrum bereit · Lebensbereiche werden spezialisiert",
+  currentPhase: "Spezialisierte sensible Lebensbereiche bereit · Einstellungen/Backup/Usage folgen",
   lastVerifiedAt: "24.08.2026 · Europe/Berlin",
   items: [
     {
@@ -164,6 +164,13 @@ export const systemProgress = {
       label: "Evidenzbasiertes Integrations-Health-Center",
       evidence: "8 Connector-Verträge · Online nur nach Live-Prüfung · Kosten/Scope/Datenschutz/Reconnect · 0 Aktivierungen",
       href: "#integrations",
+      status: "complete",
+    },
+    {
+      id: "specialized-domains",
+      label: "Spezialisierte private Lebensbereiche",
+      evidence: "Gebet/Qurʾān · Training/Recovery/Ernährung · manuelle Finanzen · Personen/Geburtstage/Follow-ups · verschlüsselt",
+      href: "#areas",
       status: "complete",
     },
     {

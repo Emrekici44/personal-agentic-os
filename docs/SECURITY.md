@@ -12,6 +12,7 @@
 - Obsidian write preparation is a separate signed preview service. It validates in-vault Markdown targets, rejects traversal/symlinks, binds current hashes, encrypts exact diffs and records content-free audit metadata. Its expiring token can approve only the preview status; `applyAvailable` remains false and no filesystem write primitive or Apply endpoint exists.
 - Finance connectors are read-only; transactions are outside system scope.
 - Health outputs are organizational and not medical advice.
+- Prayer/Qurʾān tracking is voluntary local organization without location automation or authoritative religious guidance. Health, manual finance and relationship specialty fields are field-encrypted before persistence and excluded from audit metadata.
 - Private hosting must require authentication, HTTPS, secure cookies, CSRF protection, rate limiting, encrypted secrets, and tested account deletion/export.
 - Run dependency audits before deployment; do not apply breaking automatic fixes without review.
 - Local/free operation is the default. Potentially billable providers must disclose cost class and obtain explicit activation approval.

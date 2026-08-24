@@ -20,6 +20,7 @@
 - Safe reusable local skills: fixed deterministic procedures, pinned input/source contracts, versioned definitions, transparent agent references, encrypted preview history and technical denial of arbitrary code, shell, network, models, files, external writes and silent chains.
 - Controlled Obsidian write preparation: exact new-note/frontmatter diff, validated in-vault target, current hash/conflict gate, explicit backup/restore plan, encrypted proposal history and expiring preview approval. Apply remains technically absent until Emre grants a later exact action approval.
 - Evidence-based integration health center: live server checks, last success/current action/safe error, cost class, scope, privacy, reconnect guidance and extensible connector classification; no connection, scope or paid activation from the health UI.
+- Specialized real-data domain workspaces: voluntary prayer/Qurʾān tracking without location guidance, organizational training/recovery/nutrition, manual finance overview without transactions/advice, and private people/birthday/follow-up constellation without messaging. All specialty fields are encrypted.
 
 ## Complete – Bedienwahrheit and responsive refinement
 
