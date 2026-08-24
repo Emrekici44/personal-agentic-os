@@ -21,6 +21,7 @@
 - Controlled Obsidian write preparation: exact new-note/frontmatter diff, validated in-vault target, current hash/conflict gate, explicit backup/restore plan, encrypted proposal history and expiring preview approval. Apply remains technically absent until Emre grants a later exact action approval.
 - Evidence-based integration health center: live server checks, last success/current action/safe error, cost class, scope, privacy, reconnect guidance and extensible connector classification; no connection, scope or paid activation from the health UI.
 - Specialized real-data domain workspaces: voluntary prayer/Qurʾān tracking without location guidance, organizational training/recovery/nutrition, manual finance overview without transactions/advice, and private people/birthday/follow-up constellation without messaging. All specialty fields are encrypted.
+- Shared validated branding and theme preferences, real provider/integration/storage evidence in Usage & Limits, and local SHA-256/integrity-checked SQLite snapshots with restore-conflict preview. Restore apply remains intentionally absent.
 
 ## Complete – Bedienwahrheit and responsive refinement
 
@@ -42,3 +43,4 @@
 3. Review an exact Obsidian preview when useful; a real apply/restore executor remains a separate explicit user decision and must preserve all existing notes unless its exact diff is approved.
 4. Evaluate each new connector independently; no implicit OAuth scope expansion or paid activation.
 5. Seed real shared tasks/projects/inbox items through the normal UI so the planner can propose the first useful three-outcome week; each eventual Calendar event still requires its own action-time approval.
+6. Review the exact local restore preview only if a recovery is needed; implementing and invoking restore both require a separate exact approval.

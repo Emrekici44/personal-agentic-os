@@ -25,6 +25,7 @@
 - Tailscale host names and IPs are discovered at runtime and never committed. Expo Go over Tailscale is development-only and requires Metro plus a connected, awake laptop.
 - Run Unattended and Windows sleep/power settings remain explicit user choices; helpers never change them silently.
 - `.gitignore` excludes secrets, environment files, databases, backups, caches, screenshots, and local personal state. The Emre vault lives outside the repository and must never be pushed.
+- Shared-store backups use SQLite `VACUUM INTO`, are kept under the git-ignored local state directory and are never uploaded. The UI exposes SHA-256/integrity/schema/count review but no restore primitive. Backups contain encrypted private fields and do not contain the `AUTH_SECRET`; this is field protection, not a claim of full-disk encryption.
 - Relationship, faith, financial, and health demo data is labeled; real sensitive data requires deliberate import/connection boundaries.
 - The current SQLite store is a local bridge, not a cloud claim. The PostgreSQL PoC binds only to loopback, has no committed password, does not autostart, and contains no migrated data. A cloud database requires separate account, data-transfer, cost and migration approval.
 - Shared preferences use the same signed private API and append an audit entry. They contain presentation state only, not secrets.

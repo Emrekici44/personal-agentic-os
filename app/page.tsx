@@ -135,9 +135,19 @@ export default function App() {
       .then((status) => setVaultOnline(status.status === "online"))
       .catch(() => setVaultOnline(false));
     fetch("/api/state/session", { method: "POST" })
-      .then(() => fetch("/api/state/preferences/theme", { cache: "no-store" }))
-      .then((response) => response.json())
-      .then((preference) => setTheme(preference.value === "light" ? "light" : "dark"))
+      .then(() =>
+        Promise.all([
+          fetch("/api/state/preferences/theme", { cache: "no-store" }).then((response) => response.json()),
+          fetch("/api/state/preferences/branding", { cache: "no-store" }).then((response) => response.json()),
+        ]),
+      )
+      .then(([themePreference, brandingPreference]) => {
+        setTheme(themePreference.value === "light" ? "light" : "dark");
+        if (brandingPreference.value?.name) {
+          setBrand(brandingPreference.value);
+          store.set("brand", brandingPreference.value);
+        }
+      })
       .catch(() => setTheme("dark"));
   }, []);
   useEffect(() => {
@@ -167,6 +177,23 @@ export default function App() {
       note(`${next === "light" ? "Light" : "Dark"} Mode gemeinsam gespeichert`);
     } catch {
       note("Theme ist nur für diese Sitzung aktiv");
+    }
+  };
+  const saveBranding = async (next: { name: string; short: string; accent: string }) => {
+    try {
+      await fetch("/api/state/session", { method: "POST" });
+      const response = await fetch("/api/state/preferences/branding", {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ value: next }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Branding konnte nicht gespeichert werden");
+      setBrand(result.value);
+      store.set("brand", result.value);
+      note("Branding gemeinsam gespeichert");
+    } catch (error) {
+      note(error instanceof Error ? error.message : "Branding konnte nicht gespeichert werden");
     }
   };
   const showView = useCallback((next: View) => {
@@ -348,11 +375,8 @@ export default function App() {
               brand={brand}
               theme={theme}
               changeTheme={changeTheme}
-              save={(x: any) => {
-                setBrand(x);
-                store.set("brand", x);
-                note("Branding lokal gespeichert");
-              }}
+              save={saveBranding}
+              note={note}
             />
           )}
         </section>
@@ -1888,8 +1912,61 @@ function Brain() {
     </>
   );
 }
-function Settings({ brand, save, theme, changeTheme }: any) {
+function Settings({ brand, save, theme, changeTheme, note }: any) {
   const [d, setD] = useState(brand);
+  const [backupState, setBackupState] = useState<any>({ state: "loading", backups: [], store: null });
+  const [selectedBackup, setSelectedBackup] = useState("");
+  const [restorePreview, setRestorePreview] = useState<any>(null);
+  const [backupBusy, setBackupBusy] = useState(false);
+  useEffect(() => setD(brand), [brand]);
+  const loadBackups = useCallback(async () => {
+    try {
+      await fetch("/api/state/session", { method: "POST" });
+      const response = await fetch("/api/state/backups", { cache: "no-store" });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Backup-Status nicht verfügbar");
+      setBackupState({ state: "online", ...result });
+      setSelectedBackup((current) => current || result.backups?.[0]?.fileName || "");
+    } catch (error) {
+      setBackupState({ state: "error", backups: [], store: null });
+      note(error instanceof Error ? error.message : "Backup-Status nicht verfügbar");
+    }
+  }, [note]);
+  useEffect(() => { loadBackups(); }, [loadBackups]);
+  const createBackup = async () => {
+    setBackupBusy(true);
+    try {
+      const response = await fetch("/api/state/backups", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ action: "create_backup" }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Backup fehlgeschlagen");
+      note("Lokales Backup geprüft und erstellt");
+      await loadBackups();
+    } catch (error) {
+      note(error instanceof Error ? error.message : "Backup fehlgeschlagen");
+    } finally { setBackupBusy(false); }
+  };
+  const inspectRestore = async () => {
+    if (!selectedBackup) return;
+    setBackupBusy(true);
+    try {
+      const response = await fetch("/api/state/backups", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ action: "preview_restore", fileName: selectedBackup }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Restore-Vorschau fehlgeschlagen");
+      setRestorePreview(result);
+      note("Restore nur geprüft · keine Daten ersetzt");
+    } catch (error) {
+      note(error instanceof Error ? error.message : "Restore-Vorschau fehlgeschlagen");
+    } finally { setBackupBusy(false); }
+  };
+  const brandingValid = d.name.trim().length >= 2 && /^[A-ZÄÖÜ0-9]{1,3}$/i.test(d.short.trim()) && /^#[0-9a-f]{6}$/i.test(d.accent);
   return (
     <>
       <Intro eyebrow="PERSÖNLICH & LOKAL" title="Einstellungen">
@@ -1933,7 +2010,8 @@ function Settings({ brand, save, theme, changeTheme }: any) {
               onChange={(e) => setD({ ...d, accent: e.target.value })}
             />
           </label>
-          <Btn onClick={() => save(d)}>Branding speichern</Btn>
+          <Btn onClick={brandingValid ? () => save(d) : undefined}>Branding gemeinsam speichern</Btn>
+          <small className="settingsHint">Gilt nach dem Speichern für Desktop und iPhone.</small>
         </Card>
         <Card>
           <Tag>KOSTENREGEL</Tag>
@@ -1953,6 +2031,63 @@ function Settings({ brand, save, theme, changeTheme }: any) {
             Bestehende Inhalte bleiben erhalten. Neue Struktur ist additiv;
             App-Writes benötigen weiterhin Vorschau, Freigabe und Audit.
           </p>
+        </Card>
+        <Card className="backupCard">
+          <div className="row">
+            <Tag>BACKUP · LOKAL</Tag>
+            <span className={`badge ${backupState.state === "online" ? "online" : "offline"}`}>
+              {backupState.state === "online" ? "Bereit" : backupState.state === "loading" ? "Prüft" : "Fehler"}
+            </span>
+          </div>
+          <h3>Shared Store sichern</h3>
+          <p>
+            SQLite-Daten bleiben im privaten lokalen Ordner. Das Backup enthält keinen Schlüssel und wird nicht hochgeladen.
+          </p>
+          <dl className="settingsFacts">
+            <dt>Engine</dt><dd>{backupState.store?.engine || "Nicht geprüft"}</dd>
+            <dt>Schema</dt><dd>{backupState.store?.schemaVersion ? `v${backupState.store.schemaVersion}` : "—"}</dd>
+            <dt>Backups</dt><dd>{backupState.backups?.length ?? 0}</dd>
+          </dl>
+          <Btn onClick={!backupBusy && backupState.state === "online" ? createBackup : undefined}>
+            <I.Archive /> {backupBusy ? "Prüfung läuft" : "Lokales Backup jetzt erstellen"}
+          </Btn>
+        </Card>
+        <Card className="backupCard">
+          <Tag>RESTORE · VORSCHAU</Tag>
+          <h3>Vorher vergleichen, nie still ersetzen</h3>
+          {backupState.backups?.length ? (
+            <>
+              <label>
+                Lokales Backup
+                <select value={selectedBackup} onChange={(event) => { setSelectedBackup(event.target.value); setRestorePreview(null); }}>
+                  {backupState.backups.map((backup: any) => (
+                    <option key={backup.fileName} value={backup.fileName}>
+                      {new Intl.DateTimeFormat("de-DE", { dateStyle: "short", timeStyle: "short" }).format(new Date(backup.createdAt))} · {Math.ceil(backup.bytes / 1024)} KB
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <Btn soft onClick={!backupBusy ? inspectRestore : undefined}>Integrität & Konflikte prüfen</Btn>
+            </>
+          ) : <p className="settingsEmpty">Noch kein lokales Backup vorhanden.</p>}
+          {restorePreview && (
+            <div className="restorePreview" role="status">
+              <b><I.ShieldCheck /> Integrität {restorePreview.integrity}</b>
+              <span>Schema v{restorePreview.schemaVersion} · {restorePreview.changedTables.length} Tabellen mit Abweichungen</span>
+              <small>{restorePreview.conflictReviewRequired ? "Konfliktprüfung erforderlich" : "Zähler stimmen überein"}</small>
+            </div>
+          )}
+          <button className="btn" disabled type="button">Restore bleibt bis zur exakten Freigabe gesperrt</button>
+        </Card>
+        <Card>
+          <Tag>DATENGRENZEN</Tag>
+          <h3>Drei klare Quellen</h3>
+          <div className="sourceBoundaries">
+            <span><I.Database /><b>SQLite</b><small>Veränderliche operative Daten</small></span>
+            <span><I.Network /><b>Obsidian</b><small>Dauerhaftes Markdown-Wissen</small></span>
+            <span><I.CalendarRange /><b>Google</b><small>Externe Kalenderereignisse</small></span>
+          </div>
+          <p className="settingsHint">Restore, Vault-Apply und Kalenderwrites bleiben getrennte, exakte Freigaben.</p>
         </Card>
       </div>
     </>

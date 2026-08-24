@@ -6,6 +6,7 @@ Last verified: 24.08.2026, Europe/Berlin.
 
 - Electron remains the primary desktop UI; the verified window loads the current Next.js app.
 - Expo/iPhone and Electron use the same server UI. Operational records are shared through a signed private API and the laptop-local SQLite bridge.
+- Product name, short name, accent and Light/Dark preference now use validated shared preferences, with device-local branding only as a compatibility fallback during startup.
 - Real shared CRUD is active for projects, tasks, inbox, agents, skill metadata, journal metadata and life-area records. Journal text plus private life-area details are field-encrypted. No device localStorage migration occurred.
 - Shared Light/Dark preference is stored in the private operational store. The mobile wrapper follows automatic system chrome while the shared web UI uses the selected theme.
 - The Emre Vault path is present in ignored local configuration. The live read-only index reports 27 Markdown notes, 37 local links and 34 resolved relationships. Existing notes remain untouched.
@@ -43,10 +44,12 @@ Last verified: 24.08.2026, Europe/Berlin.
 - Gesundheit trennt Training, Recovery, Ernährung und Messwerte mit Dauer/Intensität, Recovery 1–5, Schlaf und eigenem Messwert/Einheit. Kennzahlen und Verlaufsgrafik entstehen nur aus realen Einträgen; keine Diagnose oder medizinische Fachberatung.
 - Finanzen berechnet Einnahmen/Ausgaben, Container-, Budget-, Wiederkehrend- und Sparzielzahlen nur aus manuellen Datensätzen je Währung. Keine Bank, Transaktion, Anlageentscheidung oder Finanzberatung ist verfügbar.
 - Beziehungen zeigt ausschließlich echte Personen in einer privaten Konstellation sowie Geburtstage, letzten Kontakt und Follow-ups. Position 1–8 ist bewusst editierbar. Es gibt keinen Nachrichten-/Reminder-Versand. Alle neuen Spezialfelder liegen im verschlüsselten `sensitive_enc`; öffentliche Bereichsdaten enthalten weiter nur ID, Bereich, Typ, Titel und Status.
+- Einstellungen können jetzt ein lokales, git-ignoriertes SQLite-Snapshot per `VACUUM INTO` erzeugen. Die UI zeigt nur Dateizeit/Größe und prüft SHA-256, SQLite-Integrität, Schema und Tabellenzähler. Ein erster Snapshot wurde praktisch erstellt und seine Restore-Vorschau meldete erwartungsgemäß einen Audit-Zählerkonflikt; es wurden keine Daten ersetzt. Ein Restore-Executor existiert nicht.
+- Usage & Limits lädt echte Provider-, Integrations-, Speicher- und Backup-Evidenz. ChatGPT-Planlimits und Integrationsquoten bleiben ausdrücklich manuell/nicht verfügbar; OpenAI API ist unkonfiguriert, mit aktivem Kill Switch und 0-Euro-Grenzen. Google Calendar wird aus dem Live-Health-Vertrag statt als Mock dargestellt.
 
 ## Verification
 
-- Root tests: 63/63 passed after specialized domains, integration-health, Obsidian-Diff, local-skill, agent-workflow, project-workspace and weekly-planner safeguards.
+- Root tests: 67/67 passed after shared branding, backup/restore-preview and truthful Usage-&-Limits contracts.
 - Root lint and optimized Next build: passed after the final UI/documentation refresh.
 - Electron security checks: 2/2 passed. Expo TypeScript, lint and static web export passed.
 - Browser: the private Tailscale URL passed desktop 1280-wide and mobile 390×844 checks without horizontal overflow or console errors. The life-area overview, faith empty state/editor, finance fields and split career columns rendered from the shared source.
@@ -60,7 +63,8 @@ Last verified: 24.08.2026, Europe/Berlin.
 - Nach dem Obsidian-Meilenstein sind Root 55/55, TypeScript, ESLint, Produktionsbuild, Electron 2/2 und Expo TypeScript/Lint/Web-Export grün.
 - Integrationsbrowser-Abnahme: Calendar/Obsidian/Shared Store live Online, OpenAI/Tasks unkonfiguriert, Tailscale im localhost-Client korrekt Degraded; Detail/Reconnect für Obsidian öffnet und 390×844 bleibt ohne horizontalen Überlauf. Root 58/58, TypeScript, ESLint, Produktionsbuild, Electron 2/2 und Expo TypeScript/Lint/Web-Export sind grün.
 - Bereichsbrowser-Abnahme: Glaube zeigt 0/5 statt erfundener Praxis; leerer Gebetseditor kann nicht speichern und wurde abgebrochen. Gesundheit, Finanzen und Beziehungen zeigen ehrliche leere Analyse-/Konstellationszustände. Beziehungen bleiben auf 390×844 ohne horizontalen Überlauf. Root 63/63, TypeScript, ESLint, Produktionsbuild, Electron 2/2 und Expo TypeScript/Lint/Web-Export sind grün.
-- Git: Projektarbeitsraum-Commit `b3b70cf7ec57f0205f01d70cb9163487dff89595` ist auf privatem `main`; der Agentenmeilenstein ist für seinen auditierten inkrementellen Commit bereit.
+- Einstellungsbrowser-Abnahme: Shared Branding, lokales Backup, Restore-Sperre und Datengrenzen rendern mit Live-Schema v8. Ein echtes lokales Backup wurde erstellt und Integrität `ok` geprüft; Restore blieb gesperrt. Usage & Limits zeigte auf 390×844 0 horizontalen Überlauf, echte Calendar-/Storage-Evidenz und keine erfundenen Plan-Zähler.
+- Git: Spezialisierte Lebensbereiche sind als `6a7ff8273526ceede71daa72b25b3a2481047602` auf privatem `main`; der Settings-/Backup-/Usage-Meilenstein befindet sich in der abschließenden Matrix vor seinem eigenen Push.
 
 ## User boundaries
 

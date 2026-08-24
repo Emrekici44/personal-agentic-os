@@ -41,3 +41,11 @@ Stand: 24.08.2026, Europe/Berlin. Diese Punkte blockieren nicht die übrige loka
 - Auswirkung: Nur der einzeln angezeigte Diff wird ausgeführt. Deletes bleiben deaktiviert.
 - Kosten/Datenschutz: Aktionsabhängig; keine stillen Nebenwirkungen.
 - Sicherer nächster Schritt: Exakte Vorschau mit Ziel, Inhalt und Gültigkeitsfenster prüfen und unmittelbar bestätigen oder verwerfen.
+
+## Wiederherstellung eines lokalen Shared-Store-Backups
+
+- Benötigte Entscheidung: Eine konkrete, zuvor auf Integrität und Datensatzabweichungen geprüfte Backupdatei ausdrücklich zur Wiederherstellung freigeben.
+- Grund: Ein Restore ersetzt veränderliche operative Daten und kann neuere Desktop-/iPhone-Eingaben zurücksetzen.
+- Auswirkung: Erst ein späterer separater Apply-Executor dürfte nach einem zusätzlichen Vorher-Backup genau die ausgewählte Datei atomar einspielen. Der aktuelle Stand bietet ausschließlich eine Vorschau; Restore ist technisch gesperrt.
+- Kosten/Datenschutz: Keine Kosten und kein Upload. Das lokale Backup enthält verschlüsselte private Felder, aber bewusst nicht den lokalen Schlüssel; es gehört nicht in Git, Logs oder Screenshots.
+- Sicherer nächster Schritt: In Einstellungen ein lokales Backup wählen, Integrität und Konfliktzähler prüfen und erst danach eine exakte Restore-Aktion separat genehmigen.

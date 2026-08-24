@@ -9,7 +9,7 @@ export type ProgressItem = {
 };
 
 export const systemProgress = {
-  currentPhase: "Spezialisierte sensible Lebensbereiche bereit · Einstellungen/Backup/Usage folgen",
+  currentPhase: "Gemeinsame Einstellungen, lokales Backup und Usage-Wahrheit bereit · Abschlussaudit aktiv",
   lastVerifiedAt: "24.08.2026 · Europe/Berlin",
   items: [
     {
@@ -172,6 +172,20 @@ export const systemProgress = {
       evidence: "Gebet/Qurʾān · Training/Recovery/Ernährung · manuelle Finanzen · Personen/Geburtstage/Follow-ups · verschlüsselt",
       href: "#areas",
       status: "complete",
+    },
+    {
+      id: "settings-backup-usage",
+      label: "Gemeinsame Einstellungen, Backup und Usage & Limits",
+      evidence: "Geteiltes Branding · lokales geprüftes Backup · Restore nur Vorschau · keine erfundenen Limits",
+      href: "#settings",
+      status: "complete",
+    },
+    {
+      id: "master-gap-audit",
+      label: "Restlücken gegen den vollständigen Masterauftrag prüfen",
+      evidence: "Controls, Statuswahrheit, responsive Clients, Doku und sichere nächste Schritte",
+      href: "#home",
+      status: "active",
     },
     {
       id: "migration-boundary",

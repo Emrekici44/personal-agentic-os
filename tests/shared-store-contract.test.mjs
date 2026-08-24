@@ -23,12 +23,29 @@ test('life-area CRUD encrypts private content and archives instead of deleting',
 });
 test('vault normalization is preview-only and preserves existing notes',()=>{assert.match(vault,/previewVaultNormalization/);assert.match(vault,/existingNotesModified:0/);assert.match(vault,/proposedMoves:0/);assert.match(vault,/proposedRenames:0/);assert.match(vault,/sensitiveWritesRequireApproval:true/);assert.match(route,/no-store, private/);assert.match(route,/writesPerformed:false/)});
 
-test('shared theme preference is authenticated, validated and audited',async()=>{
+test('shared theme and branding preferences are authenticated, validated and audited',async()=>{
   const preferences=await readFile(new URL('../app/api/state/preferences/[id]/route.ts',import.meta.url),'utf8');
   assert.match(preferences,/verifyLocalSession/);
-  assert.match(store,/preferenceIds=\['theme'\]/);
+  assert.match(store,/preferenceIds=\['theme','branding'\]/);
   assert.match(store,/\['dark','light'\]/);
+  assert.match(store,/Produktname muss 2 bis 60 Zeichen/);
+  assert.match(store,/\^#\[0-9a-f\]\{6\}\$/);
   assert.match(store,/preference\.update/);
+});
+
+test('local backups are integrity checked and restoration remains preview-only',async()=>{
+  const route=await readFile(new URL('../app/api/state/backups/route.ts',import.meta.url),'utf8');
+  assert.match(store,/PRAGMA wal_checkpoint\(FULL\)/);
+  assert.match(store,/VACUUM INTO/);
+  assert.match(store,/PRAGMA integrity_check/);
+  assert.match(store,/sha256File/);
+  assert.match(store,/applyAvailable:false/);
+  assert.match(store,/restorePerformed:false/);
+  assert.match(store,/conflictReviewRequired/);
+  assert.match(route,/verifyLocalSession/);
+  assert.match(route,/action !== "create_backup"/);
+  assert.match(route,/action !== "preview_restore"/);
+  assert.doesNotMatch(route,/renameSync|copyFileSync|unlinkSync|rmSync/);
 });
 
 test('audit feed exposes only action metadata behind the private session',async()=>{

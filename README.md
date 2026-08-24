@@ -11,7 +11,7 @@
 
 For the laptop app, double-click `Agentic OS - Laptop starten.cmd`. For the no-cost iPhone companion, install Expo Go once and double-click `Agentic OS - iPhone starten.cmd`; then scan the displayed QR code while both devices are on the same Wi-Fi. Private travel access is prepared through Tailscale Personal and `tailscale serve`—never Funnel—using `Agentic OS - Privat unterwegs starten.cmd`. See `docs/DESKTOP.md`, `docs/MOBILE.md`, and `docs/REMOTE-ACCESS.md`.
 
-The current verified mode stores user state in browser local storage and supports a JSON backup from Settings. Demo content is visibly representative; no external account is claimed as connected.
+The current verified mode stores operational state in the laptop-local encrypted-field SQLite bridge behind signed private APIs. Desktop and iPhone read the same source. Settings can create integrity-checkable local database backups and preview restore conflicts; restore itself remains deliberately unavailable until an exact user approval. Local storage remains only a compatibility fallback for unmigrated device values. Empty states are honest and no external account is shown as connected without live evidence.
 
 ## Ownership and privacy
 

@@ -10,6 +10,7 @@ Project root: `outputs/agentic-os`. Private source remote: `https://github.com/E
 
 - Standard ignored local configuration includes the authorized Emre Vault path; never print `.env.local` values.
 - Local state, database/WAL/backups, OAuth tokens, Vault content and preview images remain ignored.
+- One real local SQLite snapshot now exists under the ignored backup directory. Its SHA-256/integrity/schema/count preview passed; it was not restored, copied externally or committed.
 - Electron and the local Next dev service are currently usable. The verified desktop shortcut/launcher remains unchanged.
 - Calendar reads are safe; no pending write proposal exists.
 - Existing Vault notes remain unchanged.
@@ -28,6 +29,7 @@ Project root: `outputs/agentic-os`. Private source remote: `https://github.com/E
 - Practical testing did not create a fake proposal. The real Vault remained exactly 27 Markdown files; its content manifest SHA-256 after verification is `F368D92A1064A853F6DD17C740ED057B516E9755BABE25F2910A5943F6DD2AB2`.
 - Integration Health now aggregates eight real connector contracts through a signed private route. Green Online is computed only from a successful live source check. Manual Health/Finance cards refer explicitly to the local Shared Store, not a manufacturer/bank connection. Tailscale is only Online when the current request proves private HTTPS/MagicDNS; localhost correctly reports Degraded if private-host configuration exists.
 - Faith, Health, Finance and Relationships now render specialized summaries from real encrypted `area_records`. With the current empty store they show 0/empty instead of invented progress, money or people. Editors expose validated domain fields; practical tests opened/cancelled without mutation.
+- Branding and theme are shared preferences. Settings includes an explicit local backup action and review-only restore comparison. Usage & Limits reads live OpenAI-policy, connector-health, storage and backup status while leaving unsupported ChatGPT/quota counters unavailable instead of estimating them.
 
 ## Immediate continuation
 
@@ -36,6 +38,7 @@ Project root: `outputs/agentic-os`. Private source remote: `https://github.com/E
 3. Any selected focus block must still enter the exact single-event approval screen; never test the final write without Emre's action-time confirmation.
 4. Ask Emre before any PostgreSQL target/account, real migration, Vault mutation, Graphify installation or new external connector activation.
 5. If an agent suggestion should ever become an external or consequential action, add a separate exact approval proposal first; the current workflow surface cannot execute such actions.
+6. Continue the global master-gap audit. Do not add a restore executor unless Emre explicitly approves the exact recovery action after inspecting its conflict preview.
 
 ## Non-negotiable boundaries
 

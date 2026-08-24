@@ -2,7 +2,7 @@
 
 ## Local operation
 
-Follow the README. Settings → Backup export downloads the current local state. Dedicated launch instructions are in `DESKTOP.md`, `MOBILE.md`, and `REMOTE-ACCESS.md`.
+Follow the README. Settings → Backup creates a private SQLite snapshot under the git-ignored local state folder; nothing is downloaded or uploaded. A selected snapshot can be checked for integrity, schema and record-count conflicts, but cannot currently be applied. Dedicated launch instructions are in `DESKTOP.md`, `MOBILE.md`, and `REMOTE-ACCESS.md`.
 
 ## Default ChatGPT Companion Mode
 
@@ -32,7 +32,7 @@ Local mode is the default. Any connector or provider that may incur charges must
 
 ## Obsidian
 
-The authorized Emre vault is the human-readable notes and knowledge layer. Operational records such as task state, approvals, audits, connector state, and job handoffs belong in the application-owned structured state layer, with SQLite as the planned durable local store. Synchronization to Markdown is explicit and auditable. Vault mutation remains a separate opt-in capability.
+The authorized Emre vault is the human-readable notes and knowledge layer. Operational records such as task state, approvals, audits, connector state, and job handoffs belong in the application-owned structured state layer, with SQLite as the current local bridge while a server target awaits approval. Synchronization to Markdown is explicit and auditable. Vault mutation remains a separate opt-in capability.
 
 Set `AGENTIC_OS_OBSIDIAN_VAULT` only in the local server environment or use the provided Windows launchers, which resolve the authorized default below `%USERPROFILE%` only when it exists. The app reads bounded Markdown metadata and links only; see `OBSIDIAN.md`. Never commit a personal vault path or generated index.
 

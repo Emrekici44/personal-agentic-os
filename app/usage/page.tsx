@@ -1,146 +1,87 @@
-import {
-  ShieldCheck,
-  ExternalLink,
-  Server,
-  HardDrive,
-  Cloud,
-  Database,
-  TriangleAlert,
-} from "lucide-react";
+"use client";
+
+import { ShieldCheck, ExternalLink, Server, HardDrive, Cloud, Database, TriangleAlert, RefreshCw } from "lucide-react";
 import Link from "next/link";
+import { useCallback, useEffect, useState } from "react";
+
+const label: Record<string, string> = { online: "Online", degraded: "Eingeschränkt", offline: "Offline", unconfigured: "Nicht konfiguriert" };
+
 export default function Usage() {
+  const [state, setState] = useState<any>({ loading: true, openai: null, integrations: [], storage: null, backups: [] });
+  const refresh = useCallback(async () => {
+    setState((current: any) => ({ ...current, loading: true }));
+    try {
+      await fetch("/api/state/session", { method: "POST" });
+      const [openaiResponse, integrationResponse, backupResponse] = await Promise.all([
+        fetch("/api/openai/status", { cache: "no-store" }),
+        fetch("/api/integrations/health", { cache: "no-store" }),
+        fetch("/api/state/backups", { cache: "no-store" }),
+      ]);
+      if (!openaiResponse.ok || !integrationResponse.ok || !backupResponse.ok) throw new Error();
+      const [openai, integrations, backups] = await Promise.all([openaiResponse.json(), integrationResponse.json(), backupResponse.json()]);
+      setState({ loading: false, error: false, openai, integrations: integrations.connectors || [], storage: backups.store, backups: backups.backups || [], checkedAt: integrations.checkedAt });
+    } catch {
+      setState((current: any) => ({ ...current, loading: false, error: true }));
+    }
+  }, []);
+  useEffect(() => { refresh(); }, [refresh]);
+  const connection = (id: string) => state.integrations.find((item: any) => item.id === id);
+  const calendar = connection("google-calendar");
+  const lastBackup = state.backups?.[0];
+  const statusRows = [
+    { Icon: Cloud, name: "ChatGPT Subscription", cost: "Included", detail: "Kein unterstützter präziser Plan-Zähler", status: "Manuell / nicht verfügbar" },
+    { Icon: Server, name: "OpenAI API", cost: "Usage-based", detail: state.openai?.configured ? `Kill Switch ${state.openai.killSwitch ? "aktiv" : "inaktiv"}` : "Kein Server-Key konfiguriert", status: state.openai?.configured ? "Konfiguriert" : "Nicht konfiguriert" },
+    { Icon: HardDrive, name: "Lokales Modell", cost: "Free*", detail: "Keine kompatible Runtime verifiziert", status: "Nicht konfiguriert" },
+    { Icon: Database, name: "Agentic OS Storage", cost: "Free", detail: state.storage ? `${state.storage.engine} · Schema v${state.storage.schemaVersion} · WAL` : "Status nicht verfügbar", status: state.storage?.online ? "Online" : "Nicht geprüft" },
+    { Icon: ShieldCheck, name: "Google Calendar", cost: calendar?.costClass || "Free", detail: calendar?.permissionScope || "Scope nicht geprüft", status: label[calendar?.status] || "Nicht geprüft" },
+    { Icon: TriangleAlert, name: "Integrationsquoten", cost: "Unknown", detail: "Nur zeigen, wenn ein Anbieter sie verlässlich meldet", status: "Manuell / nicht verfügbar" },
+  ];
   return (
     <main className="usagePage">
-      <Link href="/">← Agentic OS</Link>
+      <div className="usageTopline">
+        <Link href="/#settings">← Einstellungen</Link>
+        <button onClick={refresh} disabled={state.loading} type="button"><RefreshCw /> {state.loading ? "Prüft" : "Live-Status prüfen"}</button>
+      </div>
       <header>
-        <span>ZERO-COST MODE · STANDARD</span>
+        <span>KOSTENKONTROLLE · LOKALER STANDARD</span>
         <h1>Usage & Limits</h1>
-        <p>
-          Jede Kostenquelle bleibt getrennt, sichtbar und standardmäßig
-          ausgeschaltet.
-        </p>
+        <p>Freie lokale Nutzung ist der Standard. Mögliche Gebühren werden vor jeder Aktivierung erklärt und benötigen deine ausdrückliche Freigabe.</p>
+        {state.error && <small className="usageError">Live-Status derzeit nicht vollständig erreichbar. Es werden keine Werte erfunden.</small>}
       </header>
       <section className="modeGrid">
         <article>
-          <b>1 · Subscription companion</b>
-          <em>Included</em>
+          <b>1 · Subscription Companion</b><em>Included</em>
           <h2>ChatGPT Pro & Codex</h2>
-          <p>
-            Agentic OS organisiert Links, Chats und Übergaben. Es behauptet
-            keinen direkten Modellzugriff.
-          </p>
-          <dl>
-            <dt>Präzise Limits</dt>
-            <dd>Nicht über unterstützte API verfügbar</dd>
-            <dt>Status</dt>
-            <dd>Manuell / unbekannt</dd>
-          </dl>
-          <a href="https://chatgpt.com/" rel="noreferrer" target="_blank">
-            Offizielle Kontoansicht <ExternalLink />
-          </a>
+          <p>Agentic OS organisiert Projekte, Aufgaben, Wissen und Übergaben. Deine Subscription wird nicht als API-Zugang ausgegeben.</p>
+          <dl><dt>Präzise Limits</dt><dd>Nicht über unterstützte API verfügbar</dd><dt>Status</dt><dd>Manuell / unbekannt</dd></dl>
+          <a href="https://chatgpt.com/" rel="noreferrer" target="_blank">Offizielle Kontoansicht <ExternalLink /></a>
         </article>
         <article>
-          <b>2 · OpenAI API</b>
-          <em className="usage">Usage-based</em>
+          <b>2 · OpenAI API</b><em className="usage">Usage-based</em>
           <h2>Responses API</h2>
-          <p>
-            Optional und deaktiviert. Ein eigener API-Key wäre separat von Pro
-            abrechenbar.
-          </p>
-          <label>
-            <input type="checkbox" defaultChecked disabled /> HARD KILL SWITCH
-            AKTIV
-          </label>
-          <dl>
-            <dt>Tagesschwelle</dt>
-            <dd>€ 0,00</dd>
-            <dt>Monatsschwelle</dt>
-            <dd>€ 0,00</dd>
-            <dt>Verifizierte Nutzung</dt>
-            <dd>Nicht konfiguriert</dd>
-          </dl>
+          <p>Optional, serverseitig und unabhängig von Pro abrechenbar. Ohne positiven Grenzwert und deaktivierten Kill Switch geht keine Anfrage hinaus.</p>
+          <label><input type="checkbox" checked={Boolean(state.openai?.killSwitch ?? true)} readOnly disabled /> HARD KILL SWITCH {state.openai?.killSwitch === false ? "INAKTIV" : "AKTIV"}</label>
+          <dl><dt>Tagesschwelle</dt><dd>€ {Number(state.openai?.dailyLimit || 0).toFixed(2)}</dd><dt>Monatsschwelle</dt><dd>€ {Number(state.openai?.monthlyLimit || 0).toFixed(2)}</dd><dt>Nutzungsquelle</dt><dd>{state.openai?.usageSource === "unavailable" ? "Nicht verfügbar" : "Nicht geprüft"}</dd></dl>
         </article>
         <article>
-          <b>3 · Local model</b>
-          <em>Free*</em>
+          <b>3 · Lokales Modell</b><em>Free*</em>
           <h2>Lokaler Provider</h2>
-          <p>
-            Null Kosten pro Anfrage, aber erst nach geprüfter
-            Windows-ARM-Runtime und Hardwareeignung.
-          </p>
-          <dl>
-            <dt>RAM / GPU</dt>
-            <dd>Nicht verifiziert</dd>
-            <dt>Status</dt>
-            <dd>Unkonfiguriert</dd>
-          </dl>
+          <p>Keine Kosten pro Anfrage, aber erst nach separater Runtime- und Hardwareprüfung. Es ist aktuell kein Modell verbunden.</p>
+          <dl><dt>RAM / GPU</dt><dd>Nicht verifiziert</dd><dt>Status</dt><dd>Nicht konfiguriert</dd></dl>
         </article>
       </section>
-      <h2 className="sectionTitle">System- und Quotenstatus</h2>
+      <h2 className="sectionTitle">Verifizierter System- und Quotenstatus</h2>
       <section className="limitGrid">
-        {[
-          [
-            Cloud,
-            "ChatGPT Subscription",
-            "Included",
-            "Limits nicht maschinenlesbar",
-            "Manuell",
-          ],
-          [
-            Server,
-            "OpenAI API",
-            "Usage-based",
-            "€ 0,00 · Kill Switch",
-            "Unkonfiguriert",
-          ],
-          [
-            HardDrive,
-            "Local model",
-            "Free*",
-            "Keine Runtime erkannt",
-            "Offline",
-          ],
-          [
-            Database,
-            "Agentic OS Storage",
-            "Free",
-            "Browser lokal · Backup empfohlen",
-            "Online",
-          ],
-          [
-            ShieldCheck,
-            "Google Calendar",
-            "Free",
-            "8-Tage-Lesefenster",
-            "Mock",
-          ],
-          [
-            TriangleAlert,
-            "Integration quotas",
-            "Unknown",
-            "Erst nach echter Verbindung",
-            "Unverifiziert",
-          ],
-        ].map(([Icon, n, c, d, s]: any) => (
-          <article key={n}>
-            <Icon />
-            <span>
-              <b>{n}</b>
-              <em>{c}</em>
-            </span>
-            <p>{d}</p>
-            <small>{s}</small>
-          </article>
+        {statusRows.map(({ Icon, name, cost, detail, status }) => (
+          <article key={name}><Icon /><span><b>{name}</b><em>{cost}</em></span><p>{detail}</p><small>{status}</small></article>
         ))}
       </section>
-      <aside>
-        <ShieldCheck />
-        <p>
-          <b>Kostenschutz:</b> Agentic OS sendet im lokalen Standardmodus keine
-          bezahlte API-Anfrage. Aktivierung erfordert sichtbare Preise, Tages-
-          und Monatsgrenzen, Warnschwelle und ausdrückliche Freigabe.
-        </p>
-      </aside>
+      <section className="usageEvidence">
+        <article><b>Lokale Backups</b><strong>{state.backups?.length ?? "—"}</strong><small>{lastBackup ? `Zuletzt ${new Intl.DateTimeFormat("de-DE", { dateStyle: "short", timeStyle: "short" }).format(new Date(lastBackup.createdAt))}` : "Noch keines erstellt"}</small></article>
+        <article><b>Speicherschutz</b><strong>{state.storage?.sensitiveFieldEncryption || "Nicht geprüft"}</strong><small>Feldverschlüsselung; keine Behauptung über Festplattenverschlüsselung</small></article>
+        <article><b>Letzte Live-Prüfung</b><strong>{state.checkedAt ? new Intl.DateTimeFormat("de-DE", { timeStyle: "medium" }).format(new Date(state.checkedAt)) : "—"}</strong><small>Nur nicht sensible Health-Evidenz</small></article>
+      </section>
+      <aside><ShieldCheck /><p><b>Kostenschutz:</b> Keine bezahlte API wird still aktiviert. Ein späterer API-Modus benötigt sichtbare Preisart, Tages-/Monatsgrenzen, Warnschwelle und ausdrückliche Freigabe.</p></aside>
     </main>
   );
 }

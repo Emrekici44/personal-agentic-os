@@ -8,7 +8,7 @@ node_modules/
 *.db
 *.sqlite*
 *.tar.gz
-backups/
+/backups/
 local-state/
 previews/*.png
 previews/*.jpg
