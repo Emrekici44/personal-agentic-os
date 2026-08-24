@@ -1679,7 +1679,7 @@ function Integrations({ note }: any) {
     [calendarStatus, setCalendarStatus] = useState<any>({
       configured: false,
       connected: false,
-      mode: "mock",
+      mode: "unavailable",
     }),[integrationHealth,setIntegrationHealth]=useState<any>({state:"loading",connectors:[]}),[selectedConnectorId,setSelectedConnectorId]=useState("");
   const loadIntegrationHealth=useCallback(async()=>{try{await fetch("/api/state/session",{method:"POST"});const response=await fetch("/api/integrations/health",{cache:"no-store"}),result=await response.json();if(!response.ok)throw new Error(result.error);setIntegrationHealth({state:"online",...result});setSelectedConnectorId(current=>current||result.connectors?.[0]?.id||"")}catch(cause){setIntegrationHealth({state:"error",connectors:[],error:cause instanceof Error?cause.message:"Health Center nicht erreichbar"})}},[]);
   useEffect(() => {
@@ -1726,8 +1726,8 @@ function Integrations({ note }: any) {
         title="Jede Verbindung. Ehrlich sichtbar."
       >
         <p>
-          Online bedeutet verifiziert. Alles andere bleibt klar als Mock oder
-          unkonfiguriert markiert.
+          Online bedeutet verifiziert. Alles andere bleibt klar als eingeschränkt,
+          offline oder unkonfiguriert markiert.
         </p>
       </Intro>
       <Card className="calendarSafe">

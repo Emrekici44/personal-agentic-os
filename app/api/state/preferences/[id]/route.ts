@@ -8,6 +8,7 @@ import {
 
 const authorized = (request: NextRequest) =>
   verifyLocalSession(request.cookies.get("agentic_os_local_session")?.value);
+const headers = { "Cache-Control": "no-store, private" };
 
 export async function GET(
   request: NextRequest,
@@ -15,10 +16,10 @@ export async function GET(
 ) {
   const { id } = await params;
   if (!authorized(request))
-    return NextResponse.json({ error: "Lokale Sitzung erforderlich" }, { status: 401 });
+    return NextResponse.json({ error: "Lokale Sitzung erforderlich" }, { status: 401, headers });
   if (!isPreferenceId(id))
-    return NextResponse.json({ error: "Unbekannte Einstellung" }, { status: 404 });
-  return NextResponse.json(getPreference(id));
+    return NextResponse.json({ error: "Unbekannte Einstellung" }, { status: 404, headers });
+  return NextResponse.json(getPreference(id), { headers });
 }
 
 export async function PUT(
@@ -27,14 +28,14 @@ export async function PUT(
 ) {
   try {
     const { id } = await params;
-    if (!authorized(request)) throw new Error("Lokale Sitzung erforderlich");
+    if (!authorized(request)) return NextResponse.json({ error: "Lokale Sitzung erforderlich" }, { status: 401, headers });
     if (!isPreferenceId(id)) throw new Error("Unbekannte Einstellung");
     const body = await request.json();
-    return NextResponse.json(setPreference(id, body.value));
+    return NextResponse.json(setPreference(id, body.value), { headers });
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Speichern fehlgeschlagen" },
-      { status: 400 },
+      { status: 400, headers },
     );
   }
 }

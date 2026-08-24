@@ -35,6 +35,7 @@
 - Calendar status, catalog, bounded reads, OAuth entry and encrypted local token sharing now require the same signed private session and return `no-store, private`. Disconnected production routes return honest empty/unavailable states instead of mock events, and both obsolete mock proposal/approval endpoints return 410 without actions.
 - Project workspaces now include shared resource references: allowlisted web links and local file references with a visible short title, encrypted private target, project linkage, explicit reveal and no file open/copy/upload primitive. Validation was executed against an isolated temporary store; no user record or file was created.
 - Settings now has a signed, read-only recovery diagnosis. It checks Shared Store/WAL/schema, connector-health evidence and local backup availability, presents an ordered restart/check/preview runbook, and cannot reconnect, restore or write externally.
+- All remaining sensitive Shared Store/API responses now explicitly use `no-store, private`. Unauthorized reads and mutations consistently return 401 (not a misleading validation 400), including records, preferences, backups, audit, migration preview and Calendar proposal/write routes.
 
 ## Complete – Bedienwahrheit and responsive refinement
 

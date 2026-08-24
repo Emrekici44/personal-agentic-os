@@ -3,10 +3,11 @@ import crypto from 'node:crypto';
 import { refreshedAccessToken } from '@/lib/google-calendar';
 import { auditCalendarWrite, consumeApproval } from '@/lib/calendar-write';
 import { verifyLocalSession } from '@/lib/shared-store';
+const headers={'Cache-Control':'no-store, private'};
 
 export async function POST(req: NextRequest) {
   try {
-    if (!verifyLocalSession(req.cookies.get('agentic_os_local_session')?.value)) return NextResponse.json({ error: 'Lokale Sitzung erforderlich' }, { status: 401 });
+    if (!verifyLocalSession(req.cookies.get('agentic_os_local_session')?.value)) return NextResponse.json({ error: 'Lokale Sitzung erforderlich' }, { status: 401, headers });
     const access = await refreshedAccessToken(req.cookies.get('agentic_os_google_token')?.value);
     if (!access) throw new Error('Google Calendar ist nicht verbunden');
     const body = await req.json();
@@ -20,7 +21,7 @@ export async function POST(req: NextRequest) {
       const existing = await fetch(duplicate, { headers: { authorization: `Bearer ${access}` }, cache: 'no-store' });
       if (!existing.ok) throw new Error('Duplikatprüfung fehlgeschlagen');
       const matches = await existing.json();
-      if (matches.items?.length) return NextResponse.json({ written: false, duplicatePrevented: true, auditId: matches.items[0].id });
+      if (matches.items?.length) return NextResponse.json({ written: false, duplicatePrevented: true, auditId: matches.items[0].id },{headers});
     }
     const url = change.action === 'update' ? `${base}/${encodeURIComponent(change.eventId!)}` : base;
     const event = { summary: change.title, description: change.description, location: change.location, start: { dateTime: change.start }, end: { dateTime: change.end }, extendedProperties: { private: { agenticOsIdempotencyKey: change.idempotencyKey } } };
@@ -29,12 +30,12 @@ export async function POST(req: NextRequest) {
     const result = await response.json();
     const auditId = crypto.randomUUID();
     await auditCalendarWrite({ auditId, action: change.action, calendarId: change.calendarId, eventId: result.id, idempotencyKey: change.idempotencyKey, approved: true });
-    return NextResponse.json({ written: true, action: change.action, eventId: result.id, auditId, deletesEnabled: false });
+    return NextResponse.json({ written: true, action: change.action, eventId: result.id, auditId, deletesEnabled: false },{headers});
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : 'Kalenderänderung abgelehnt' }, { status: 400 });
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Kalenderänderung abgelehnt' }, { status: 400, headers });
   }
 }
 
 export async function DELETE() {
-  return NextResponse.json({ error: 'Kalender-Löschungen sind deaktiviert' }, { status: 405, headers: { Allow: 'POST' } });
+  return NextResponse.json({ error: 'Kalender-Löschungen sind deaktiviert' }, { status: 405, headers: { ...headers, Allow: 'POST' } });
 }

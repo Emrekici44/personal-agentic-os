@@ -9,7 +9,7 @@ export type ProgressItem = {
 };
 
 export const systemProgress = {
-  currentPhase: "Lokale MASTER-GAPS und Recovery-Audit abgeschlossen · gebündelte Nutzergrenzen offen",
+  currentPhase: "Lokale Lücken und API-/Recovery-Härtung abgeschlossen · gebündelte Nutzergrenzen offen",
   lastVerifiedAt: "24.08.2026 · Europe/Berlin",
   items: [
     {
@@ -267,7 +267,7 @@ export const systemProgress = {
     {
       id: "private-api-surface",
       label: "Private Status- und Preview-API vereinheitlichen",
-      evidence: "Vault/Provider/Calendar signiert · cachefrei · keine Produktions-Mockevents · alte Mock-Endpunkte deaktiviert",
+      evidence: "Vault/Provider/Calendar/Shared Store signiert · no-store private · 13 Methoden ohne Sitzung = 401",
       href: "#integrations",
       status: "complete",
     },
