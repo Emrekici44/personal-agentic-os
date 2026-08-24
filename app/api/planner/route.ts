@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { refreshedAccessToken } from "@/lib/google-calendar";
 import { readCalendarCatalog, readGoogleCalendarWindow } from "@/lib/google-calendar-read";
 import { buildWeeklyPlan, weeklyWindow } from "@/lib/weekly-planner";
-import { latestWeeklyPlan, listRecords, reviewWeeklyPlan, saveWeeklyPlan, verifyLocalSession } from "@/lib/shared-store";
+import { latestWeeklyPlan, listRecords, listWeeklyPlanSummaries, reviewWeeklyPlan, saveWeeklyPlan, verifyLocalSession } from "@/lib/shared-store";
 
 function authenticated(request: NextRequest) {
   return verifyLocalSession(request.cookies.get("agentic_os_local_session")?.value);
@@ -10,7 +10,7 @@ function authenticated(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   if (!authenticated(request)) return NextResponse.json({ error: "Lokale Sitzung erforderlich" }, { status: 401 });
-  return NextResponse.json({ plan: latestWeeklyPlan(), source: "laptop-shared-store", backgroundWrites: false, writesPerformed: false }, { headers: { "Cache-Control": "no-store, private" } });
+  return NextResponse.json({ plan: latestWeeklyPlan(), history: listWeeklyPlanSummaries(), source: "laptop-shared-store", backgroundWrites: false, writesPerformed: false }, { headers: { "Cache-Control": "no-store, private" } });
 }
 
 export async function POST(request: NextRequest) {
@@ -33,7 +33,8 @@ export async function POST(request: NextRequest) {
       inbox: listRecords("inbox_items"),
       projects: listRecords("projects"),
     });
-    return NextResponse.json({ plan: saveWeeklyPlan(proposal), generatedFromRealSources: true, rawEventDetailsExposed: false, writesPerformed: false }, { headers: { "Cache-Control": "no-store, private" } });
+    const plan = saveWeeklyPlan(proposal);
+    return NextResponse.json({ plan, history: listWeeklyPlanSummaries(), generatedFromRealSources: true, rawEventDetailsExposed: false, writesPerformed: false }, { headers: { "Cache-Control": "no-store, private" } });
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : "Wochenplan konnte nicht erzeugt werden", writesPerformed: false }, { status: 400 });
   }
@@ -43,7 +44,8 @@ export async function PATCH(request: NextRequest) {
   try {
     if (!authenticated(request)) return NextResponse.json({ error: "Lokale Sitzung erforderlich", writesPerformed: false }, { status: 401 });
     const body = await request.json();
-    return NextResponse.json({ plan: reviewWeeklyPlan(String(body.planId || ""), body), calendarWritesPrepared: false, writesPerformed: false }, { headers: { "Cache-Control": "no-store, private" } });
+    const plan = reviewWeeklyPlan(String(body.planId || ""), body);
+    return NextResponse.json({ plan, history: listWeeklyPlanSummaries(), calendarWritesPrepared: false, writesPerformed: false }, { headers: { "Cache-Control": "no-store, private" } });
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : "Auswahl konnte nicht gespeichert werden", writesPerformed: false }, { status: 400 });
   }

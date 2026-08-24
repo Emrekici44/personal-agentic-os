@@ -1418,6 +1418,7 @@ function WeeklyPlanner({ note }: any) {
   const [plan, setPlan] = useState<any>(null);
   const [selectedOutcomes, setSelectedOutcomes] = useState<string[]>([]);
   const [selectedBlocks, setSelectedBlocks] = useState<string[]>([]);
+  const [history, setHistory] = useState<any[]>([]);
   const [busy, setBusy] = useState<"idle" | "generate" | "review" | "approval">("idle");
   const [error, setError] = useState("");
   const [approval, setApproval] = useState<any>(null);
@@ -1442,6 +1443,7 @@ function WeeklyPlanner({ note }: any) {
         setSelectedOutcomes(latest.plan.decisions?.selectedOutcomeIds || latest.plan.outcomes?.map((item: any) => item.id) || []);
         setSelectedBlocks(latest.plan.decisions?.selectedBlockIds || latest.plan.blocks?.map((item: any) => item.id) || []);
       }
+      setHistory(planResponse.ok ? latest.history || [] : []);
     } catch {
       setStatus({ state: "error", connected: false });
       setError("Private Planner-Quelle ist gerade nicht erreichbar.");
@@ -1464,6 +1466,7 @@ function WeeklyPlanner({ note }: any) {
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "Vorschlag konnte nicht erzeugt werden");
       setPlan(result.plan);
+      setHistory(result.history || []);
       setSelectedOutcomes(result.plan.outcomes.map((item: any) => item.id));
       setSelectedBlocks(result.plan.blocks.map((item: any) => item.id));
       note("Echter Wochenvorschlag erzeugt · 0 Kalenderwrites");
@@ -1479,6 +1482,7 @@ function WeeklyPlanner({ note }: any) {
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "Review konnte nicht gespeichert werden");
       setPlan(result.plan);
+      setHistory(result.history || []);
       note("Review gemeinsam gespeichert · weiterhin 0 Writes");
     } catch (reason) { setError(reason instanceof Error ? reason.message : "Review fehlgeschlagen"); }
     finally { setBusy("idle"); }
@@ -1567,6 +1571,10 @@ function WeeklyPlanner({ note }: any) {
           <dl><dt>Ziel</dt><dd>{approval.block.calendarName}</dd><dt>Start</dt><dd>{formatMoment(approval.exactChange.start)}</dd><dt>Ende</dt><dd>{formatMoment(approval.exactChange.end)}</dd><dt>Aktion</dt><dd>Neuen Termin erstellen · keine Gäste/kein Ort</dd></dl>
           <label>Zur Einzelbestätigung exakt eingeben<input value={confirmation} onChange={(event) => setConfirmation(event.target.value)} placeholder="DIESEN_TERMIN_JETZT_SCHREIBEN" /></label>
           <Btn onClick={confirmation === "DIESEN_TERMIN_JETZT_SCHREIBEN" && busy === "idle" ? executeApprovedWrite : undefined}>Diesen einen Termin jetzt schreiben</Btn>
+        </Card>}
+        {history.length > 0 && <Card className="plannerHistory">
+          <div className="row"><div><Tag>PLANHISTORIE · GEMEINSAM</Tag><h3>Letzte Planstände</h3></div><small>Keine Ereignistitel in der Übersicht</small></div>
+          <div className="historyRows">{history.map((item) => <div key={item.id}><I.History /><span><b>{item.weekStart} bis {item.windowEnd}</b><small>{item.outcomeCount} Outcomes · {item.blockCount} Vorschläge · {item.bufferPercent}% Puffer</small></span><em>{item.status === "reviewed" ? `${item.selectedOutcomeCount} gewählt` : "Vorschlag"}</em></div>)}</div>
         </Card>}
       </>}
     </section>
