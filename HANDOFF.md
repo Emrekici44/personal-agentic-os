@@ -86,6 +86,8 @@ Project root: `outputs/agentic-os`. Private source remote: `https://github.com/E
 - Full verification for atomic mutations: Root 119/119, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed; live progress rendered 49/52.
 - Skill definitions/reviews, Agent workflow transitions and Weekly Planner reviews now carry an exact shared version. Stale clients receive 409 and reload the shared source; isolated tests prove the newer decision survives. Initial Weekly Plan responses now expose version 1 consistently.
 - Full verification for procedure-state conflicts: Root 121/121, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed. Live progress rendered 50/53 with 0 desktop/390×844 horizontal overflow.
+- Theme and Branding now carry shared versions from default 0 onward. Stale device saves return 409 and reload; failed Theme transport restores the prior visible state rather than claiming an unsynchronized shared preference.
+- Full verification for shared preference conflicts: Root 123/123, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed. Settings rendered both real Theme controls with 0 desktop/390×844 horizontal overflow; the check performed no preference mutation.
 
 ## Immediate continuation
 

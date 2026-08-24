@@ -121,6 +121,23 @@ export default function App() {
       accent: "#27d3ff",
     });
   const contentRef = useRef<HTMLElement>(null);
+  const preferenceVersions = useRef({ theme: 0, branding: 0 });
+  const loadPreferences = useCallback(async () => {
+    const session = await fetch("/api/state/session", { method: "POST" });
+    if (!session.ok) throw new Error("Private Sitzung nicht erreichbar");
+    const [themeResponse, brandingResponse] = await Promise.all([
+      fetch("/api/state/preferences/theme", { cache: "no-store" }),
+      fetch("/api/state/preferences/branding", { cache: "no-store" }),
+    ]);
+    if (!themeResponse.ok || !brandingResponse.ok) throw new Error("Gemeinsame Darstellung nicht erreichbar");
+    const [themePreference, brandingPreference] = await Promise.all([themeResponse.json(), brandingResponse.json()]);
+    preferenceVersions.current = { theme: Number(themePreference.version || 0), branding: Number(brandingPreference.version || 0) };
+    setTheme(themePreference.value === "light" ? "light" : "dark");
+    if (brandingPreference.value?.name) {
+      setBrand(brandingPreference.value);
+      store.set("brand", brandingPreference.value);
+    }
+  }, []);
   useEffect(() => {
     setJournal(store.get("journal", ""));
     const savedBrand = store.get("brand", {
@@ -135,22 +152,8 @@ export default function App() {
     };
     setBrand(migratedBrand);
     store.set("brand", migratedBrand);
-    fetch("/api/state/session", { method: "POST" })
-      .then(() =>
-        Promise.all([
-          fetch("/api/state/preferences/theme", { cache: "no-store" }).then((response) => response.json()),
-          fetch("/api/state/preferences/branding", { cache: "no-store" }).then((response) => response.json()),
-        ]),
-      )
-      .then(([themePreference, brandingPreference]) => {
-        setTheme(themePreference.value === "light" ? "light" : "dark");
-        if (brandingPreference.value?.name) {
-          setBrand(brandingPreference.value);
-          store.set("brand", brandingPreference.value);
-        }
-      })
-      .catch(() => setTheme("dark"));
-  }, []);
+    void loadPreferences().catch(() => setTheme("dark"));
+  }, [loadPreferences]);
   useEffect(() => {
     const mobileBridge = (
       window as Window & {
@@ -187,18 +190,27 @@ export default function App() {
     return () => { window.clearInterval(interval); window.removeEventListener("online", recheck); window.removeEventListener("focus", recheck); };
   }, [checkRuntimeHealth]);
   const changeTheme = async (next: "dark" | "light") => {
+    const previous = theme;
     setTheme(next);
     try {
       await fetch("/api/state/session", { method: "POST" });
       const response = await fetch("/api/state/preferences/theme", {
         method: "PUT",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ value: next }),
+        body: JSON.stringify({ value: next, version: preferenceVersions.current.theme }),
       });
-      if (!response.ok) throw new Error();
+      const result = await response.json();
+      if (response.status === 409) {
+        await loadPreferences();
+        note("Theme wurde inzwischen geändert · gemeinsamer Stand neu geladen");
+        return;
+      }
+      if (!response.ok) throw new Error(result.error || "Theme konnte nicht gespeichert werden");
+      preferenceVersions.current.theme = Number(result.version);
       note(`${next === "light" ? "Light" : "Dark"} Mode gemeinsam gespeichert`);
     } catch {
-      note("Theme ist nur für diese Sitzung aktiv");
+      setTheme(previous);
+      note("Theme nicht gespeichert · gemeinsamer Stand bleibt unverändert");
     }
   };
   const saveBranding = async (next: { name: string; short: string; accent: string }) => {
@@ -207,10 +219,16 @@ export default function App() {
       const response = await fetch("/api/state/preferences/branding", {
         method: "PUT",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ value: next }),
+        body: JSON.stringify({ value: next, version: preferenceVersions.current.branding }),
       });
       const result = await response.json();
+      if (response.status === 409) {
+        await loadPreferences();
+        note("Branding wurde inzwischen geändert · gemeinsamer Stand neu geladen");
+        return;
+      }
       if (!response.ok) throw new Error(result.error || "Branding konnte nicht gespeichert werden");
+      preferenceVersions.current.branding = Number(result.version);
       setBrand(result.value);
       store.set("brand", result.value);
       note("Branding gemeinsam gespeichert");

@@ -370,6 +370,13 @@ export const systemProgress = {
       status: "complete",
     },
     {
+      id: "preference-version-conflicts",
+      label: "Gemeinsame Darstellung konfliktfrei halten",
+      evidence: "Theme und Branding · exakte Version + 409 · keine scheinbar synchronisierte Offline-Änderung",
+      href: "#settings",
+      status: "complete",
+    },
+    {
       id: "ongoing-local-gap-audit",
       label: "Nächste lokale Bedien-/Recovery-Lücke prüfen",
       evidence: "Nur reversible lokale Änderungen · keine externen Writes, Migrationen, Installationen oder Kosten",
