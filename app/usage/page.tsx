@@ -2,13 +2,15 @@
 
 import { ShieldCheck, ExternalLink, Server, HardDrive, Cloud, Database, TriangleAlert, RefreshCw } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { runtimeHealthTransition, type RuntimeSourceState } from "@/lib/runtime-recovery";
 
 const label: Record<string, string> = { online: "Online", degraded: "Eingeschränkt", offline: "Offline", unconfigured: "Nicht konfiguriert" };
 const costLabel: Record<string, string> = { Free: "Kostenfrei", "Free*": "Kostenfrei*", Included: "Enthalten", "Usage-based": "Nutzungsbasiert", Unknown: "Ungeklärt" };
 
 export default function Usage() {
   const [state, setState] = useState<any>({ loading: true, error: false, openai: null, integrations: [], storage: null, backups: [], checkedAt: null });
+  const runtimeStateRef = useRef<RuntimeSourceState>("checking");
   const refresh = useCallback(async () => {
     setState({ loading: true, error: false, openai: null, integrations: [], storage: null, backups: [], checkedAt: null });
     try {
@@ -21,12 +23,41 @@ export default function Usage() {
       ]);
       if (!openaiResponse.ok || !integrationResponse.ok || !backupResponse.ok) throw new Error();
       const [openai, integrations, backups] = await Promise.all([openaiResponse.json(), integrationResponse.json(), backupResponse.json()]);
+      runtimeStateRef.current = "online";
       setState({ loading: false, error: false, openai, integrations: integrations.connectors || [], storage: backups.store, backups: backups.backups || [], checkedAt: integrations.checkedAt });
     } catch {
+      runtimeStateRef.current = "offline";
       setState({ loading: false, error: true, openai: null, integrations: [], storage: null, backups: [], checkedAt: null });
     }
   }, []);
-  useEffect(() => { void refresh(); const recover = () => void refresh(); window.addEventListener("agentic-os:runtime-online", recover); return () => window.removeEventListener("agentic-os:runtime-online", recover); }, [refresh]);
+  const checkRuntime = useCallback(async () => {
+    try {
+      const session = await fetch("/api/state/session", { method: "POST" });
+      if (!session.ok) throw new Error();
+      const response = await fetch("/api/state/status", { cache: "no-store" });
+      if (!response.ok) throw new Error();
+      const result = await response.json();
+      const transition = runtimeHealthTransition(runtimeStateRef.current, result.online ? "online" : "offline");
+      runtimeStateRef.current = transition.state;
+      if (transition.state === "offline") setState({ loading: false, error: true, openai: null, integrations: [], storage: null, backups: [], checkedAt: null });
+      if (transition.recovered) await refresh();
+    } catch {
+      runtimeStateRef.current = "offline";
+      setState({ loading: false, error: true, openai: null, integrations: [], storage: null, backups: [], checkedAt: null });
+    }
+  }, [refresh]);
+  useEffect(() => {
+    void refresh();
+    const interval = window.setInterval(checkRuntime, 30_000);
+    const recheck = () => void checkRuntime();
+    window.addEventListener("online", recheck);
+    window.addEventListener("focus", recheck);
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener("online", recheck);
+      window.removeEventListener("focus", recheck);
+    };
+  }, [checkRuntime, refresh]);
   const verified = !state.loading && !state.error;
   const connection = (id: string) => state.integrations.find((item: any) => item.id === id);
   const calendar = connection("google-calendar");

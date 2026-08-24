@@ -405,6 +405,13 @@ export const systemProgress = {
       status: "complete",
     },
     {
+      id: "usage-route-recovery",
+      label: "Usage & Limits eigenständig wiederaufnehmen",
+      evidence: "Separate Route · private Runtime-Prüfung · Evidenz bei Offline geleert · Refresh nur nach Recovery",
+      href: "#settings",
+      status: "complete",
+    },
+    {
       id: "ongoing-local-gap-audit",
       label: "Nächste lokale Bedien-/Recovery-Lücke prüfen",
       evidence: "Nur reversible lokale Änderungen · keine externen Writes, Migrationen, Installationen oder Kosten",

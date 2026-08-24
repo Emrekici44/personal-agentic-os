@@ -78,6 +78,7 @@
 - Integration recovery now reloads Health evidence and Calendar status/catalog after private runtime recovery, with a real Health retry action. The recovery callback is statically constrained to read-only loaders and cannot invoke OAuth, week reads or Calendar writes.
 - Knowledge recovery now refreshes Vault metadata, content-light audit and diff inventory from the private source as one read-only recovery step. Short-lived approval material is invalidated; proposal generation, approval and Vault apply are absent from the callback.
 - Runtime recovery broadcasts are transition-based rather than poll-based. Initial/healthy 30-second checks do not reload views or disturb drafts; a verified Offline→Online change reloads source inventories once, including read-only Backup/Archive state, while invalidating stale recovery diagnosis.
+- Usage & Limits no longer depends on a dashboard-only event. Its standalone route monitors the signed private runtime itself, invalidates every precise evidence field when offline and refreshes provider/integration/storage/backup reads once on verified recovery.
 
 ## Complete – Bedienwahrheit and responsive refinement
 

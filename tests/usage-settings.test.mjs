@@ -29,7 +29,10 @@ test("usage evidence is invalidated while loading or offline", () => {
   assert.match(usage, /setState\(\{ loading: true, error: false, openai: null, integrations: \[\], storage: null, backups: \[\], checkedAt: null \}\)/);
   assert.match(usage, /setState\(\{ loading: false, error: true, openai: null, integrations: \[\], storage: null, backups: \[\], checkedAt: null \}\)/);
   assert.match(usage, /if \(!sessionResponse\.ok\) throw new Error\(\)/);
-  assert.match(usage, /window\.addEventListener\("agentic-os:runtime-online", recover\)/);
+  assert.match(usage, /setInterval\(checkRuntime, 30_000\)/);
+  assert.match(usage, /runtimeHealthTransition\(runtimeStateRef\.current/);
+  assert.match(usage, /if \(transition\.recovered\) await refresh\(\)/);
+  assert.match(usage, /window\.addEventListener\("online", recheck\)/);
   assert.match(usage, /verified \? state\.backups\.length : "—"/);
   assert.match(usage, /HARD KILL SWITCH[\s\S]*?NICHT VERIFIZIERT/);
   assert.match(usage, /Private Statusquelle nicht erreichbar/);

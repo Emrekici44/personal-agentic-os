@@ -28,6 +28,6 @@ test("system progress reflects the current recovery audit without fake precision
   assert.match(progressSource, /id: "source-recovery-truth"[\s\S]*status: "complete"/);
   assert.match(progressSource, /id: "ongoing-local-gap-audit"[\s\S]*status: "active"/);
   assert.match(progressSource, /Projekt, Usage, Journal und Calendar/);
-  for (const id of ["oauth-cache-state-recovery", "calendar-evidence-recovery", "google-transport-boundary", "calendar-single-use-approval", "visible-state-language", "private-api-error-boundary", "private-https-cookie-policy", "structured-read-recovery", "atomic-shared-mutations", "procedure-version-conflicts", "preference-version-conflicts", "preference-source-recovery", "integration-runtime-recovery", "knowledge-runtime-recovery", "transition-only-runtime-recovery"]) assert.match(progressSource, new RegExp(`id: "${id}"[\\s\\S]*status: "complete"`));
+  for (const id of ["oauth-cache-state-recovery", "calendar-evidence-recovery", "google-transport-boundary", "calendar-single-use-approval", "visible-state-language", "private-api-error-boundary", "private-https-cookie-policy", "structured-read-recovery", "atomic-shared-mutations", "procedure-version-conflicts", "preference-version-conflicts", "preference-source-recovery", "integration-runtime-recovery", "knowledge-runtime-recovery", "transition-only-runtime-recovery", "usage-route-recovery"]) assert.match(progressSource, new RegExp(`id: "${id}"[\\s\\S]*status: "complete"`));
   assert.match(progressSource, /keine externen Writes, Migrationen, Installationen oder Kosten/);
 });
