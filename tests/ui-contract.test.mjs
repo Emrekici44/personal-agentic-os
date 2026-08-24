@@ -173,7 +173,19 @@ test("shared record mutations fail closed while the private source is unavailabl
   assert.match(page, /disabled=\{taskState !== "online"\}/);
   assert.match(page, /journalState === "online" \? completeJournal : undefined/);
   assert.match(page, /state === "online" && txt\.trim\(\)\.length >= 2 \? capture : undefined/);
-  assert.match(page, /state === "online" && captureTitle\.trim\(\)\.length >= 2/);
+  assert.match(page, /state === "online" && \(!projectId \|\| projectState === "online"\) && captureTitle\.trim\(\)\.length >= 2/);
+});
+
+test("cross-source references remain blocked until their real source is verified", async () => {
+  const page = await readFile(pagePath, "utf8");
+  assert.match(page, /Projektzuordnung ist gerade nicht verifizierbar/);
+  assert.match(page, /disabled=\{projectState !== "online"\}/);
+  assert.match(page, /Projektquelle wird geladen/);
+  assert.match(page, /Skill-Referenzen nicht verifiziert/);
+  assert.match(page, /projectState==="online"&&Boolean\(runInput\.projectId\)/);
+  assert.match(page, /Zuordnungsquellen sind gerade nicht vollständig verifizierbar/);
+  assert.match(page, /disabled=\{agentState !== "online"\}/);
+  assert.match(page, /\(!triageDraft\.agentId \|\| agentState === "online"\)/);
 });
 
 test("knowledge search stays inside the signed metadata-only vault preview", async () => {
