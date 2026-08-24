@@ -104,6 +104,7 @@ Last verified: 25.08.2026, Europe/Berlin.
 - Eine physische iPhone-Abnahme des aktuellen Nachtstands ist in `PENDING-DECISIONS.md` gebündelt und wird nicht automatisch behauptet. Der vorherige Expo-Navigationsstand bleibt physisch bestätigt.
 - Nach dem lokalen Abschlussaudit bleiben Root 78/78, TypeScript, ESLint, Electron 2/2, Expo TypeScript/Lint/Web-Export und Next-Produktionsbuild grün.
 - Calendar-Recovery trennt jetzt drei unabhängige Wahrheiten: erreichbarer Statusendpunkt, Tokenprüfung und Kalenderkatalog. Ein Katalogfehler verdeckt weder die OAuth-Konfiguration noch den sicheren Retry; eine unklare Tokenprüfung sperrt Reconnect und Reads bis zur erneuten Prüfung. Integration Health bleibt bei diesem Teilfehler erreichbar und zeigt niemals gleichzeitig `Online` und einen fehlenden Token.
+- Jeder Google-Transportpfad besitzt jetzt ein gemeinsames lokales 8-Sekunden-Limit: OAuth-Tokenaustausch/-Refresh, Katalog, begrenzte Reads, Tageszahl, Planner-Adapter sowie die bereits freigabegesteuerte Write-/Duplikatprüfung. Der Katalog fängt Timeout/Netzfehler als private, inhaltsfreie 502-Evidenz ab; er gibt weder Rohfehler noch Ersatzdaten aus.
 
 ## Verification
 
@@ -130,6 +131,7 @@ Last verified: 25.08.2026, Europe/Berlin.
 - Tagesbereich-Browser-Abnahme: Aufgaben- und Habit-Editor wurden auf Desktop und 390×844 geöffnet und abgebrochen; Priorität/Datum/Bereich/Projekt sowie täglicher/wöchentlicher Rhythmus renderten ohne horizontalen Überlauf. Es wurden keine Testdatensätze erzeugt.
 - Nach der Aufgaben-/Habit-Erweiterung sind Root 74/74, TypeScript, ESLint, Produktionsbuild, Electron 2/2 und Expo TypeScript/Lint/Web-Export grün. `git diff --check`, Secret- und verbotene-Inhaltsprüfung sind sauber.
 - Calendar-Recovery-Browserabnahme: die verbundene Quelle zeigt `EVENTS LIVE · KONTROLLIERT`, acht reale Kalenderrollen und keinen widersprüchlichen Tokenfehler. Desktop sowie 390×844 hatten keine Console-Warnung und keinen horizontalen Überlauf; es wurde kein Kalender gelesen, OAuth gestartet oder Write vorbereitet.
+- Transport-Browserprobe: derselbe private Integrationspfad lieferte weiterhin `Online` und acht Kalenderrollen ohne Console-Warnung. Die Probe bestand nur aus dem vorhandenen Katalog-Read; kein Eventabruf, OAuth-Start oder Write wurde ausgelöst.
 
 ## User boundaries
 

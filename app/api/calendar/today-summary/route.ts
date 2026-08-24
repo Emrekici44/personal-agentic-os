@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { addCalendarDays, berlinDateKey, berlinLocalIso } from "@/lib/weekly-planner";
 import { refreshedAccessToken } from "@/lib/google-calendar";
+import { googleRequestSignal } from "@/lib/google-transport";
 import { verifyLocalSession } from "@/lib/shared-store";
 
 const headers = { "Cache-Control": "no-store, private" };
@@ -17,7 +18,7 @@ export async function GET(request: NextRequest) {
     const start = berlinLocalIso(day, 0, 0);
     const end = berlinLocalIso(addCalendarDays(day, 1), 0, 0);
     const listResponse = await fetch("https://www.googleapis.com/calendar/v3/users/me/calendarList?minAccessRole=reader", {
-      headers: { authorization: `Bearer ${token}` }, cache: "no-store",
+      headers: { authorization: `Bearer ${token}` }, cache: "no-store", signal: googleRequestSignal(),
     });
     if (!listResponse.ok) throw new Error("Kalenderliste derzeit nicht lesbar");
     const list = await listResponse.json();
@@ -25,7 +26,7 @@ export async function GET(request: NextRequest) {
     const counts = await Promise.all(calendars.map(async (calendar: any) => {
       const url = new URL(`https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendar.id)}/events`);
       url.search = new URLSearchParams({ timeMin: start, timeMax: end, singleEvents: "true", maxResults: "2500", fields: "items(id,start,end),nextPageToken" }).toString();
-      const response = await fetch(url, { headers: { authorization: `Bearer ${token}` }, cache: "no-store" });
+      const response = await fetch(url, { headers: { authorization: `Bearer ${token}` }, cache: "no-store", signal: googleRequestSignal() });
       if (!response.ok) throw new Error("Heutige Termine derzeit nicht lesbar");
       const data = await response.json();
       return { count: Array.isArray(data.items) ? data.items.length : 0, truncated: Boolean(data.nextPageToken) };

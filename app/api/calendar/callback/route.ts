@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { calendarConfig, open, seal, storeTokenBundle } from "@/lib/google-calendar";
+import { googleRequestSignal } from "@/lib/google-transport";
 
 const protectRedirect = (response: NextResponse) => {
   response.headers.set("Cache-Control", "no-store, private");
@@ -25,6 +26,7 @@ export async function GET(req: NextRequest) {
       headers: { "content-type": "application/x-www-form-urlencoded" },
       body,
       cache: "no-store",
+      signal: googleRequestSignal(),
     });
     if (!tokenResponse.ok) throw new Error("Google Token-Austausch fehlgeschlagen");
     const data = { ...(await tokenResponse.json()), obtained_at: Date.now() };

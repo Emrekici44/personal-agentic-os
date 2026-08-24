@@ -1,8 +1,9 @@
 import { assertBoundedWindow } from "./calendar-core.mjs";
+import { googleRequestSignal } from "./google-transport";
 import { berlinLocalIso } from "./weekly-planner";
 
 export async function readCalendarCatalog(access: string) {
-  const response = await fetch("https://www.googleapis.com/calendar/v3/users/me/calendarList?minAccessRole=reader", { headers: { authorization: `Bearer ${access}` }, cache: "no-store" });
+  const response = await fetch("https://www.googleapis.com/calendar/v3/users/me/calendarList?minAccessRole=reader", { headers: { authorization: `Bearer ${access}` }, cache: "no-store", signal: googleRequestSignal() });
   if (!response.ok) throw new Error("Google-Kalenderliste konnte nicht gelesen werden");
   const data = await response.json();
   return (data.items || []).map((calendar: any) => ({ id: calendar.id, summary: calendar.summary || "(Ohne Namen)", primary: Boolean(calendar.primary), selected: calendar.selected !== false, accessRole: calendar.accessRole, writable: ["writer", "owner"].includes(calendar.accessRole) }));
@@ -25,7 +26,7 @@ export async function readGoogleCalendarWindow(access: string, calendarIds: stri
   const batches = await Promise.all(uniqueIds.map(async (id) => {
     const url = new URL(`https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(id)}/events`);
     url.search = new URLSearchParams({ timeMin: new Date(start).toISOString(), timeMax: new Date(end).toISOString(), singleEvents: "true", orderBy: "startTime", maxResults: "100" }).toString();
-    const response = await fetch(url, { headers: { authorization: `Bearer ${access}` }, cache: "no-store" });
+    const response = await fetch(url, { headers: { authorization: `Bearer ${access}` }, cache: "no-store", signal: googleRequestSignal() });
     if (!response.ok) throw new Error("Google-Termine konnten nicht gelesen werden");
     const data = await response.json();
     return (data.items || []).map((event: any) => normalizeGoogleEvent(event, id, allowed.get(id)?.summary || "Kalender")).filter(Boolean);

@@ -20,8 +20,8 @@ test("disconnected production calendar routes return honest empty states, never 
   assert.match(status, /connectionCheck/);
   assert.match(status, /["']degraded["']/);
   assert.doesNotMatch(status, /mode:connected\?'google':c\.configured\?'oauth-ready':'mock'/);
-  assert.match(calendars, /calendars:\[\]/);
-  assert.match(calendars, /mockDataUsed:false/);
+  assert.match(calendars, /calendars:\s*\[\]/);
+  assert.match(calendars, /mockDataUsed:\s*false/);
   assert.doesNotMatch(calendars, /MOCK_CALENDARS|Testdaten/);
   assert.match(events, /events:\s*\[\]/);
   assert.match(events, /mockDataUsed:\s*false/);
@@ -78,4 +78,30 @@ test("OAuth redirects are cache-free and consume the short-lived state cookie", 
   assert.match(callback, /response\.headers\.set\("Cache-Control", "no-store, private"\)/);
   assert.equal((callback.match(/response\.cookies\.delete\("agentic_os_oauth_state"\)/g) || []).length, 2);
   assert.match(callback, /open\(stored\) !== state/);
+});
+
+test("every Google transport is time-bounded and catalog failures stay private", async () => {
+  const files = await Promise.all([
+    readFile(new URL("../lib/google-calendar.ts", import.meta.url), "utf8"),
+    readFile(new URL("../lib/google-calendar-read.ts", import.meta.url), "utf8"),
+    route("calendars"),
+    route("callback"),
+    route("events"),
+    route("today-summary"),
+    route("write"),
+  ]);
+  const helper = await readFile(new URL("../lib/google-transport.ts", import.meta.url), "utf8");
+  assert.match(helper, /GOOGLE_REQUEST_TIMEOUT_MS = 8_000/);
+  assert.match(helper, /AbortSignal\.timeout\(GOOGLE_REQUEST_TIMEOUT_MS\)/);
+  for (const source of files) {
+    assert.match(source, /googleRequestSignal/);
+    for (const call of source.matchAll(/fetch\([\s\S]*?\)/g)) {
+      if (/googleapis|oauth2\.google/.test(call[0])) assert.match(source, /signal:\s*googleRequestSignal\(\)/);
+    }
+  }
+  const catalog = files[2];
+  assert.match(catalog, /Google-Kalenderkatalog vorübergehend nicht erreichbar/);
+  assert.match(catalog, /connectionCheck: "error"/);
+  assert.match(catalog, /writesPerformed: false/);
+  assert.doesNotMatch(catalog, /error\.message|String\(error\)/);
 });

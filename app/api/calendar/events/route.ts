@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { assertBoundedWindow } from "@/lib/calendar-core.mjs";
 import { refreshedAccessToken } from "@/lib/google-calendar";
+import { googleRequestSignal } from "@/lib/google-transport";
 import { verifyLocalSession } from "@/lib/shared-store";
 import { weeklyWindow } from "@/lib/weekly-planner";
 
@@ -38,7 +39,7 @@ export async function GET(req: NextRequest) {
           maxResults: "100",
           fields: "items(id,summary,start,end)",
         }).toString();
-        const response = await fetch(url, { headers: { authorization: `Bearer ${token}` }, cache: "no-store" });
+        const response = await fetch(url, { headers: { authorization: `Bearer ${token}` }, cache: "no-store", signal: googleRequestSignal() });
         if (!response.ok) throw new Error("Google Terminabruf fehlgeschlagen");
         const data = await response.json();
         return (Array.isArray(data.items) ? data.items : [])

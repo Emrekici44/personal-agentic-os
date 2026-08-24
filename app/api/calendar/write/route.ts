@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'node:crypto';
 import { refreshedAccessToken } from '@/lib/google-calendar';
+import { googleRequestSignal } from '@/lib/google-transport';
 import { auditCalendarWrite, consumeApproval } from '@/lib/calendar-write';
 import { verifyLocalSession } from '@/lib/shared-store';
 const headers={'Cache-Control':'no-store, private'};
@@ -18,14 +19,14 @@ export async function POST(req: NextRequest) {
       duplicate.searchParams.set('privateExtendedProperty', `agenticOsIdempotencyKey=${change.idempotencyKey}`);
       duplicate.searchParams.set('timeMin', new Date(change.start).toISOString());
       duplicate.searchParams.set('timeMax', new Date(change.end).toISOString());
-      const existing = await fetch(duplicate, { headers: { authorization: `Bearer ${access}` }, cache: 'no-store' });
+      const existing = await fetch(duplicate, { headers: { authorization: `Bearer ${access}` }, cache: 'no-store', signal: googleRequestSignal() });
       if (!existing.ok) throw new Error('Duplikatprüfung fehlgeschlagen');
       const matches = await existing.json();
       if (matches.items?.length) return NextResponse.json({ written: false, duplicatePrevented: true, auditId: matches.items[0].id },{headers});
     }
     const url = change.action === 'update' ? `${base}/${encodeURIComponent(change.eventId!)}` : base;
     const event = { summary: change.title, description: change.description, location: change.location, start: { dateTime: change.start }, end: { dateTime: change.end }, extendedProperties: { private: { agenticOsIdempotencyKey: change.idempotencyKey } } };
-    const response = await fetch(url, { method: change.action === 'update' ? 'PATCH' : 'POST', headers: { authorization: `Bearer ${access}`, 'content-type': 'application/json' }, body: JSON.stringify(event), cache: 'no-store' });
+    const response = await fetch(url, { method: change.action === 'update' ? 'PATCH' : 'POST', headers: { authorization: `Bearer ${access}`, 'content-type': 'application/json' }, body: JSON.stringify(event), cache: 'no-store', signal: googleRequestSignal() });
     if (!response.ok) throw new Error('Google Calendar Write fehlgeschlagen');
     const result = await response.json();
     const auditId = crypto.randomUUID();
