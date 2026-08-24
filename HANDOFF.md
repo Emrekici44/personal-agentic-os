@@ -75,6 +75,7 @@ Project root: `outputs/agentic-os`. Private source remote: `https://github.com/E
 - Calendar approvals now use the existing SQLite `approvals` ledger: encrypted exact diff, 15-minute expiry, transactional one-use consumption and content-light audit. A temporary-store runtime test proved mismatch/replay rejection and no plaintext event title in the DB; no real approval or calendar action was created.
 - Calendar writes now expose explicit non-retryable recovery outcomes, perform a content-minimal read-back after Google success and distinguish missing read-back or audit from a rejected/not-started request. The UI clears the consumed approval and requires Calendar inspection plus a new exact proposal for unknown/partial outcomes. Only an anonymous 401 probe was run; no real write path executed.
 - Integration/cost and life-area enums are translated in the visible UI while stored/API codes remain stable. Integration Health and mobile Usage & Limits were checked without raw class badges, overflow or console errors. Current area store is empty, so enum-detail contracts were tested statically without creating fake personal records.
+- `data/system-progress.ts` now lists the five newest verified recovery/UX increments explicitly. The UI derives completed/total counts from the checklist, keeps one active local audit and does not fold the two remaining user decisions into fake progress.
 
 ## Immediate continuation
 

@@ -67,6 +67,7 @@
 - Exact Calendar approval tokens are now backed by the existing local approvals ledger. Exact changes are encrypted, scope/expiry/diff are revalidated transactionally and the approval becomes single-use before any Google write transport. Isolated runtime proof confirms changed diffs and replay are rejected.
 - Calendar execution now models each recovery outcome explicitly. Successful Google responses are read back with content-minimal fields and audited; an unknown or partially verified result is non-retryable, clears the one-use approval and directs the user to inspect Calendar before generating a new exact proposal.
 - User-facing status truth now translates internal connector/cost and life-area enums without changing persisted contracts. Integration Health and Usage & Limits use consistent German labels; raw provider/record codes remain implementation evidence only.
+- Dashboard progress is synchronized with the verified recovery work as five discrete completed checklist items. Exactly one local gap audit remains active; physical iPhone retest and PostgreSQL direction stay separate user-action boundaries, with no invented percentage.
 
 ## Complete – Bedienwahrheit and responsive refinement
 

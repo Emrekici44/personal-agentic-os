@@ -28,5 +28,6 @@ test("system progress reflects the current recovery audit without fake precision
   assert.match(progressSource, /id: "source-recovery-truth"[\s\S]*status: "complete"/);
   assert.match(progressSource, /id: "ongoing-local-gap-audit"[\s\S]*status: "active"/);
   assert.match(progressSource, /Projekt, Usage, Journal und Calendar/);
+  for (const id of ["oauth-cache-state-recovery", "calendar-evidence-recovery", "google-transport-boundary", "calendar-single-use-approval", "visible-state-language"]) assert.match(progressSource, new RegExp(`id: "${id}"[\\s\\S]*status: "complete"`));
   assert.match(progressSource, /keine externen Writes, Migrationen, Installationen oder Kosten/);
 });
