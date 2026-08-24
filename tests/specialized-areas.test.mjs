@@ -46,3 +46,12 @@ test("all specialized private values remain inside encrypted area payloads", () 
   assert.match(payload, /sensitive:encryptSensitive\(sensitive\)/);
   assert.doesNotMatch(payload.match(/publicData:JSON\.stringify\(([^)]*)\)/)?.[1] || "", /birthday|amount|details|quranPage|recoveryScore|lastContact/);
 });
+
+test("life-area details translate stored enums instead of exposing internal codes", () => {
+  for (const map of ["recordStatusLabel", "relationshipLabel", "frequencyLabel", "intensityLabel"]) assert.match(ui, new RegExp(map));
+  assert.match(ui, /recordStatusLabel\[record\.status\]/);
+  assert.match(ui, /recordStatusLabel\[selected\.status\]/);
+  assert.match(ui, /relationshipLabel\[selected\.relationshipCategory\]/);
+  assert.match(ui, /frequencyLabel\[selected\.frequency\]/);
+  assert.match(ui, /intensityLabel\[selected\.intensity\]/);
+});

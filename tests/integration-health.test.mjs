@@ -36,6 +36,8 @@ test("health UI provides a real refresh and expandable evidence without activati
   assert.match(ui, /fetch\("\/api\/integrations\/health"/);
   assert.match(ui, /setSelectedConnectorId/);
   assert.doesNotMatch(ui.slice(ui.indexOf("function Integrations"), ui.indexOf("function Brain")), /Verbindung erfolgreich aktiviert|Plugin installiert|API aktiviert/i);
+  for (const term of ["Kostenfrei", "Nutzungsbasiert", "Ungeklärt", "Direkte API", "Lokaler Adapter", "Privates Netzwerk", "Berechtigungen"]) assert.match(ui, new RegExp(term));
+  assert.doesNotMatch(ui, /CONNECTOR CONTRACT · \{selectedConnector\.classification\}|opaque IDs/);
 });
 
 test("calendar recovery keeps status, token check and catalog evidence separate", async () => {

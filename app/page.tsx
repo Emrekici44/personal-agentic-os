@@ -79,6 +79,10 @@ const viewIds = new Set<View>([
 ]);
 const isView = (candidate: unknown): candidate is View =>
   typeof candidate === "string" && viewIds.has(candidate as View);
+const recordStatusLabel: Record<string, string> = { active: "Aktiv", planned: "Geplant", paused: "Pausiert", completed: "Abgeschlossen", archived: "Archiviert", metadata_only: "Nur Metadaten" };
+const relationshipLabel: Record<string, string> = { family: "Familie", friend: "Freundschaft", romantic: "Romantisch", professional: "Beruflich", other: "Andere" };
+const frequencyLabel: Record<string, string> = { weekly: "Wöchentlich", monthly: "Monatlich", quarterly: "Vierteljährlich", yearly: "Jährlich" };
+const intensityLabel: Record<string, string> = { easy: "Leicht", moderate: "Moderat", hard: "Hart" };
 const store = {
   get: (k: string, d: any) => {
     if (typeof window === "undefined") return d;
@@ -833,7 +837,7 @@ function AreaRecordWorkspace({ config, note }: { config: AreaRecordConfig; note:
   };
   const renderRecord = (record: any) => (
     <button className="areaRecordCard" key={record.id} onClick={() => setSelected(record)} type="button">
-      <span><Tag>{typeLabel(record.recordType)}</Tag><i>{record.status}</i></span>
+      <span><Tag>{typeLabel(record.recordType)}</Tag><i>{recordStatusLabel[record.status] || "Nicht verifiziert"}</i></span>
       <b>{record.title}</b>
       <small>{record.date || "Kein Datum"}</small>
     </button>
@@ -873,20 +877,20 @@ function AreaRecordWorkspace({ config, note }: { config: AreaRecordConfig; note:
       {state==="online" && selected && (
         <Card className="areaRecordDetail">
           <button className="backButton" onClick={() => setSelected(null)} type="button">← Übersicht</button>
-          <div className="row"><Tag>{typeLabel(selected.recordType)}</Tag><i className="badge unconfigured">{selected.status}</i></div>
+          <div className="row"><Tag>{typeLabel(selected.recordType)}</Tag><i className="badge unconfigured">{recordStatusLabel[selected.status] || "Nicht verifiziert"}</i></div>
           <h2>{selected.title}</h2>
           {selected.track && <p><b>Pfad:</b> {trackLabel(selected.track)}</p>}
           {selected.date && <p><b>Datum:</b> {selected.date}</p>}
           {selected.amount && <p><b>Betrag:</b> {selected.amount} {selected.currency}</p>}
           {selected.prayerName&&<p><b>Gebet/Praxis:</b> {selected.prayerName} · {selected.completed?"selbst erfasst":"nicht als abgeschlossen markiert"}</p>}
           {selected.quranPage&&<p><b>Qurʾān:</b> Seite {selected.quranPage}{selected.pagesRead?` · ${selected.pagesRead} Seiten gelesen`:""}</p>}
-          {selected.durationMinutes&&<p><b>Training:</b> {selected.durationMinutes} Minuten · {selected.intensity||"Intensität nicht gesetzt"}</p>}
+          {selected.durationMinutes&&<p><b>Training:</b> {selected.durationMinutes} Minuten · {intensityLabel[selected.intensity]||"Intensität nicht gesetzt"}</p>}
           {selected.recoveryScore&&<p><b>Recovery:</b> {selected.recoveryScore}/5{selected.sleepHours?` · ${selected.sleepHours} h Schlaf`:""}</p>}
           {selected.metricValue&&<p><b>Messwert:</b> {selected.metricValue} {selected.unit}</p>}
           {selected.category&&<p><b>Kategorie:</b> {selected.category}</p>}
           {selected.targetAmount&&<p><b>Zielbetrag:</b> {selected.targetAmount} {selected.currency}</p>}
-          {selected.frequency&&config.area==="finance"&&<p><b>Rhythmus:</b> {selected.frequency}</p>}
-          {selected.relationshipCategory&&<p><b>Beziehung:</b> {selected.relationshipCategory}</p>}
+          {selected.frequency&&config.area==="finance"&&<p><b>Rhythmus:</b> {frequencyLabel[selected.frequency] || "Nicht verifiziert"}</p>}
+          {selected.relationshipCategory&&<p><b>Beziehung:</b> {relationshipLabel[selected.relationshipCategory] || "Nicht verifiziert"}</p>}
           {selected.birthday&&<p><b>Geburtstag:</b> {selected.birthday}</p>}
           {selected.lastContact&&<p><b>Letzter Kontakt:</b> {selected.lastContact}</p>}
           {selected.nextFollowUp&&<p><b>Nächstes Follow-up:</b> {selected.nextFollowUp}</p>}
@@ -1794,6 +1798,8 @@ function Integrations({ note }: any) {
   const selectedConnector=integrationHealth.connectors.find((connector:any)=>connector.id===selectedConnectorId);
   const connectionIcons:Record<string,any>={"google-calendar":I.CalendarDays,obsidian:I.BookOpen,"shared-store":I.Database,openai:I.Sparkles,"google-tasks":I.CheckSquare,"health-local":I.Activity,"finance-local":I.Landmark,tailscale:I.ShieldCheck};
   const healthStatusLabel:Record<string,string>={online:"Online",degraded:"Eingeschränkt",offline:"Offline",unconfigured:"Nicht konfiguriert"};
+  const costClassLabel:Record<string,string>={Free:"Kostenfrei",Included:"Enthalten","Usage-based":"Nutzungsbasiert",Unknown:"Ungeklärt"};
+  const connectorClassLabel:Record<string,string>={direct_api:"Direkte API",local_adapter:"Lokaler Adapter",local_database:"Lokale Datenbank",optional_paid_api:"Optionale Bezahl-API",new_oauth_scope:"Neue OAuth-Berechtigung",manual_local:"Manuell lokal",private_network:"Privates Netzwerk"};
   const formatHealthTime=(value:string|null)=>value?new Intl.DateTimeFormat("de-DE",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit",timeZone:"Europe/Berlin"}).format(new Date(value)):"Noch nie verifiziert";
   return (
     <>
@@ -1881,14 +1887,14 @@ function Integrations({ note }: any) {
       {integrationHealth.state==="error"&&<p className="plannerError" role="alert"><I.TriangleAlert/>{integrationHealth.error}</p>}
       <div className="connections healthConnections">
         {integrationHealth.connectors.map((connector:any)=>{const Icon=connectionIcons[connector.id]||I.Plug;return <Card className={selectedConnectorId===connector.id?"selected":""} key={connector.id}>
-          <div className="row"><span className="connector"><Icon/></span><div className="connectionBadges"><i className={`badge ${connector.status}`}>{healthStatusLabel[connector.status]||"Nicht verifiziert"}</i><i className={`costBadge ${String(connector.costClass).toLowerCase().replace(/[^a-z]+/g,"-")}`}>{connector.costClass}</i></div></div>
+          <div className="row"><span className="connector"><Icon/></span><div className="connectionBadges"><i className={`badge ${connector.status}`}>{healthStatusLabel[connector.status]||"Nicht verifiziert"}</i><i className={`costBadge ${String(connector.costClass).toLowerCase().replace(/[^a-z]+/g,"-")}`}>{costClassLabel[connector.costClass]||"Ungeklärt"}</i></div></div>
           <h3>{connector.name}</h3><p>{connector.area}</p>
-          <dl><dt>Letzter Erfolg</dt><dd>{formatHealthTime(connector.lastSuccessfulSync)}</dd><dt>Aktuelle Prüfung</dt><dd>{connector.currentAction}</dd><dt>Scope</dt><dd>{connector.permissionScope.join(" · ")}</dd></dl>
+          <dl><dt>Letzter Erfolg</dt><dd>{formatHealthTime(connector.lastSuccessfulSync)}</dd><dt>Aktuelle Prüfung</dt><dd>{connector.currentAction}</dd><dt>Berechtigungen</dt><dd>{connector.permissionScope.join(" · ")}</dd></dl>
           {connector.recentError&&<p className="connectionError"><I.TriangleAlert/>{connector.recentError}</p>}
           <button className="connectionDetailsButton" aria-expanded={selectedConnectorId===connector.id} onClick={()=>setSelectedConnectorId(current=>current===connector.id?"":connector.id)}>Details & sichere Schritte<I.ChevronDown/></button>
         </Card>})}
       </div>
-      {selectedConnector&&<Card className="connectionDetails"><div className="row"><div><Tag>CONNECTOR CONTRACT · {selectedConnector.classification}</Tag><h3>{selectedConnector.name}</h3></div><i className={`badge ${selectedConnector.status}`}>{healthStatusLabel[selectedConnector.status]||"Nicht verifiziert"}</i></div><div className="connectionDetailGrid"><span><b>Datenschutz</b>{selectedConnector.privacy}</span><span><b>Sicherer Wiederverbindungsweg</b>{selectedConnector.reconnect}</span><span><b>Letzte Prüfung</b>{formatHealthTime(selectedConnector.checkedAt)}</span><span><b>Kostenklasse</b>{selectedConnector.costClass} · keine Aktivierung durch diese Ansicht</span></div><details><summary>Verifizierte Evidenz anzeigen</summary><pre>{JSON.stringify(selectedConnector.evidence,null,2)}</pre></details><small><I.Lock/>Keine Zugangsdaten, opaque IDs oder persönlichen Inhalte werden hier angezeigt.</small></Card>}
+      {selectedConnector&&<Card className="connectionDetails"><div className="row"><div><Tag>VERBINDUNGSART · {connectorClassLabel[selectedConnector.classification]||"Ungeklärt"}</Tag><h3>{selectedConnector.name}</h3></div><i className={`badge ${selectedConnector.status}`}>{healthStatusLabel[selectedConnector.status]||"Nicht verifiziert"}</i></div><div className="connectionDetailGrid"><span><b>Datenschutz</b>{selectedConnector.privacy}</span><span><b>Sicherer Wiederverbindungsweg</b>{selectedConnector.reconnect}</span><span><b>Letzte Prüfung</b>{formatHealthTime(selectedConnector.checkedAt)}</span><span><b>Kostenklasse</b>{costClassLabel[selectedConnector.costClass]||"Ungeklärt"} · keine Aktivierung durch diese Ansicht</span></div><details><summary>Verifizierte Evidenz anzeigen</summary><pre>{JSON.stringify(selectedConnector.evidence,null,2)}</pre></details><small><I.Lock/>Keine Zugangsdaten, technischen Fremd-IDs oder persönlichen Inhalte werden hier angezeigt.</small></Card>}
     </>
   );
 }

@@ -33,7 +33,9 @@ test("usage evidence is invalidated while loading or offline", () => {
   assert.match(usage, /verified \? state\.backups\.length : "—"/);
   assert.match(usage, /HARD KILL SWITCH[\s\S]*?NICHT VERIFIZIERT/);
   assert.match(usage, /Private Statusquelle nicht erreichbar/);
-  assert.match(usage, /Connector-Status nicht erreichbar/);
+  assert.match(usage, /Verbindungsstatus nicht erreichbar/);
+  for (const cost of ["Enthalten", "Nutzungsbasiert", "Kostenfrei", "Ungeklärt"]) assert.match(usage, new RegExp(cost));
+  assert.match(usage, /calendar\.permissionScope\.join\(" · "\)/);
   assert.match(css, /\.usageTopline>a\{[^}]*min-height:44px/);
   assert.match(css, /\.modeGrid article>a\{[^}]*min-height:44px/);
 });
