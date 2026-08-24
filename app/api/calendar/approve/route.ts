@@ -1,2 +1,3 @@
-import {NextRequest,NextResponse} from 'next/server';import {validateApproval} from '@/lib/calendar-core.mjs';
-export async function POST(req:NextRequest){try{const blocks=validateApproval(await req.json());return NextResponse.json({approved:true,mode:'mock',writesPerformed:false,reason:'Mock adapter never writes external data',approvedCount:blocks.length,auditId:crypto.randomUUID()})}catch(e){return NextResponse.json({error:e instanceof Error?e.message:'Freigabe ungültig'},{status:400})}}
+import {NextRequest,NextResponse} from 'next/server';import {verifyLocalSession} from '@/lib/shared-store';
+const headers={'Cache-Control':'no-store, private'};
+export async function POST(req:NextRequest){if(!verifyLocalSession(req.cookies.get('agentic_os_local_session')?.value))return NextResponse.json({error:'Lokale Sitzung erforderlich',writesPerformed:false},{status:401,headers});return NextResponse.json({error:'Dieser frühere Testadapter ist deaktiviert. Nutze die exakte Write-Proposal-Freigabe.',retired:true,writesPerformed:false},{status:410,headers})}

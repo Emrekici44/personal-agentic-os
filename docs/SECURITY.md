@@ -4,7 +4,7 @@
 - Google requests only `calendar.calendarlist.readonly` and `calendar.events` after the user's explicit enablement. Calendar ACL/sharing, settings, deletes, broad administration, and background writes remain disabled.
 - Tokens are encrypted in HTTP-only, SameSite cookies and never returned to client code. OAuth state is random, encrypted, short-lived, and verified.
 - Reads are limited to eight days, twelve selected calendars, and 100 events per calendar.
-- The labeled mock adapter always reports `writesPerformed: false`, including after approval.
+- Calendar mocks exist only as bounded automated-test fixtures. Production status/catalog/read routes require the signed local session and return an empty unavailable state when Google is disconnected; the obsolete mock proposal/approval HTTP routes are retired with 410 and cannot act.
 - Consequential writes require a visible preview, explicit approval, an expiring single-use approval token, and an audit entry.
 - Each event create/update is bound to a selected calendar, an exact diff, a 15-minute approval token, the literal per-action confirmation `DIESEN_TERMIN_JETZT_SCHREIBEN`, and an idempotency key checked before create. Audit metadata is stored only under git-ignored `local-state/`.
 - Obsidian integration begins with an inventory and read-only preview. Existing vault files are never modified without separate confirmation.
@@ -18,6 +18,7 @@
 - Local/free operation is the default. Potentially billable providers must disclose cost class and obtain explicit activation approval.
 - OpenAI keys are server-only. ChatGPT Pro is never treated as API authorization. API requests are blocked locally until positive daily/monthly ceilings and kill-switch state permit them.
 - OpenAI provider status and Obsidian normalization preview require the signed local session and return `no-store, private`; neither route returns a provider key, Vault body, absolute Vault path or frontmatter value.
+- Calendar status, calendar catalog, bounded events, OAuth entry and encrypted local token sharing use that same signed private-session boundary and `no-store, private` responses. The OAuth callback is the narrow exception: it validates the encrypted ten-minute Google state instead of an app-session cookie and never returns credentials.
 - ChatGPT Companion Mode has no conversation-history integration. Only text the user deliberately pastes into the Inbox becomes Agentic OS data.
 - The Electron renderer is sandboxed with context isolation and web security enabled, Node integration disabled, permissions denied, and navigation restricted to its loopback Agentic OS origin. No installer or updater is active.
 - The Expo companion receives only a non-secret LAN URL through `EXPO_PUBLIC_AGENTIC_OS_URL`. It contains no API key, OAuth credential, fixed machine IP, tunnel, hosted endpoint, or EAS account configuration.

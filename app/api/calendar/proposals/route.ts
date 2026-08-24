@@ -1,2 +1,3 @@
-import {NextRequest,NextResponse} from 'next/server';import {proposeFocusBlocks,readMockEvents} from '@/lib/calendar-core.mjs';
-export async function POST(req:NextRequest){const b=await req.json();try{const events=readMockEvents({start:b.start,end:b.end,calendarIds:b.calendarIds||[]});return NextResponse.json({mode:'mock',proposalOnly:true,writesPerformed:false,blocks:proposeFocusBlocks(events)})}catch(e){return NextResponse.json({error:e instanceof Error?e.message:'Vorschlag fehlgeschlagen'},{status:400})}}
+import {NextRequest,NextResponse} from 'next/server';import {verifyLocalSession} from '@/lib/shared-store';
+const headers={'Cache-Control':'no-store, private'};
+export async function POST(req:NextRequest){if(!verifyLocalSession(req.cookies.get('agentic_os_local_session')?.value))return NextResponse.json({error:'Lokale Sitzung erforderlich',writesPerformed:false},{status:401,headers});return NextResponse.json({error:'Dieser frühere Testadapter ist deaktiviert. Nutze den echten gemeinsamen Wochenplaner.',retired:true,proposalOnly:true,writesPerformed:false},{status:410,headers})}

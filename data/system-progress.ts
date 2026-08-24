@@ -9,7 +9,7 @@ export type ProgressItem = {
 };
 
 export const systemProgress = {
-  currentPhase: "Lokaler Abschlussaudit grün · physischer iPhone-Nachtest gebündelt offen",
+  currentPhase: "Private API und ehrliche Offline-Zustände gehärtet · Projektressourcen als nächster lokaler Schritt",
   lastVerifiedAt: "24.08.2026 · Europe/Berlin",
   items: [
     {
@@ -267,7 +267,7 @@ export const systemProgress = {
     {
       id: "private-api-surface",
       label: "Private Status- und Preview-API vereinheitlichen",
-      evidence: "Vault-Status/Normalisierung + Providerstatus signiert, privat und cachefrei",
+      evidence: "Vault/Provider/Calendar signiert · cachefrei · keine Produktions-Mockevents · alte Mock-Endpunkte deaktiviert",
       href: "#integrations",
       status: "complete",
     },

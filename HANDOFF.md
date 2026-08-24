@@ -13,6 +13,7 @@ Project root: `outputs/agentic-os`. Private source remote: `https://github.com/E
 - One real local SQLite snapshot now exists under the ignored backup directory. Its SHA-256/integrity/schema/count preview passed; it was not restored, copied externally or committed.
 - Electron and the local Next dev service are currently usable. The verified desktop shortcut/launcher remains unchanged.
 - Calendar reads are safe; no pending write proposal exists.
+- Calendar status, calendar list, bounded event read, OAuth entry and local encrypted-token handoff now reject unsigned clients with 401 and private no-store responses. Disconnected clients receive no demo calendars/events; obsolete mock proposal and approval routes are retired with 410.
 - Existing Vault notes remain unchanged.
 - PostgreSQL PoC is files-only and deliberately inactive. Docker/Podman/psql were not installed.
 - Graphify is not installed.

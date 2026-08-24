@@ -17,13 +17,13 @@ Stand: 24.08.2026, Europe/Berlin. Diese Liste verwendet nur diskrete Zustände. 
 | Wissen | Reeller 27-Notizen-Vault-Index, 37 Links, 34 Beziehungen, private Metadatensuche, exakte Diffvorschau | Kein Vault-Apply; bestehende Notizen unverändert |
 | Google Calendar | Verbunden, begrenzte Reads, enges Event-Scope, exakte Einzelwrite-Freigabe | Keine Hintergrundwrites, Deletes, ACL, Sharing oder Settings |
 | Einstellungen und Usage | Geteiltes Branding/Theme, lokales geprüftes Backup, Restore-Vorschau, ehrliche Provider-/Limitgrenzen | Restore-Apply und bezahlte Provider technisch gesperrt |
+| Private API und Calendar-Leerzustände | Status, Katalog, Reads, OAuth-Einstieg und lokale Token-Übernahme verlangen dieselbe signierte Sitzung; frühere Mock-Endpunkte sind deaktiviert | OAuth-Callback bleibt ausschließlich an den kurzlebigen verschlüsselten Google-State gebunden |
 
 ## Lokal weiter ausführbar
 
 | Priorität | Restpunkt | Sicherer nächster vertikaler Schritt | Abnahmekriterium |
 | --- | --- | --- | --- |
-| 1 | Private API-Oberfläche vollständig vereinheitlichen | Alle wissens-/providerbezogenen Status- und Preview-Routen hinter die signierte lokale Sitzung legen | 401 ohne Sitzung, `no-store, private`, bestehende UI grün |
-| 2 | Projektdateien und Dokumentverweise | Zunächst nur validierte Referenz-Metadaten/Links, kein stilles Kopieren oder Öffnen | Ehrlicher Dateiverweis; keine Vault-/Dateisystemmutation |
+| 1 | Projektdateien und Dokumentverweise | Zunächst nur validierte Referenz-Metadaten/Links, kein stilles Kopieren oder Öffnen | Ehrlicher Dateiverweis; keine Vault-/Dateisystemmutation |
 Der lokale Bedienaudit ist abgeschlossen: 16 Kernansichten wurden auf Desktop und 390×844 ohne horizontalen Überlauf geprüft; alle sichtbaren aktiven mobilen Buttons erreichen mindestens 32 px in beiden Dimensionen, Menü/Journal-Impulse mindestens 44 px. Der physische Expo-Nachtest bleibt eine gebündelte Nutzeraktion.
 
 ## Nutzerentscheidung oder externe Grenze
