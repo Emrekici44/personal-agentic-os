@@ -1771,11 +1771,7 @@ function Integrations({ note }: any) {
   const readWeek = async () => {
     if (!selectedCalendars.length) return note("Bitte mindestens einen Kalender auswählen");
     setCalendarRead({ state: "loading", events: [] });
-    const start = new Date();
-    start.setHours(0, 0, 0, 0);
-    const end = new Date(start);
-    end.setDate(end.getDate() + 8);
-    const query = new URLSearchParams({ start: start.toISOString(), end: end.toISOString() });
+    const query = new URLSearchParams();
     selectedCalendars.forEach((id) => query.append("calendar", id));
     try {
       const response = await fetch(`/api/calendar/events?${query}`, { cache: "no-store" });
@@ -1855,7 +1851,7 @@ function Integrations({ note }: any) {
             <b>2 · Begrenzter Abruf</b>
             <p>
               {calendarRead.state === "online"
-                ? `${calendarRead.events.length} Termine · ${calendarRead.label} · maximal 8 Tage`
+                ? `${calendarRead.events.length} Termine · ${calendarRead.label} · ${calendarRead.boundedDays} Tage · ${calendarRead.timezone}`
                 : calendarRead.state === "loading" ? "Kalender werden gelesen …" : calendarRead.error || "Noch keine Daten gelesen"}
             </p>
           </div>

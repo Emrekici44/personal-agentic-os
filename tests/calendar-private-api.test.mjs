@@ -21,9 +21,25 @@ test("disconnected production calendar routes return honest empty states, never 
   assert.match(calendars, /calendars:\[\]/);
   assert.match(calendars, /mockDataUsed:false/);
   assert.doesNotMatch(calendars, /MOCK_CALENDARS|Testdaten/);
-  assert.match(events, /events:\[\]/);
-  assert.match(events, /mockDataUsed:false/);
+  assert.match(events, /events:\s*\[\]/);
+  assert.match(events, /mockDataUsed:\s*false/);
   assert.doesNotMatch(events, /readMockEvents|Testdaten/);
+});
+
+test("bounded calendar reads use the server-side Europe Berlin window", async () => {
+  const [events, page] = await Promise.all([
+    route("events"),
+    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
+  ]);
+  assert.match(events, /weeklyWindow\(new Date\(\)\)/);
+  assert.match(events, /assertBoundedWindow\(window\.start, window\.end\)/);
+  assert.match(events, /timeMin: window\.start/);
+  assert.match(events, /timeMax: window\.end/);
+  assert.match(events, /timezone: window\.timezone/);
+  assert.match(events, /fields: "items\(id,summary,start,end\)"/);
+  assert.match(events, /new Set\(req\.nextUrl\.searchParams\.getAll\("calendar"\)\)/);
+  assert.doesNotMatch(page, /new URLSearchParams\(\{ start: start\.toISOString\(\), end: end\.toISOString\(\) \}\)/);
+  assert.match(page, /calendarRead\.boundedDays[\s\S]*calendarRead\.timezone/);
 });
 
 test("retired calendar mock endpoints cannot approve or propose anything", async () => {

@@ -1,3 +1,76 @@
-import {NextRequest,NextResponse} from 'next/server';import {assertBoundedWindow} from '@/lib/calendar-core.mjs';import {refreshedAccessToken} from '@/lib/google-calendar';import {verifyLocalSession} from '@/lib/shared-store';
-const headers={'Cache-Control':'no-store, private'};
-export async function GET(req:NextRequest){try{if(!verifyLocalSession(req.cookies.get('agentic_os_local_session')?.value))return NextResponse.json({error:'Lokale Sitzung erforderlich',events:[]},{status:401,headers});const q=req.nextUrl.searchParams,start=q.get('start'),end=q.get('end'),calendarIds=q.getAll('calendar');assertBoundedWindow(start,end);if(!calendarIds.length)return NextResponse.json({error:'Mindestens ein Kalender ist erforderlich',events:[]},{status:400,headers});const token=await refreshedAccessToken(req.cookies.get('agentic_os_google_token')?.value);if(!token)return NextResponse.json({mode:'unavailable',connected:false,error:'Google Calendar ist nicht verbunden',events:[],mockDataUsed:false,writesPerformed:false},{status:409,headers});const batches=await Promise.all(calendarIds.slice(0,12).map(async id=>{const u=new URL(`https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(id)}/events`);u.search=new URLSearchParams({timeMin:new Date(start!).toISOString(),timeMax:new Date(end!).toISOString(),singleEvents:'true',orderBy:'startTime',maxResults:'100'}).toString();const r=await fetch(u,{headers:{authorization:`Bearer ${token}`},cache:'no-store'});if(!r.ok)throw new Error('Google Terminabruf fehlgeschlagen');const d=await r.json();return (Array.isArray(d.items)?d.items:[]).map((x:any)=>({id:x.id,calendarId:id,title:x.summary||'(Ohne Titel)',start:x.start?.dateTime||x.start?.date,end:x.end?.dateTime||x.end?.date,kind:'calendar'})).filter((x:any)=>x.start&&x.end)}));return NextResponse.json({mode:'google',connected:true,label:'Google Calendar · nur Lesen',events:batches.flat(),boundedDays:8,mockDataUsed:false,writesPerformed:false},{headers})}catch(e){return NextResponse.json({error:e instanceof Error?e.message:'Ungültige Anfrage',events:[]},{status:400,headers})}}
+import { NextRequest, NextResponse } from "next/server";
+import { assertBoundedWindow } from "@/lib/calendar-core.mjs";
+import { refreshedAccessToken } from "@/lib/google-calendar";
+import { verifyLocalSession } from "@/lib/shared-store";
+import { weeklyWindow } from "@/lib/weekly-planner";
+
+const headers = { "Cache-Control": "no-store, private" };
+
+export async function GET(req: NextRequest) {
+  try {
+    if (!verifyLocalSession(req.cookies.get("agentic_os_local_session")?.value)) {
+      return NextResponse.json({ error: "Lokale Sitzung erforderlich", events: [] }, { status: 401, headers });
+    }
+
+    const calendarIds = [...new Set(req.nextUrl.searchParams.getAll("calendar"))].slice(0, 12);
+    if (!calendarIds.length) {
+      return NextResponse.json({ error: "Mindestens ein Kalender ist erforderlich", events: [] }, { status: 400, headers });
+    }
+
+    const window = weeklyWindow(new Date());
+    assertBoundedWindow(window.start, window.end);
+    const token = await refreshedAccessToken(req.cookies.get("agentic_os_google_token")?.value);
+    if (!token) {
+      return NextResponse.json(
+        { mode: "unavailable", connected: false, error: "Google Calendar ist nicht verbunden", events: [], mockDataUsed: false, writesPerformed: false },
+        { status: 409, headers },
+      );
+    }
+
+    const batches = await Promise.all(
+      calendarIds.map(async (id) => {
+        const url = new URL(`https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(id)}/events`);
+        url.search = new URLSearchParams({
+          timeMin: window.start,
+          timeMax: window.end,
+          singleEvents: "true",
+          orderBy: "startTime",
+          maxResults: "100",
+          fields: "items(id,summary,start,end)",
+        }).toString();
+        const response = await fetch(url, { headers: { authorization: `Bearer ${token}` }, cache: "no-store" });
+        if (!response.ok) throw new Error("Google Terminabruf fehlgeschlagen");
+        const data = await response.json();
+        return (Array.isArray(data.items) ? data.items : [])
+          .map((event: any) => ({
+            id: event.id,
+            calendarId: id,
+            title: event.summary || "(Ohne Titel)",
+            start: event.start?.dateTime || event.start?.date,
+            end: event.end?.dateTime || event.end?.date,
+            kind: "calendar",
+          }))
+          .filter((event: any) => event.start && event.end);
+      }),
+    );
+
+    return NextResponse.json(
+      {
+        mode: "google",
+        connected: true,
+        label: "Google Calendar · nur Lesen",
+        events: batches.flat(),
+        boundedDays: window.days,
+        timezone: window.timezone,
+        windowStart: window.start,
+        windowEnd: window.end,
+        selectedCalendarCount: calendarIds.length,
+        mockDataUsed: false,
+        writesPerformed: false,
+      },
+      { headers },
+    );
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Ungültige Anfrage", events: [] }, { status: 400, headers });
+  }
+}
