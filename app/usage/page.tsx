@@ -7,11 +7,12 @@ import { useCallback, useEffect, useState } from "react";
 const label: Record<string, string> = { online: "Online", degraded: "Eingeschränkt", offline: "Offline", unconfigured: "Nicht konfiguriert" };
 
 export default function Usage() {
-  const [state, setState] = useState<any>({ loading: true, openai: null, integrations: [], storage: null, backups: [] });
+  const [state, setState] = useState<any>({ loading: true, error: false, openai: null, integrations: [], storage: null, backups: [], checkedAt: null });
   const refresh = useCallback(async () => {
-    setState((current: any) => ({ ...current, loading: true }));
+    setState({ loading: true, error: false, openai: null, integrations: [], storage: null, backups: [], checkedAt: null });
     try {
-      await fetch("/api/state/session", { method: "POST" });
+      const sessionResponse = await fetch("/api/state/session", { method: "POST" });
+      if (!sessionResponse.ok) throw new Error();
       const [openaiResponse, integrationResponse, backupResponse] = await Promise.all([
         fetch("/api/openai/status", { cache: "no-store" }),
         fetch("/api/integrations/health", { cache: "no-store" }),
@@ -21,19 +22,20 @@ export default function Usage() {
       const [openai, integrations, backups] = await Promise.all([openaiResponse.json(), integrationResponse.json(), backupResponse.json()]);
       setState({ loading: false, error: false, openai, integrations: integrations.connectors || [], storage: backups.store, backups: backups.backups || [], checkedAt: integrations.checkedAt });
     } catch {
-      setState((current: any) => ({ ...current, loading: false, error: true }));
+      setState({ loading: false, error: true, openai: null, integrations: [], storage: null, backups: [], checkedAt: null });
     }
   }, []);
-  useEffect(() => { refresh(); }, [refresh]);
+  useEffect(() => { void refresh(); const recover = () => void refresh(); window.addEventListener("agentic-os:runtime-online", recover); return () => window.removeEventListener("agentic-os:runtime-online", recover); }, [refresh]);
+  const verified = !state.loading && !state.error;
   const connection = (id: string) => state.integrations.find((item: any) => item.id === id);
   const calendar = connection("google-calendar");
   const lastBackup = state.backups?.[0];
   const statusRows = [
     { Icon: Cloud, name: "ChatGPT Subscription", cost: "Included", detail: "Kein unterstützter präziser Plan-Zähler", status: "Manuell / nicht verfügbar" },
-    { Icon: Server, name: "OpenAI API", cost: "Usage-based", detail: state.openai?.configured ? `Kill Switch ${state.openai.killSwitch ? "aktiv" : "inaktiv"}` : "Kein Server-Key konfiguriert", status: state.openai?.configured ? "Konfiguriert" : "Nicht konfiguriert" },
+    { Icon: Server, name: "OpenAI API", cost: "Usage-based", detail: state.loading ? "Status wird geprüft" : state.error ? "Private Statusquelle nicht erreichbar" : state.openai?.configured ? `Kill Switch ${state.openai.killSwitch ? "aktiv" : "inaktiv"}` : "Kein Server-Key konfiguriert", status: state.loading ? "Prüft" : state.error ? "Nicht erreichbar" : state.openai?.configured ? "Konfiguriert" : "Nicht konfiguriert" },
     { Icon: HardDrive, name: "Lokales Modell", cost: "Free*", detail: "Keine kompatible Runtime verifiziert", status: "Nicht konfiguriert" },
-    { Icon: Database, name: "Agentic OS Storage", cost: "Free", detail: state.storage ? `${state.storage.engine} · Schema v${state.storage.schemaVersion} · WAL` : "Status nicht verfügbar", status: state.storage?.online ? "Online" : "Nicht geprüft" },
-    { Icon: ShieldCheck, name: "Google Calendar", cost: calendar?.costClass || "Free", detail: calendar?.permissionScope || "Scope nicht geprüft", status: label[calendar?.status] || "Nicht geprüft" },
+    { Icon: Database, name: "Agentic OS Storage", cost: "Free", detail: state.loading ? "Status wird geprüft" : state.error ? "Private Statusquelle nicht erreichbar" : state.storage ? `${state.storage.engine} · Schema v${state.storage.schemaVersion} · WAL` : "Status nicht verfügbar", status: state.loading ? "Prüft" : state.error ? "Nicht erreichbar" : state.storage?.online ? "Online" : "Nicht geprüft" },
+    { Icon: ShieldCheck, name: "Google Calendar", cost: verified ? calendar?.costClass || "Unknown" : "Unknown", detail: state.loading ? "Scope wird geprüft" : state.error ? "Connector-Status nicht erreichbar" : calendar?.permissionScope || "Scope nicht geprüft", status: state.loading ? "Prüft" : state.error ? "Nicht erreichbar" : label[calendar?.status] || "Nicht geprüft" },
     { Icon: TriangleAlert, name: "Integrationsquoten", cost: "Unknown", detail: "Nur zeigen, wenn ein Anbieter sie verlässlich meldet", status: "Manuell / nicht verfügbar" },
   ];
   return (
@@ -60,8 +62,8 @@ export default function Usage() {
           <b>2 · OpenAI API</b><em className="usage">Usage-based</em>
           <h2>Responses API</h2>
           <p>Optional, serverseitig und unabhängig von Pro abrechenbar. Ohne positiven Grenzwert und deaktivierten Kill Switch geht keine Anfrage hinaus.</p>
-          <label><input type="checkbox" checked={Boolean(state.openai?.killSwitch ?? true)} readOnly disabled /> HARD KILL SWITCH {state.openai?.killSwitch === false ? "INAKTIV" : "AKTIV"}</label>
-          <dl><dt>Tagesschwelle</dt><dd>€ {Number(state.openai?.dailyLimit || 0).toFixed(2)}</dd><dt>Monatsschwelle</dt><dd>€ {Number(state.openai?.monthlyLimit || 0).toFixed(2)}</dd><dt>Nutzungsquelle</dt><dd>{state.openai?.usageSource === "unavailable" ? "Nicht verfügbar" : "Nicht geprüft"}</dd></dl>
+          <label><input type="checkbox" checked={verified && Boolean(state.openai?.killSwitch)} readOnly disabled /> HARD KILL SWITCH {verified ? state.openai?.killSwitch === false ? "INAKTIV" : "AKTIV" : "NICHT VERIFIZIERT"}</label>
+          <dl><dt>Tagesschwelle</dt><dd>{verified ? `€ ${Number(state.openai?.dailyLimit || 0).toFixed(2)}` : "—"}</dd><dt>Monatsschwelle</dt><dd>{verified ? `€ ${Number(state.openai?.monthlyLimit || 0).toFixed(2)}` : "—"}</dd><dt>Nutzungsquelle</dt><dd>{verified && state.openai?.usageSource === "unavailable" ? "Nicht verfügbar" : verified ? "Nicht geprüft" : "Nicht verifiziert"}</dd></dl>
         </article>
         <article>
           <b>3 · Lokales Modell</b><em>Free*</em>
@@ -77,8 +79,8 @@ export default function Usage() {
         ))}
       </section>
       <section className="usageEvidence">
-        <article><b>Lokale Backups</b><strong>{state.backups?.length ?? "—"}</strong><small>{lastBackup ? `Zuletzt ${new Intl.DateTimeFormat("de-DE", { dateStyle: "short", timeStyle: "short" }).format(new Date(lastBackup.createdAt))}` : "Noch keines erstellt"}</small></article>
-        <article><b>Speicherschutz</b><strong>{state.storage?.sensitiveFieldEncryption || "Nicht geprüft"}</strong><small>Feldverschlüsselung; keine Behauptung über Festplattenverschlüsselung</small></article>
+        <article><b>Lokale Backups</b><strong>{verified ? state.backups.length : "—"}</strong><small>{!verified ? state.loading ? "Inventar wird geprüft" : "Inventar nicht erreichbar" : lastBackup ? `Zuletzt ${new Intl.DateTimeFormat("de-DE", { dateStyle: "short", timeStyle: "short" }).format(new Date(lastBackup.createdAt))}` : "Noch keines erstellt"}</small></article>
+        <article><b>Speicherschutz</b><strong>{verified ? state.storage?.sensitiveFieldEncryption || "Nicht geprüft" : "—"}</strong><small>Feldverschlüsselung; keine Behauptung über Festplattenverschlüsselung</small></article>
         <article><b>Letzte Live-Prüfung</b><strong>{state.checkedAt ? new Intl.DateTimeFormat("de-DE", { timeStyle: "medium" }).format(new Date(state.checkedAt)) : "—"}</strong><small>Nur nicht sensible Health-Evidenz</small></article>
       </section>
       <aside><ShieldCheck /><p><b>Kostenschutz:</b> Keine bezahlte API wird still aktiviert. Ein späterer API-Modus benötigt sichtbare Preisart, Tages-/Monatsgrenzen, Warnschwelle und ausdrückliche Freigabe.</p></aside>

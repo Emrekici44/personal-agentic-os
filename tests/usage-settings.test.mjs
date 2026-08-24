@@ -25,6 +25,19 @@ test("usage center derives live integration, provider and storage evidence", () 
   assert.doesNotMatch(usage, /Browser lokal|Google Calendar[\s\S]{0,120}Mock/);
 });
 
+test("usage evidence is invalidated while loading or offline", () => {
+  assert.match(usage, /setState\(\{ loading: true, error: false, openai: null, integrations: \[\], storage: null, backups: \[\], checkedAt: null \}\)/);
+  assert.match(usage, /setState\(\{ loading: false, error: true, openai: null, integrations: \[\], storage: null, backups: \[\], checkedAt: null \}\)/);
+  assert.match(usage, /if \(!sessionResponse\.ok\) throw new Error\(\)/);
+  assert.match(usage, /window\.addEventListener\("agentic-os:runtime-online", recover\)/);
+  assert.match(usage, /verified \? state\.backups\.length : "—"/);
+  assert.match(usage, /HARD KILL SWITCH[\s\S]*?NICHT VERIFIZIERT/);
+  assert.match(usage, /Private Statusquelle nicht erreichbar/);
+  assert.match(usage, /Connector-Status nicht erreichbar/);
+  assert.match(css, /\.usageTopline>a\{[^}]*min-height:44px/);
+  assert.match(css, /\.modeGrid article>a\{[^}]*min-height:44px/);
+});
+
 test("provider status remains signed, private and never exposes a key", async () => {
   const route = await readFile(new URL("../app/api/openai/status/route.ts", import.meta.url), "utf8");
   assert.match(route, /verifyLocalSession/);

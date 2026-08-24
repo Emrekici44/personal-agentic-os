@@ -22,6 +22,7 @@
 - Backup/archive recovery now clears stale inventory selection and restore previews while loading/offline, distinguishes unavailable from verified zero, and blocks local create/preview requests until the private inventory is reverified. Restore Apply remains disabled.
 - Integration Health and Calendar catalog now clear stale cards/selections during refresh, expose Loading/Offline/verified-empty independently and provide a scoped Calendar retry. The final visible `TESTADAPTER` fallback was removed; bounded read failures are handled without a write or fake catalog.
 - Project workspace recovery now invalidates stale weekly/audit payloads, gates each task/inbox/resource mutation on its own verified source and renders unavailable cross-source counts as unknown rather than zero.
+- Usage & Limits now invalidates all live provider/integration/storage/backup evidence during refresh or outage, suppresses precise limits and statuses until verified, and automatically rechecks after private runtime recovery.
 - Unified daily workspace with shared tasks, persistent habits and encrypted journal completion.
 - Real content-free shared-store audit in Knowledge; static activity claims removed.
 - Real shared life-area records for faith, health, finance, relationships and split career; encrypted private fields, honest empty states and reversible archive.
