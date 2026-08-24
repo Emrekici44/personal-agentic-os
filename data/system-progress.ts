@@ -239,7 +239,7 @@ export const systemProgress = {
     {
       id: "offline-conflict-audit",
       label: "Offline-/Konflikt- und abschließender Bedienaudit",
-      evidence: "409 bei veralteter Version · sofortige Netzwerkfehler-Wahrheit · automatische Wiederverbindung ohne lokalen Fallback",
+      evidence: "409 · automatische Wiederverbindung · echte Retry-Pfade für Planner/Agenten/Skills/Wissen/Backup/Archiv · kein lokaler Fallback",
       href: "#settings",
       status: "complete",
     },

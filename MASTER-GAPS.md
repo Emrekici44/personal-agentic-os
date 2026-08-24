@@ -28,6 +28,7 @@ Alle derzeit im Ledger beschriebenen lokal reversiblen Vertikalschnitte sind umg
 
 Der Recovery-Audit ist ebenfalls umgesetzt: Einstellungen prüfen den privaten Store, Connector-Verträge und Backup-Inventar nur lesend und zeigen einen sicheren Wiederanlaufpfad. Restore/Reconnect bleiben getrennte Grenzen.
 Aktive Shared-Store-Ansichten härten den Laufzeitpfad zusätzlich: Netzwerkfehler werden unmittelbar als Offline gezeigt; nach einer zentral verifizierten Wiederverbindung laden die betroffenen Desktop-/Expo-Ansichten automatisch aus der gemeinsamen Quelle nach. Es gibt weiterhin keinen stillen lokalen Daten-Fork.
+Auch unabhängige Quellen wie Agentenläufe, Skills, Planner, Knowledge-Audit, Backups und Archiv besitzen konkrete Retry-Aktionen. Folgecontrols bleiben gesperrt, wenn ihre echte Quelle fehlt; Offline bedeutet nicht „leere Beispieldaten“.
 
 Auch „reversibel archiviert“ ist jetzt vollständig bedienbar: das lokale Datensatz-Archiv kann eine exakte Version in ihren vorherigen Status zurückholen. Das ist ausdrücklich kein Backup-Restore und keine externe Aktion.
 Projekt, Journal und eigene Agent-Konfiguration besitzen zusätzlich einen zweistufigen Archiv-Einstieg. Die Transaktion blockiert Projekte beziehungsweise Agenten mit aktiven Verknüpfungen, bevor der Status geändert wird; damit bleibt der gemeinsame Datengraph konsistent.
