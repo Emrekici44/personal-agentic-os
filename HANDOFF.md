@@ -30,6 +30,7 @@ Project root: `outputs/agentic-os`. Private source remote: `https://github.com/E
 - Dashboard progress is current to 25 August: source-recovery evidence is complete and one local gap audit is active. Practical UI showed 40/43 complete, one active item, no percentage, and no desktop/390×844 alert, overflow or undersized target.
 - Home now reads Calendar, Planner, Vault and OpenAI independently; one malformed/unreachable source cannot mark all four offline. Practical status: Planner/Calendar/Vault Online, OpenAI API Not configured, with German UI labels and no desktop/390×844 alert, overflow or undersized target.
 - Integration Health's expander is now truthfully named `Details & sichere Schritte`; it does not claim reconnect. All eight connector badges use German user labels. Desktop/390×844 remained free of alerts, overflow and undersized targets; no connector action was invoked.
+- Planner GET/generate/review now use one cache-free private response helper for success and all error paths. Anonymous runtime probes returned 401 plus `no-store, private` for GET/POST/PATCH and did not reach data, persistence or Google.
 - Calendar status, calendar list, bounded event read, OAuth entry and local encrypted-token handoff now reject unsigned clients with 401 and private no-store responses. Disconnected clients receive no demo calendars/events; obsolete mock proposal and approval routes are retired with 410.
 - Existing Vault notes remain unchanged.
 - PostgreSQL PoC is files-only and deliberately inactive. Docker/Podman/psql were not installed.

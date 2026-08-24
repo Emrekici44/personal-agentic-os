@@ -121,6 +121,8 @@ test("weekly plan persistence is versioned, encrypted and approval-linked", asyn
   assert.match(route, /rawEventDetailsExposed: false/);
   assert.match(route, /weeklyWindow\(new Date\(\)\)/);
   assert.match(route, /Cache-Control.*no-store, private/);
+  assert.match(route, /const respond = .*NextResponse\.json\(body, \{ \.\.\.init, headers \}\)/);
+  assert.doesNotMatch(route, /return NextResponse\.json/);
 });
 
 test("weekly planner UI is guided and keeps writes behind the exact approval stage", async () => {

@@ -68,6 +68,7 @@ Die gebündelten Details stehen in `PENDING-DECISIONS.md`. Kein Punkt hier block
 - Die sichtbare strukturierte Fortschrittsquelle ist mit diesem Ledger synchron: verifizierte Recovery-Inkremente sind abgeschlossen, genau ein lokaler Restlücken-Audit ist aktiv und Nutzerentscheidungen bleiben als eigene Zustände statt erfundener Prozente sichtbar.
 - Command-Center-Quellen werden unabhängig ausgewertet: ein Parser-/Netzfehler in Calendar, Planner, Vault oder OpenAI verändert nur den zugehörigen Status. Interne englische State-Werte werden nicht mehr als sichtbare Bedienkopie ausgegeben.
 - Das Health Center trennt Öffnen und Handeln semantisch: `Details & sichere Schritte` zeigt nur Evidenz/Anleitung und behauptet keinen Reconnect. Sichtbare Connectorzustände sind übersetzt, eine Aktivierung bleibt technisch und textlich ausgeschlossen.
+- Planner-API-Antworten sind auch im Fehlerpfad cachefrei/privat. Anonyme GET-/POST-/PATCH-Aufrufe enden einheitlich mit 401 vor Request-Body-Auswertung, Datenzugriff oder externer Kalenderkommunikation.
 - Produktmodule enthalten keine eingebetteten Kalender-, Ereignis-, Fokusblock- oder Provider-Mocks mehr; Testverträge prüfen echte Guards ohne sie als Nutzerdatenpfad bereitzuhalten.
 - ChatGPT Pro ist kein API-Zugang. Companion Mode ist ein manueller Übergabepfad.
 - SQLite ist operative Quelle, Obsidian dauerhafte Wissensquelle und Google Calendar externe Ereignisquelle, bis Emre eine andere Migration ausdrücklich freigibt.

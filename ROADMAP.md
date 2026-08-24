@@ -28,6 +28,7 @@
 - The structured dashboard checklist now reflects the 25 August recovery work with discrete completed/active/user-action states: one local gap audit is active, without a decorative percentage or fabricated progress.
 - Command Center source refresh now isolates Calendar, Planner, Vault and OpenAI failures instead of collapsing all statuses on one malformed response, and maps internal states to clear German labels.
 - Integration Health no longer labels a details expander as a reconnect action; connector statuses are user-facing German labels while the underlying verified state and safe recovery instructions remain unchanged.
+- Planner GET/generate/review responses now share one `no-store, private` boundary for success, authentication denial and validation errors; anonymous GET/POST/PATCH probes all stopped at 401 before data or Google access.
 - Unified daily workspace with shared tasks, persistent habits and encrypted journal completion.
 - Real content-free shared-store audit in Knowledge; static activity claims removed.
 - Real shared life-area records for faith, health, finance, relationships and split career; encrypted private fields, honest empty states and reversible archive.
