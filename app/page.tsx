@@ -494,15 +494,15 @@ function Home({ go }: any) {
             <Tag>NÄCHSTER KLARER SCHRITT</Tag>
             <span className="pulse">Gemeinsamer Datenkern</span>
           </div>
-          <h3>{openTasks[0]?.title || "Noch keine Aufgabe priorisiert"}</h3>
-          <p>{openTasks[0] ? `Bereich: ${openTasks[0].life_area || openTasks[0].area || "noch nicht zugeordnet"}` : "Erfasse eine konkrete Aufgabe; Agentic OS erfindet keine Priorität für dich."}</p>
+          <h3>{taskState==="error"?"Aufgabenquelle nicht erreichbar":taskState==="loading"?"Aufgaben werden geladen":openTasks[0]?.title || "Noch keine Aufgabe priorisiert"}</h3>
+          <p>{taskState==="error"?"Es wird keine leere Prioritätenliste behauptet. Nach Wiederverbindung lädt die gemeinsame Quelle neu.":taskState==="loading"?"Der gemeinsame Aufgabenbestand wird geprüft.":openTasks[0] ? `Bereich: ${openTasks[0].life_area || openTasks[0].area || "noch nicht zugeordnet"}` : "Erfasse eine konkrete Aufgabe; Agentic OS erfindet keine Priorität für dich."}</p>
           <Btn onClick={() => go("habits")}>
             Aufgaben öffnen <I.ArrowRight />
           </Btn>
         </Card>
         <Card className="day">
           <Tag>HEUTE · ECHTE QUELLEN</Tag>
-          <div className="event"><I.CheckSquare /><span><b>{openTasks.length} offene Aufgaben</b><small>Laptop Shared Store</small></span></div>
+          <div className="event"><I.CheckSquare /><span><b>{taskState==="online"?`${openTasks.length} offene Aufgaben`:taskState==="loading"?"Aufgaben werden geladen":"Aufgaben nicht erreichbar"}</b><small>Laptop Shared Store</small></span></div>
           <div className="event"><I.CalendarDays /><span><b>Google Calendar · {calendarState}</b><small>Termine werden erst in der Kalenderansicht gelesen</small></span></div>
           <div className="event"><I.Network /><span><b>Obsidian · {vaultState}</b><small>Read-only Wissensindex</small></span></div>
           <Btn soft onClick={() => go("integrations")}>Verbindungen prüfen</Btn>
@@ -534,7 +534,7 @@ function Home({ go }: any) {
         <Card>
           <div className="row">
             <Tag>PRIORITÄTEN</Tag>
-            <b>{taskState === "online" ? `${openTasks.length} offen` : "Lädt …"}</b>
+            <b>{taskState === "online" ? `${openTasks.length} offen` : taskState==="loading"?"Lädt …":"Offline"}</b>
           </div>
           {openTasks.slice(0, 3).map((t: any) => (
             <div className="miniTask" key={t.id}>
@@ -688,7 +688,7 @@ function Areas({ go }: any) {
             </Tag>
             <h3>{n}</h3>
             <p>{s}</p>
-            <p className="areaCount">{count === null ? "Eigenständiger Projektbereich" : `${count} gemeinsame Einträge`}</p>
+            <p className="areaCount">{count === null ? "Eigenständiger Projektbereich" : state==="online"?`${count} gemeinsame Einträge`:state==="loading"?"Einträge werden geladen":"Einträge nicht erreichbar"}</p>
             <button onClick={() => go(id as View)}>
               Dashboard öffnen <I.ArrowRight />
             </button>
@@ -831,11 +831,11 @@ function AreaRecordWorkspace({ config, note }: { config: AreaRecordConfig; note:
   );
   return (
     <div className={`domain ${config.className}`}>
-      <Intro eyebrow={config.eyebrow} title={config.title} action={<Btn onClick={() => openCreate()}><I.Plus /> Eintrag</Btn>}>
+      <Intro eyebrow={config.eyebrow} title={config.title} action={<Btn onClick={state==="online"?() => openCreate():undefined}><I.Plus /> Eintrag</Btn>}>
         <p>{config.description}</p>
       </Intro>
       <p className="privacyBoundary"><I.ShieldCheck /> {config.privacy}</p>
-      <DomainInsights area={config.area} records={records} openCreate={openCreate}/>
+      {state==="online"&&<DomainInsights area={config.area} records={records} openCreate={openCreate}/>}
       {editorOpen && (
         <Card className="areaRecordEditor">
           <div className="row"><Tag>{editingId ? "EINTRAG BEARBEITEN" : "NEUER EINTRAG"}</Tag><button aria-label="Editor schließen" onClick={() => setEditorOpen(false)} type="button"><I.X /></button></div>
@@ -861,7 +861,7 @@ function AreaRecordWorkspace({ config, note }: { config: AreaRecordConfig; note:
       {state === "loading" && <p role="status">Gemeinsame Bereichsdaten werden geladen …</p>}
       {state === "error" && <Card><Tag>OFFLINE</Tag><h3>Gemeinsamer Datenkern nicht erreichbar</h3><p>Es werden keine Ersatz- oder Beispieldaten angezeigt.</p></Card>}
       {state === "online" && records.length === 0 && <Card className="trueEmpty"><I.Database /><div><Tag>ECHTE DATENQUELLE · LEER</Tag><h3>Noch keine Einträge</h3><p>Lege nur an, was für diesen Bereich tatsächlich nützlich ist.</p></div><Btn onClick={() => openCreate()}><I.Plus /> Ersten Eintrag anlegen</Btn></Card>}
-      {selected && (
+      {state==="online" && selected && (
         <Card className="areaRecordDetail">
           <button className="backButton" onClick={() => setSelected(null)} type="button">← Übersicht</button>
           <div className="row"><Tag>{typeLabel(selected.recordType)}</Tag><i className="badge unconfigured">{selected.status}</i></div>
@@ -886,11 +886,11 @@ function AreaRecordWorkspace({ config, note }: { config: AreaRecordConfig; note:
           <div className="editorActions"><Btn onClick={() => openEdit(selected)}>Bearbeiten</Btn><button className="dangerQuiet" onClick={archiveSelected} type="button">Archivieren</button></div>
         </Card>
       )}
-      {!selected && config.tracks ? (
+      {state==="online" && !selected && config.tracks ? (
         <div className="careerRecordsSplit">
           {config.tracks.map(([track, label]) => <section key={track}><div className="pathTitle"><span>{track === "employee" ? <I.Building2 /> : <I.Rocket />}</span><div><Tag>{label.toUpperCase()}</Tag><h3>{records.filter((record: any) => record.track === track).length} Einträge</h3></div><button onClick={() => openCreate(track)} type="button"><I.Plus /></button></div><div className="areaRecordGrid">{records.filter((record: any) => record.track === track).map(renderRecord)}</div>{records.every((record: any) => record.track !== track) && <p className="columnEmpty">Noch keine Einträge für diesen Pfad.</p>}</section>)}
         </div>
-      ) : !selected && records.length > 0 ? <div className="areaRecordGrid">{records.map(renderRecord)}</div> : null}
+      ) : state==="online" && !selected && records.length > 0 ? <div className="areaRecordGrid">{records.map(renderRecord)}</div> : null}
     </div>
   );
 }

@@ -53,6 +53,7 @@ Die gebündelten Details stehen in `PENDING-DECISIONS.md`. Kein Punkt hier block
 - Grün/Online bedeutet eine aktuelle technische Prüfung, nicht nur vorhandene Konfiguration.
 - Die Startseite bezieht Planner-, Calendar-, Vault- und OpenAI-API-Status aus aktuellen privaten Endpunkten und trennt Erreichbarkeit von vorhandenen Nutzerdatensätzen.
 - Leere reale Quellen bleiben leer; die Anwendung erzeugt keine persönlichen Beispiele.
+- Ein sichtbarer Wert `0` erscheint nur nach erfolgreicher Quellprüfung. Lade-/Offlinezustände unterdrücken Zähler, Charts und mutierende Bereichscontrols, statt Nichterreichbarkeit als leeren Bestand darzustellen.
 - Produktmodule enthalten keine eingebetteten Kalender-, Ereignis-, Fokusblock- oder Provider-Mocks mehr; Testverträge prüfen echte Guards ohne sie als Nutzerdatenpfad bereitzuhalten.
 - ChatGPT Pro ist kein API-Zugang. Companion Mode ist ein manueller Übergabepfad.
 - SQLite ist operative Quelle, Obsidian dauerhafte Wissensquelle und Google Calendar externe Ereignisquelle, bis Emre eine andere Migration ausdrücklich freigibt.

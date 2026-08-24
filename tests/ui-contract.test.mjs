@@ -155,6 +155,16 @@ test("command center derives planner, vault and OpenAI API status from live priv
   assert.doesNotMatch(page, /\["OpenAI", "unconfigured"\]/);
 });
 
+test("loading and offline sources are never rendered as truthful zero counts", async () => {
+  const page = await readFile(pagePath, "utf8");
+  assert.match(page, /taskState==="error"\?"Aufgabenquelle nicht erreichbar"/);
+  assert.match(page, /taskState==="online"\?`\$\{openTasks\.length\} offene Aufgaben`/);
+  assert.match(page, /taskState\s*===\s*"online"\s*\?\s*`\$\{openTasks\.length\} offen`\s*:\s*taskState==="loading"\?"Lädt …":"Offline"/);
+  assert.match(page, /state==="online"\?`\$\{count\} gemeinsame Einträge`:state==="loading"\?"Einträge werden geladen":"Einträge nicht erreichbar"/);
+  assert.match(page, /state==="online"&&<DomainInsights/);
+  assert.match(page, /onClick=\{state==="online"\?\(\) => openCreate\(\):undefined\}/);
+});
+
 test("knowledge search stays inside the signed metadata-only vault preview", async () => {
   const [page, route] = await Promise.all([
     readFile(pagePath, "utf8"),
