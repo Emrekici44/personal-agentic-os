@@ -457,17 +457,25 @@ function Home({ go }: any) {
     try {
       const session = await fetch("/api/state/session", { method: "POST" });
       if (!session.ok) throw new Error();
-      const [calendarResponse, plannerResponse, vaultResponse, openaiResponse] = await Promise.all([
-        fetch("/api/calendar/status", { cache: "no-store" }),
-        fetch("/api/planner", { cache: "no-store" }),
-        fetch("/api/obsidian/status", { cache: "no-store" }),
-        fetch("/api/openai/status", { cache: "no-store" }),
+      const readSource = async (url: string) => {
+        try {
+          const response = await fetch(url, { cache: "no-store" });
+          const result = await response.json();
+          return { ok: response.ok, result };
+        } catch {
+          return { ok: false, result: null };
+        }
+      };
+      const [calendar, planner, vault, openai] = await Promise.all([
+        readSource("/api/calendar/status"),
+        readSource("/api/planner"),
+        readSource("/api/obsidian/status"),
+        readSource("/api/openai/status"),
       ]);
-      const [status, planner, vault, openai] = await Promise.all([calendarResponse.json(), plannerResponse.json(), vaultResponse.json(), openaiResponse.json()]);
-      setCalendarState(calendarResponse.ok ? (status.connected ? "online" : status.configured ? "offline" : "unconfigured") : "offline");
-      setPlannerState({ state: plannerResponse.ok ? "online" : "offline", plan: planner.plan || null });
-      setVaultState(vaultResponse.ok && vault.status === "online" ? "online" : vault.configured ? "offline" : "unconfigured");
-      setOpenaiApiState(openaiResponse.ok && openai.mode === "api" && openai.configured && !openai.killSwitch ? "online" : openai.mode === "api" || openai.configured ? "offline" : "unconfigured");
+      setCalendarState(calendar.ok ? (calendar.result.connected ? "online" : calendar.result.configured ? "offline" : "unconfigured") : "offline");
+      setPlannerState({ state: planner.ok ? "online" : "offline", plan: planner.ok ? planner.result.plan || null : null });
+      setVaultState(vault.ok && vault.result.status === "online" ? "online" : vault.ok && !vault.result.configured ? "unconfigured" : "offline");
+      setOpenaiApiState(openai.ok && openai.result.mode === "api" && openai.result.configured && !openai.result.killSwitch ? "online" : openai.ok && !(openai.result.mode === "api" || openai.result.configured) ? "unconfigured" : "offline");
     } catch {
       setCalendarState("offline");
       setPlannerState({ state: "offline", plan: null });
@@ -481,6 +489,7 @@ function Home({ go }: any) {
     window.addEventListener("agentic-os:runtime-online",recover);
     return()=>window.removeEventListener("agentic-os:runtime-online",recover);
   }, [loadHomeSources]);
+  const sourceLabel: Record<string, string> = { loading: "Wird geprüft", online: "Online", offline: "Nicht erreichbar", unconfigured: "Nicht konfiguriert" };
   const openTasks = tasks.filter((task: any) => !task.done && task.status !== "archived");
   return (
     <>
@@ -503,8 +512,8 @@ function Home({ go }: any) {
         <Card className="day">
           <Tag>HEUTE · ECHTE QUELLEN</Tag>
           <div className="event"><I.CheckSquare /><span><b>{taskState==="online"?`${openTasks.length} offene Aufgaben`:taskState==="loading"?"Aufgaben werden geladen":"Aufgaben nicht erreichbar"}</b><small>Laptop Shared Store</small></span></div>
-          <div className="event"><I.CalendarDays /><span><b>Google Calendar · {calendarState}</b><small>Termine werden erst in der Kalenderansicht gelesen</small></span></div>
-          <div className="event"><I.Network /><span><b>Obsidian · {vaultState}</b><small>Read-only Wissensindex</small></span></div>
+          <div className="event"><I.CalendarDays /><span><b>Google Calendar · {sourceLabel[calendarState]}</b><small>Termine werden erst in der Kalenderansicht gelesen</small></span></div>
+          <div className="event"><I.Network /><span><b>Obsidian · {sourceLabel[vaultState]}</b><small>Read-only Wissensindex</small></span></div>
           <Btn soft onClick={() => go("integrations")}>Verbindungen prüfen</Btn>
         </Card>
       </div>
@@ -560,7 +569,7 @@ function Home({ go }: any) {
             <div className="statusline" key={x[0]}>
               <i className={x[1]} />
               {x[0]}
-              <small>{x[1]}</small>
+              <small>{sourceLabel[x[1]] || "Nicht verifiziert"}</small>
             </div>
           ))}
         </Card>

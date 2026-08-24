@@ -152,8 +152,11 @@ test("command center derives planner, vault and OpenAI API status from live priv
   const page = await readFile(pagePath, "utf8");
   for (const endpoint of ["/api/calendar/status", "/api/planner", "/api/obsidian/status", "/api/openai/status"]) assert.match(page, new RegExp(endpoint.replaceAll("/", "\\/")));
   assert.match(page, /function Home\(\{ go \}: any\)/);
-  assert.match(page, /plannerResponse\.ok \? "online" : "offline"/);
-  assert.match(page, /openai\.mode === "api" && openai\.configured && !openai\.killSwitch/);
+  assert.match(page, /const readSource = async \(url: string\)/);
+  assert.match(page, /return \{ ok: false, result: null \}/);
+  assert.match(page, /setPlannerState\(\{ state: planner\.ok \? "online" : "offline", plan: planner\.ok \? planner\.result\.plan \|\| null : null \}\)/);
+  assert.match(page, /openai\.result\.mode === "api" && openai\.result\.configured && !openai\.result\.killSwitch/);
+  assert.match(page, /sourceLabel\[x\[1\]\] \|\| "Nicht verifiziert"/);
   assert.match(page, /window\.addEventListener\("agentic-os:runtime-online",recover\)/);
   assert.doesNotMatch(page, /\["OpenAI", "unconfigured"\]/);
 });

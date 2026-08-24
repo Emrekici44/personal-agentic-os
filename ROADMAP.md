@@ -26,6 +26,7 @@
 - Journal's title-free daily Calendar evidence now reloads after verified recovery with a scoped retry, while OAuth launch and local encrypted token handoff catch transport failures and never claim an unconfirmed result.
 - Manual bounded Calendar reads now derive their complete eight-day interval server-side in Europe/Berlin, independent of Windows/iPhone timezone, deduplicate selected calendars and minimize requested Google event fields.
 - The structured dashboard checklist now reflects the 25 August recovery work with discrete completed/active/user-action states: one local gap audit is active, without a decorative percentage or fabricated progress.
+- Command Center source refresh now isolates Calendar, Planner, Vault and OpenAI failures instead of collapsing all statuses on one malformed response, and maps internal states to clear German labels.
 - Unified daily workspace with shared tasks, persistent habits and encrypted journal completion.
 - Real content-free shared-store audit in Knowledge; static activity claims removed.
 - Real shared life-area records for faith, health, finance, relationships and split career; encrypted private fields, honest empty states and reversible archive.

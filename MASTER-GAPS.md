@@ -66,6 +66,7 @@ Die gebündelten Details stehen in `PENDING-DECISIONS.md`. Kein Punkt hier block
 - Die titel- und inhaltsfreie Tageszahl im Journal ist reconnect-/retry-fähig und wird vor jeder Prüfung invalidiert. Calendar-OAuth-Einstieg und lokale Tokenübernahme melden Transportunsicherheit, ohne Navigation oder Erfolg still zu behaupten.
 - Auch der manuelle 8-Tage-Read ist nicht mehr von Browser-/Gerätezeitzonen abhängig: Das signierte Backend erzeugt Start/Ende DST-sicher in Europe/Berlin, begrenzt und dedupliziert Kalender und gibt seine Fenster-Evidenz an die UI zurück.
 - Die sichtbare strukturierte Fortschrittsquelle ist mit diesem Ledger synchron: verifizierte Recovery-Inkremente sind abgeschlossen, genau ein lokaler Restlücken-Audit ist aktiv und Nutzerentscheidungen bleiben als eigene Zustände statt erfundener Prozente sichtbar.
+- Command-Center-Quellen werden unabhängig ausgewertet: ein Parser-/Netzfehler in Calendar, Planner, Vault oder OpenAI verändert nur den zugehörigen Status. Interne englische State-Werte werden nicht mehr als sichtbare Bedienkopie ausgegeben.
 - Produktmodule enthalten keine eingebetteten Kalender-, Ereignis-, Fokusblock- oder Provider-Mocks mehr; Testverträge prüfen echte Guards ohne sie als Nutzerdatenpfad bereitzuhalten.
 - ChatGPT Pro ist kein API-Zugang. Companion Mode ist ein manueller Übergabepfad.
 - SQLite ist operative Quelle, Obsidian dauerhafte Wissensquelle und Google Calendar externe Ereignisquelle, bis Emre eine andere Migration ausdrücklich freigibt.
