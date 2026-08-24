@@ -398,6 +398,13 @@ export const systemProgress = {
       status: "complete",
     },
     {
+      id: "transition-only-runtime-recovery",
+      label: "Recovery nur nach echtem Offline-Wechsel auslösen",
+      evidence: "Keine 30-Sekunden-Reloadschleife · Entwürfe bleiben stabil · Backup/Archiv danach neu inventarisiert",
+      href: "#settings",
+      status: "complete",
+    },
+    {
       id: "ongoing-local-gap-audit",
       label: "Nächste lokale Bedien-/Recovery-Lücke prüfen",
       evidence: "Nur reversible lokale Änderungen · keine externen Writes, Migrationen, Installationen oder Kosten",

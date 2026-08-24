@@ -63,3 +63,10 @@ test("settings provide a private read-only recovery diagnosis without side effec
   assert.match(css, /\.recoveryEvidence/);
   assert.match(css, /@media\(max-width:720px\)\{\.recoveryEvidence\{grid-template-columns:1fr/);
 });
+
+test("settings inventories reload only after verified runtime recovery", () => {
+  assert.match(page, /const recoverSettings[\s\S]*setDiagnosis\(\{ state: "idle" \}\)[\s\S]*loadBackups\(\)[\s\S]*loadArchive\(\)/);
+  assert.match(page, /agentic-os:runtime-online[\s\S]*recoverSettings/);
+  const recovery = page.match(/const recoverSettings[\s\S]*?window\.addEventListener\("agentic-os:runtime-online", recoverSettings\)/)?.[0] || "";
+  assert.doesNotMatch(recovery, /createBackup|inspectRestore|restoreArchiveRecord|runRecoveryCheck/);
+});

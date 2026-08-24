@@ -94,6 +94,8 @@ Project root: `outputs/agentic-os`. Private source remote: `https://github.com/E
 - Full verification for integration recovery: Root 124/124, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed. Eight real connector cards rendered with no false Retry and 0 desktop/390×844 overflow; progress rendered 53/56 and no OAuth/event read/write ran.
 - Knowledge metadata, local content-light audit and Vault proposal inventory now reload together after verified runtime recovery. `loadWriteFlow` clears in-session approval/confirmation first; the recovery callback has no proposal generation, approval or Vault-write path.
 - Full verification for Knowledge recovery: Root 125/125, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed. The real 27-note read-only index rendered with 0 desktop/390×844 overflow; progress rendered 54/57 and no diff/approval/Vault mutation ran.
+- Runtime recovery now broadcasts only on Offline→Online, not initial/healthy polling, so periodic checks cannot reset open drafts. A real recovery reloads Backup/Archive inventory and resets stale diagnosis without creating a backup, previewing restore or mutating archive data.
+- Full verification for transition-only recovery: Root 128/128, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed. Online Settings showed no false Backup/Archive Retry and 0 desktop/390×844 overflow; progress rendered 55/58 and no local mutation ran.
 
 ## Immediate continuation
 

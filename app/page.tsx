@@ -2,6 +2,7 @@
 import { type MouseEvent, useCallback, useEffect, useRef, useState } from "react";
 import * as I from "lucide-react";
 import { systemProgress } from "@/data/system-progress";
+import { runtimeHealthTransition, type RuntimeSourceState } from "@/lib/runtime-recovery";
 type View =
   | "home"
   | "agents"
@@ -122,6 +123,7 @@ export default function App() {
       accent: "#27d3ff",
     });
   const contentRef = useRef<HTMLElement>(null);
+  const runtimeStateRef = useRef<RuntimeSourceState>("checking");
   const preferenceVersions = useRef({ theme: 0, branding: 0 });
   const loadPreferences = useCallback(async () => {
     setPreferenceState("loading");
@@ -186,9 +188,12 @@ export default function App() {
       const response = await fetch("/api/state/status", { cache: "no-store" });
       if (!response.ok) throw new Error();
       const result = await response.json();
-      setRuntimeHealth({ state: result.online ? "online" : "offline", checkedAt: new Date().toISOString() });
-      if (result.online) window.dispatchEvent(new Event("agentic-os:runtime-online"));
+      const transition = runtimeHealthTransition(runtimeStateRef.current, result.online ? "online" : "offline");
+      runtimeStateRef.current = transition.state;
+      setRuntimeHealth({ state: transition.state, checkedAt: new Date().toISOString() });
+      if (transition.recovered) window.dispatchEvent(new Event("agentic-os:runtime-online"));
     } catch {
+      runtimeStateRef.current = "offline";
       setRuntimeHealth({ state: "offline", checkedAt: new Date().toISOString() });
     }
   }, []);
@@ -2176,7 +2181,17 @@ function Settings({ brand, save, theme, changeTheme, note, preferenceState, relo
     }
   }, [note]);
   const loadArchive=useCallback(async()=>{setArchiveState({state:"loading",records:[]});setRestoreArchiveArmed("");try{const session=await fetch("/api/state/session",{method:"POST"});if(!session.ok)throw new Error("Private Sitzung nicht erreichbar");const response=await fetch("/api/state/archive",{cache:"no-store"}),result=await response.json();if(!response.ok)throw new Error(result.error);setArchiveState({state:"online",records:result.records||[]})}catch(error){setArchiveState({state:"error",records:[],error:error instanceof Error?error.message:"Archiv nicht erreichbar"})}},[]);
-  useEffect(() => { loadBackups(); loadArchive(); }, [loadArchive,loadBackups]);
+  useEffect(() => {
+    void loadBackups();
+    void loadArchive();
+    const recoverSettings = () => {
+      setDiagnosis({ state: "idle" });
+      void loadBackups();
+      void loadArchive();
+    };
+    window.addEventListener("agentic-os:runtime-online", recoverSettings);
+    return () => window.removeEventListener("agentic-os:runtime-online", recoverSettings);
+  }, [loadArchive,loadBackups]);
   const backupRequest=async(method:"POST"|"PATCH",body:any)=>{if(backupState.state!=="online")throw new Error("Privates Backup-Inventar ist nicht schreibbereit");let response:Response;try{response=await fetch("/api/state/backups",{method,headers:{"content-type":"application/json"},body:JSON.stringify(body)})}catch{setBackupState({state:"error",backups:[],store:null});setSelectedBackup("");setRestorePreview(null);throw new Error("Backup-Ergebnis nicht bestätigt. Inventar vor erneutem Versuch prüfen.")}let result:any;try{result=await response.json()}catch{setBackupState({state:"error",backups:[],store:null});setSelectedBackup("");setRestorePreview(null);throw new Error("Ungültige Antwort der Backup-Quelle")}if(!response.ok)throw new Error(result.error||"Backup-Anfrage abgelehnt");return result};
   const createBackup = async () => {
     setBackupBusy(true);

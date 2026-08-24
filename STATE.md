@@ -118,6 +118,7 @@ Last verified: 25.08.2026, Europe/Berlin.
 - Shared preference availability is explicit in the shell and Settings. Loading/Offline disables Theme and Branding writes, exposes a scoped retry and automatically reloads both preferences after the signed runtime reports recovery; there is still no device-local operational fallback.
 - Integration Health and Calendar status/catalog now subscribe to the same verified runtime-online signal and reload together. Health errors expose a scoped retry; this recovery path performs only status/catalog reads and cannot start OAuth, event reads or writes.
 - Knowledge recovery now reloads the read-only Vault metadata index, content-light local audit and Vault proposal inventory together after verified runtime recovery. The inventory reload clears session-only approval tokens and confirmation text before reading; it cannot generate/approve a proposal or mutate the Vault.
+- The central runtime-online event now fires only for a real Offline→Online transition, never for the initial/recurring healthy poll. This prevents 30-second reload loops from replacing open drafts. On genuine recovery, Settings invalidates stale diagnosis and reloads backup/archive inventories read-only.
 
 ## Verification
 
@@ -156,6 +157,7 @@ Last verified: 25.08.2026, Europe/Berlin.
 - Darstellungs-Recovery: Die vollständige Matrix bleibt bei Root 123/123 plus Lint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export und isoliertem Produktionsbuild grün. Online waren beide Theme-Controls aktiv, kein falscher Retry sichtbar und Desktop/390×844 ohne Überlauf; Dashboard 52/55.
 - Integrations-Recovery: Root 124/124, Lint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export und isolierter Produktionsbuild sind grün. Online renderten acht echte Connector-Karten, kein falscher Retry und 0 Desktop/390×844-Überlauf; Dashboard 53/56. Es wurde kein OAuth, Eventread oder Write ausgelöst.
 - Wissens-Recovery: Root 125/125, Lint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export und isolierter Produktionsbuild sind grün. Der reale 27-Notizen-Read-only-Index rendert auf Desktop/390×844 ohne Überlauf; Dashboard 54/57. Es wurde weder Diff erzeugt/freigegeben noch der Vault verändert.
+- Übergangsbasierte Runtime-Recovery: Root 128/128, Lint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export und isolierter Produktionsbuild sind grün. Online zeigt Settings keine falschen Backup-/Archiv-Retries, Desktop/390×844 bleiben ohne Überlauf; Dashboard 55/58. Keine lokale Mutation wurde ausgeführt.
 
 ## User boundaries
 
