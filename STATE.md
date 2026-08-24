@@ -37,10 +37,12 @@ Last verified: 24.08.2026, Europe/Berlin.
 - Der kontrollierte Obsidian-Schreibworkflow ist bis zur Nutzergrenze implementiert, ohne eine Vault-Datei zu ändern. Neue Notizen sind nur unter `00 Agentic OS/Inbox` oder `00 Agentic OS/System` vorschlagbar; Normalisierungen ergänzen ausschließlich fehlendes Frontmatter und garantieren einen byteweise unveränderten Body.
 - Jede Vault-Vorschau bindet den aktuellen 27-Notizen-Index, validierten relativen Markdown-Pfad, Symlinkfreiheit, erwarteten SHA-256-Zustand, Konfliktprüfung, exakten Diff, Backupmanifest und Restore-Plan. Vorschlag und Pfad liegen verschlüsselt im Shared Store; Auditdaten enthalten keine Inhalte oder Pfade.
 - Ein 15 Minuten gültiger gehashter Token und die Phrase `OBSIDIAN DIFF FREIGEBEN` können nur den Status `approved_pending_apply` setzen. Es gibt keinen Apply-Endpunkt und keine importierte Schreib-/Kopier-/Löschprimitive; die sichtbare Apply-Schaltfläche ist gesperrt.
+- Das Integrationszentrum verwendet eine signierte private Health-API statt statischer Karten. Google Calendar, Obsidian und Shared Store werden serverseitig live geprüft; manuelle Gesundheits-/Finanzpfade sind nur wegen des verifizierten lokalen Stores Online. OpenAI, Google Tasks und andere externe Quellen bleiben unkonfiguriert; Tailscale ist nur bei einer tatsächlichen privaten HTTPS-Anfrage Online und sonst ehrlich `degraded`/`unconfigured`.
+- Acht Connector-Verträge zeigen letzte erfolgreiche Prüfung, aktuelle Aktion, sicheren Fehlertext, Kostenklasse, Permission-Scope, Datenschutzgrenze, Reconnect-Anleitung und nicht sensible Evidenz. Eine erneute Health-Prüfung aktiviert keinen Dienst, erweitert keinen OAuth-Scope und führt 0 externe Writes/Kostenaktivierungen aus.
 
 ## Verification
 
-- Root tests: 55/55 passed after the Obsidian-Diff-, local-skill, agent-workflow, project-workspace and weekly-planner safeguards.
+- Root tests: 58/58 passed after integration-health, Obsidian-Diff, local-skill, agent-workflow, project-workspace and weekly-planner safeguards.
 - Root lint and optimized Next build: passed after the final UI/documentation refresh.
 - Electron security checks: 2/2 passed. Expo TypeScript, lint and static web export passed.
 - Browser: the private Tailscale URL passed desktop 1280-wide and mobile 390×844 checks without horizontal overflow or console errors. The life-area overview, faith empty state/editor, finance fields and split career columns rendered from the shared source.
@@ -52,6 +54,7 @@ Last verified: 24.08.2026, Europe/Berlin.
 - Skillbrowser-Abnahme: echter leerer Shared-Store-Zustand, Definition-Editor mit deaktiviertem Leer-Speichern und Abbruch ohne Mutation; mobile 390×844 ohne horizontalen Überlauf. Root/Lint/TypeScript, Produktionsbuild, Electron 2/2 und Expo TypeScript/Lint/Web-Export sind grün.
 - Obsidianbrowser-Abnahme: echter 27-Notizen-Index, deaktivierte leere Diff-Erzeugung, funktionierender Wechsel zwischen neuer Systemnotiz und Normalisierung sowie mobile 390×844 ohne Überlauf. Es wurde keine Vorschau mit erfundenem Inhalt gespeichert. Das Vault-Manifest blieb bei 27 Markdown-Dateien und SHA-256 `F368D92A1064A853F6DD17C740ED057B516E9755BABE25F2910A5943F6DD2AB2`.
 - Nach dem Obsidian-Meilenstein sind Root 55/55, TypeScript, ESLint, Produktionsbuild, Electron 2/2 und Expo TypeScript/Lint/Web-Export grün.
+- Integrationsbrowser-Abnahme: Calendar/Obsidian/Shared Store live Online, OpenAI/Tasks unkonfiguriert, Tailscale im localhost-Client korrekt Degraded; Detail/Reconnect für Obsidian öffnet und 390×844 bleibt ohne horizontalen Überlauf. Root 58/58, TypeScript, ESLint, Produktionsbuild, Electron 2/2 und Expo TypeScript/Lint/Web-Export sind grün.
 - Git: Projektarbeitsraum-Commit `b3b70cf7ec57f0205f01d70cb9163487dff89595` ist auf privatem `main`; der Agentenmeilenstein ist für seinen auditierten inkrementellen Commit bereit.
 
 ## User boundaries

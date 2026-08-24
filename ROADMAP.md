@@ -19,6 +19,7 @@
 - Five real local agent workflows: project coach, faith/reflection, health planning, finance overview and relationship care; real Shared Store evidence, encrypted run/resume state, review/pause/resume, content-light audit and zero external/background actions.
 - Safe reusable local skills: fixed deterministic procedures, pinned input/source contracts, versioned definitions, transparent agent references, encrypted preview history and technical denial of arbitrary code, shell, network, models, files, external writes and silent chains.
 - Controlled Obsidian write preparation: exact new-note/frontmatter diff, validated in-vault target, current hash/conflict gate, explicit backup/restore plan, encrypted proposal history and expiring preview approval. Apply remains technically absent until Emre grants a later exact action approval.
+- Evidence-based integration health center: live server checks, last success/current action/safe error, cost class, scope, privacy, reconnect guidance and extensible connector classification; no connection, scope or paid activation from the health UI.
 
 ## Complete – Bedienwahrheit and responsive refinement
 

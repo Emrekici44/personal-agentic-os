@@ -26,6 +26,7 @@ Project root: `outputs/agentic-os`. Private source remote: `https://github.com/E
 - Agent cards show only transparent references to persisted executable skills; a reference never starts a silent chain.
 - Knowledge now contains a complete preview-only Obsidian change workflow. It can prepare a new Agentic-OS Inbox/System note or missing-frontmatter normalization with exact diff, expected hash, conflict check, backup/restore plan and expiring token. `approved_pending_apply` is only a review status: no Apply route or filesystem write primitive exists.
 - Practical testing did not create a fake proposal. The real Vault remained exactly 27 Markdown files; its content manifest SHA-256 after verification is `F368D92A1064A853F6DD17C740ED057B516E9755BABE25F2910A5943F6DD2AB2`.
+- Integration Health now aggregates eight real connector contracts through a signed private route. Green Online is computed only from a successful live source check. Manual Health/Finance cards refer explicitly to the local Shared Store, not a manufacturer/bank connection. Tailscale is only Online when the current request proves private HTTPS/MagicDNS; localhost correctly reports Degraded if private-host configuration exists.
 
 ## Immediate continuation
 

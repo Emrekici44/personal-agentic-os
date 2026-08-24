@@ -9,7 +9,7 @@ export type ProgressItem = {
 };
 
 export const systemProgress = {
-  currentPhase: "Obsidian-Diffworkflow sicher vorbereitet · Integrationszentrum wird vertieft",
+  currentPhase: "Evidenzbasiertes Integrationszentrum bereit · Lebensbereiche werden spezialisiert",
   lastVerifiedAt: "24.08.2026 · Europe/Berlin",
   items: [
     {
@@ -157,6 +157,13 @@ export const systemProgress = {
       label: "Kontrollierter Obsidian-Diffworkflow bis zur Nutzergrenze",
       evidence: "Exakter Diff · Pfad/Hash/Konflikt · Backup/Restore · 15-Minuten-Token · Apply technisch gesperrt · 0 Vault-Writes",
       href: "#brain",
+      status: "complete",
+    },
+    {
+      id: "integration-health",
+      label: "Evidenzbasiertes Integrations-Health-Center",
+      evidence: "8 Connector-Verträge · Online nur nach Live-Prüfung · Kosten/Scope/Datenschutz/Reconnect · 0 Aktivierungen",
+      href: "#integrations",
       status: "complete",
     },
     {

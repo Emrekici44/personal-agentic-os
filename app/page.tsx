@@ -1525,17 +1525,13 @@ function Integrations({ note }: any) {
   const [liveCalendars, setLiveCalendars] = useState<any[]>([]),
     [selectedCalendars, setSelectedCalendars] = useState<string[]>([]),
     [calendarRead, setCalendarRead] = useState<any>({ state: "idle", events: [] }),
-    [vaultStatus, setVaultStatus] = useState<any>({ status: "unconfigured" }),
     [calendarStatus, setCalendarStatus] = useState<any>({
       configured: false,
       connected: false,
       mode: "mock",
-    });
+    }),[integrationHealth,setIntegrationHealth]=useState<any>({state:"loading",connectors:[]}),[selectedConnectorId,setSelectedConnectorId]=useState("");
+  const loadIntegrationHealth=useCallback(async()=>{try{await fetch("/api/state/session",{method:"POST"});const response=await fetch("/api/integrations/health",{cache:"no-store"}),result=await response.json();if(!response.ok)throw new Error(result.error);setIntegrationHealth({state:"online",...result});setSelectedConnectorId(current=>current||result.connectors?.[0]?.id||"")}catch(cause){setIntegrationHealth({state:"error",connectors:[],error:cause instanceof Error?cause.message:"Health Center nicht erreichbar"})}},[]);
   useEffect(() => {
-    fetch("/api/obsidian/status", { cache: "no-store" })
-      .then((response) => response.json())
-      .then(setVaultStatus)
-      .catch(() => setVaultStatus({ status: "degraded" }));
     fetch("/api/calendar/status", { cache: "no-store" })
       .then((response) => response.json())
       .then(setCalendarStatus)
@@ -1552,7 +1548,8 @@ function Integrations({ note }: any) {
         );
       })
       .catch(() => setLiveCalendars([]));
-  }, []);
+    void loadIntegrationHealth();
+  }, [loadIntegrationHealth]);
   const readWeek = async () => {
     if (!selectedCalendars.length) return note("Bitte mindestens einen Kalender auswählen");
     setCalendarRead({ state: "loading", events: [] });
@@ -1566,6 +1563,9 @@ function Integrations({ note }: any) {
     const result = await response.json();
     setCalendarRead(response.ok ? { state: "online", ...result } : { state: "error", events: [], error: result.error || "Lesen fehlgeschlagen" });
   };
+  const selectedConnector=integrationHealth.connectors.find((connector:any)=>connector.id===selectedConnectorId);
+  const connectionIcons:Record<string,any>={"google-calendar":I.CalendarDays,obsidian:I.BookOpen,"shared-store":I.Database,openai:I.Sparkles,"google-tasks":I.CheckSquare,"health-local":I.Activity,"finance-local":I.Landmark,tailscale:I.ShieldCheck};
+  const formatHealthTime=(value:string|null)=>value?new Intl.DateTimeFormat("de-DE",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit",timeZone:"Europe/Berlin"}).format(new Date(value)):"Noch nie verifiziert";
   return (
     <>
       <Intro
@@ -1645,50 +1645,18 @@ function Integrations({ note }: any) {
           Keine Hintergrundwrites. Create/Update nur nach exakter Einzelvorschau und Bestätigung; Duplikatschutz + Audit aktiv. Deletes bleiben deaktiviert.
         </small>
       </Card>
-      <div className="connections">
-        {[
-          ["Google Tasks", "Aufgaben", "unconfigured", "Keine Berechtigung"],
-          [
-            "Obsidian",
-            "Wissen",
-            vaultStatus.status === "online" ? "online" : vaultStatus.status === "degraded" ? "offline" : "unconfigured",
-            vaultStatus.status === "online" ? `${vaultStatus.noteCount} Markdown-Notizen · Read-only` : "Read-only Vorschau",
-          ],
-          ["OpenAI", "Modelle & Chats", "unconfigured", "Kein API-Key"],
-          ["Health", "Training", "unconfigured", "Keine Datenquelle"],
-          ["Finance", "Konten", "unconfigured", "Read-only only"],
-          ["Tailscale", "Privater Fernzugriff", "offline", "Einrichtung vorhanden · Laufzeitstatus hier nicht verifiziert"],
-        ].map((x, i) => (
-          <Card key={x[0]}>
-            <div className="row">
-              <span className="connector">
-                {
-                  [
-                    <I.CheckSquare key="tasks" />,
-                    <I.BookOpen key="obsidian" />,
-                    <I.Sparkles key="openai" />,
-                    <I.Activity key="health" />,
-                    <I.Landmark key="finance" />,
-                    <I.ShieldCheck key="tailscale" />,
-                  ][i]
-                }
-              </span>
-              <i className={"badge " + x[2]}>{x[2]}</i>
-            </div>
-            <h3>{x[0]}</h3>
-            <p>{x[1]}</p>
-            <dl>
-              <dt>Scope</dt>
-              <dd>{x[3]}</dd>
-              <dt>Letzter Sync</dt>
-              <dd>{x[0] === "Obsidian" && vaultStatus.status === "online" ? "Gerade lokal verifiziert" : "Nie"}</dd>
-              <dt>Aktivität</dt>
-              <dd>{x[0] === "Obsidian" && vaultStatus.status === "online" ? "Metadatenindex gelesen · 0 Writes" : "Keine externen Aktionen"}</dd>
-            </dl>
-            <span className="connectionNote">Keine weitere Aktion in dieser Ansicht</span>
-          </Card>
-        ))}
+      <div className="integrationSummary"><span><I.RefreshCw/><b>Letzte Gesamtprüfung</b><small>{formatHealthTime(integrationHealth.checkedAt||null)}</small></span><span><I.ShieldCheck/><b>Schreibstatus</b><small>0 externe Writes durch Health Center</small></span><span><I.BadgeEuro/><b>Kostenaktivierung</b><small>Keine</small></span><Btn soft onClick={integrationHealth.state!=="loading"?loadIntegrationHealth:undefined}>{integrationHealth.state==="loading"?"Prüft …":"Health erneut prüfen"}</Btn></div>
+      {integrationHealth.state==="error"&&<p className="plannerError" role="alert"><I.TriangleAlert/>{integrationHealth.error}</p>}
+      <div className="connections healthConnections">
+        {integrationHealth.connectors.map((connector:any)=>{const Icon=connectionIcons[connector.id]||I.Plug;return <Card className={selectedConnectorId===connector.id?"selected":""} key={connector.id}>
+          <div className="row"><span className="connector"><Icon/></span><div className="connectionBadges"><i className={`badge ${connector.status}`}>{connector.status}</i><i className={`costBadge ${String(connector.costClass).toLowerCase().replace(/[^a-z]+/g,"-")}`}>{connector.costClass}</i></div></div>
+          <h3>{connector.name}</h3><p>{connector.area}</p>
+          <dl><dt>Letzter Erfolg</dt><dd>{formatHealthTime(connector.lastSuccessfulSync)}</dd><dt>Aktuelle Prüfung</dt><dd>{connector.currentAction}</dd><dt>Scope</dt><dd>{connector.permissionScope.join(" · ")}</dd></dl>
+          {connector.recentError&&<p className="connectionError"><I.TriangleAlert/>{connector.recentError}</p>}
+          <button className="connectionDetailsButton" aria-expanded={selectedConnectorId===connector.id} onClick={()=>setSelectedConnectorId(current=>current===connector.id?"":connector.id)}>Details & Wiederverbinden<I.ChevronDown/></button>
+        </Card>})}
       </div>
+      {selectedConnector&&<Card className="connectionDetails"><div className="row"><div><Tag>CONNECTOR CONTRACT · {selectedConnector.classification}</Tag><h3>{selectedConnector.name}</h3></div><i className={`badge ${selectedConnector.status}`}>{selectedConnector.status}</i></div><div className="connectionDetailGrid"><span><b>Datenschutz</b>{selectedConnector.privacy}</span><span><b>Sicherer Wiederverbindungsweg</b>{selectedConnector.reconnect}</span><span><b>Letzte Prüfung</b>{formatHealthTime(selectedConnector.checkedAt)}</span><span><b>Kostenklasse</b>{selectedConnector.costClass} · keine Aktivierung durch diese Ansicht</span></div><details><summary>Verifizierte Evidenz anzeigen</summary><pre>{JSON.stringify(selectedConnector.evidence,null,2)}</pre></details><small><I.Lock/>Keine Zugangsdaten, opaque IDs oder persönlichen Inhalte werden hier angezeigt.</small></Card>}
     </>
   );
 }
