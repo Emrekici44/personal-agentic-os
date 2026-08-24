@@ -96,10 +96,11 @@ const store = {
 function useSharedRecords(kind:string){
   const[records,setRecords]=useState<any[]>([]),[state,setState]=useState<'loading'|'online'|'error'>('loading');
   const load=useCallback(async()=>{try{await fetch('/api/state/session',{method:'POST'});const response=await fetch(`/api/state/records/${kind}`,{cache:'no-store'});if(!response.ok)throw new Error();const data=await response.json();setRecords(data.records||[]);setState('online')}catch{setState('error')}},[kind]);
-  useEffect(()=>{load()},[load]);
-  const create=async(data:any)=>{const response=await fetch(`/api/state/records/${kind}`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(data)});const result=await response.json();if(!response.ok)throw new Error(result.error||'Speichern fehlgeschlagen');await load();return result};
-  const update=async(data:any)=>{const response=await fetch(`/api/state/records/${kind}`,{method:'PATCH',headers:{'content-type':'application/json'},body:JSON.stringify(data)});const result=await response.json();if(!response.ok){if(response.status===409)await load();throw new Error(result.error||'Aktualisieren fehlgeschlagen')}await load();return result};
-  const archive=async(id:string)=>{const version=records.find(record=>record.id===id)?.version;const response=await fetch(`/api/state/records/${kind}?id=${encodeURIComponent(id)}&version=${encodeURIComponent(String(version??""))}`,{method:'DELETE'});const result=await response.json();if(!response.ok){if(response.status===409)await load();throw new Error(result.error||'Archivieren fehlgeschlagen')}await load();return result};
+  useEffect(()=>{void load();const recover=()=>void load();window.addEventListener('agentic-os:runtime-online',recover);return()=>window.removeEventListener('agentic-os:runtime-online',recover)},[load]);
+  const request=async(url:string,init:RequestInit,fallback:string)=>{let response:Response;try{response=await fetch(url,init)}catch{setState('error');throw new Error('Gemeinsamer Datenkern nicht erreichbar')}let result:any;try{result=await response.json()}catch{setState('error');throw new Error('Ungültige Antwort des gemeinsamen Datenkerns')}if(!response.ok){if(response.status===409)await load();throw new Error(result.error||fallback)}await load();return result};
+  const create=async(data:any)=>request(`/api/state/records/${kind}`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(data)},'Speichern fehlgeschlagen');
+  const update=async(data:any)=>request(`/api/state/records/${kind}`,{method:'PATCH',headers:{'content-type':'application/json'},body:JSON.stringify(data)},'Aktualisieren fehlgeschlagen');
+  const archive=async(id:string)=>{const version=records.find(record=>record.id===id)?.version;return request(`/api/state/records/${kind}?id=${encodeURIComponent(id)}&version=${encodeURIComponent(String(version??""))}`,{method:'DELETE'},'Archivieren fehlgeschlagen')};
   return{records,state,create,update,archive,reload:load};
 }
 export default function App() {
@@ -174,6 +175,7 @@ export default function App() {
       if (!response.ok) throw new Error();
       const result = await response.json();
       setRuntimeHealth({ state: result.online ? "online" : "offline", checkedAt: new Date().toISOString() });
+      if (result.online) window.dispatchEvent(new Event("agentic-os:runtime-online"));
     } catch {
       setRuntimeHealth({ state: "offline", checkedAt: new Date().toISOString() });
     }

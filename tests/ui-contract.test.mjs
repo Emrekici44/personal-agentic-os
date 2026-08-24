@@ -136,6 +136,10 @@ test("shared clients expose offline truth and reload after version conflicts", a
   assert.match(page, /keinen stillen lokalen Ersatzstand/);
   assert.match(page, /response\.status===409\)await load\(\)/);
   assert.match(page, /Erneut prüfen/);
+  assert.match(page, /agentic-os:runtime-online/);
+  assert.match(page, /window\.dispatchEvent\(new Event\("agentic-os:runtime-online"\)\)/);
+  assert.match(page, /window\.addEventListener\('agentic-os:runtime-online',recover\)/);
+  assert.match(page, /setState\('error'\);throw new Error\('Gemeinsamer Datenkern nicht erreichbar'\)/);
 });
 
 test("knowledge search stays inside the signed metadata-only vault preview", async () => {
