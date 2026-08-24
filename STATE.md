@@ -31,10 +31,13 @@ Last verified: 24.08.2026, Europe/Berlin.
 - Fünf echte lokale Agenten-Workflows sind verfügbar: Projekt-Coach, Glaubens-/Reflexionsassistent, Gesundheitsplaner, Finanzübersichtsassistent und Beziehungspflege-Assistent. Sie lesen ausschließlich freigegebene Shared-Store-Quellen, erzeugen deterministische Vorschläge mit `local-rules` und `model=none`, verwenden keine OpenAI-API und verursachen 0 € pro Lauf.
 - Jeder Workflow besitzt klaren Input, Quellenbeleg, Vorschlagsoutput und Status. Eingabe, Output und Fortsetzungsstand werden feldverschlüsselt gespeichert; das Audit enthält nur Workflow-ID, Status und Zähler. Review, Pause und Fortsetzen sind synchronisiert. Externe oder folgenreiche Aktionen werden weder angeboten noch ausgeführt und benötigen später eine gesonderte exakte Freigabestufe.
 - Glaubens-, Gesundheits-, Finanz- und Beziehungsvorschläge bleiben organisatorisch. Es gibt keine religiöse Autoritätsbehauptung, Diagnose, medizinische oder finanzielle Fachberatung, Transaktion oder automatische Nachricht.
+- Skills sind keine freien Metadaten mehr: vier fest eingebaute lokale Prozeduren decken Prioritätenprüfung, Tages-Check, Lebensbereichsübersicht und Projektstand ab. Definitionen speichern Zweck, festes Eingabeschema, erlaubte echte Quellen, deterministische Schritte, Agentenreferenzen, Freigabeklasse, Status und Version.
+- Skill-Läufe sind reine Vorschauen. Input/Output werden verschlüsselt, Quellenbelege bestehen aus Zählern und das Audit ist inhaltsarm. Beliebiger Code, Shell, dynamische Imports, Netzwerk, Modelle, Dateiänderungen, externe Writes und stille Agentenketten sind in Modul, API, Persistenz und UI gesperrt.
+- Erstellen, Bearbeiten, zweistufiges reversibles Archivieren, lokaler Vorschau-Lauf, Review und reale Laufhistorie sind zwischen Desktop und Expo synchronisiert. Bestehende ältere Metadaten wären weiterhin nicht ausführbar, bis sie bewusst einer geprüften Prozedur zugeordnet werden.
 
 ## Verification
 
-- Root tests: 46/46 passed after the agent-workflow, project-workspace and weekly-planner safeguards.
+- Root tests: 51/51 passed after the local-skill, agent-workflow, project-workspace and weekly-planner safeguards.
 - Root lint and optimized Next build: passed after the final UI/documentation refresh.
 - Electron security checks: 2/2 passed. Expo TypeScript, lint and static web export passed.
 - Browser: the private Tailscale URL passed desktop 1280-wide and mobile 390×844 checks without horizontal overflow or console errors. The life-area overview, faith empty state/editor, finance fields and split career columns rendered from the shared source.
@@ -43,6 +46,7 @@ Last verified: 24.08.2026, Europe/Berlin.
 - Projektbrowser-Abnahme: echter leerer Shared-Store-Zustand, vollständiger Erfassungseditor mit deaktiviertem Leer-Speichern und Abbruch ohne Mutation; mobile 390×844 mit 0 horizontalem Überlauf.
 - Agentenbrowser-Abnahme: alle fünf echten Workflow-Profile, Schutzgrenzen, Shared-Store-Quellen und lokale Kosten-/Modellwahrheit renderten auf Desktop und 390×844 ohne horizontalen Überlauf. Der Startknopf blieb ohne Eingabe deaktiviert; der Finanzassistent zeigte die Fachberatungs-/Transaktionsgrenze. Zur Prüfung wurde bewusst kein echter Lauf erzeugt.
 - Produktionsbuild, Root-Lint/TypeScript, Electron 2/2 sowie Expo TypeScript/Lint/Web-Export sind nach dem Agentenmeilenstein grün.
+- Skillbrowser-Abnahme: echter leerer Shared-Store-Zustand, Definition-Editor mit deaktiviertem Leer-Speichern und Abbruch ohne Mutation; mobile 390×844 ohne horizontalen Überlauf. Root/Lint/TypeScript, Produktionsbuild, Electron 2/2 und Expo TypeScript/Lint/Web-Export sind grün.
 - Git: Projektarbeitsraum-Commit `b3b70cf7ec57f0205f01d70cb9163487dff89595` ist auf privatem `main`; der Agentenmeilenstein ist für seinen auditierten inkrementellen Commit bereit.
 
 ## User boundaries

@@ -22,6 +22,8 @@ Project root: `outputs/agentic-os`. Private source remote: `https://github.com/E
 - Projects now open a full shared workspace. With the current real store at 0 projects/tasks/inbox, the UI shows honest empty states; the create editor was opened and cancelled in desktop/mobile validation without mutating Emre's data. Once Emre creates a real project, its tasks, inbox links, plan links and metadata-only audit will sync through the laptop API.
 - Agents now provide five real local proposal workflows backed only by Shared Store data. Each run records encrypted input/output/resume state and content-light audit metadata; Review, Pause and Fortsetzen synchronize between desktop and Expo. `model=none`, no paid provider and no external/background action are enforced in API, store and UI.
 - The current real store has 0 agent workflow runs because verification intentionally did not create fabricated personal data. Emre can later select a workflow, enter a real concern and create the first local proposal from the normal Agenten page.
+- Skills use four audited local procedure templates and a dedicated signed private API. Definition CRUD, reversible archive, encrypted preview output, review and history are ready. The current real store has 0 skill definitions/runs because UI validation intentionally did not fabricate data.
+- Agent cards show only transparent references to persisted executable skills; a reference never starts a silent chain.
 
 ## Immediate continuation
 

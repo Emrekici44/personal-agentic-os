@@ -9,7 +9,7 @@ export type ProgressItem = {
 };
 
 export const systemProgress = {
-  currentPhase: "Fünf transparente lokale Agenten-Workflows bereit",
+  currentPhase: "Sichere lokale Skill-Prozeduren bereit · Obsidian-Diffworkflow folgt",
   lastVerifiedAt: "24.08.2026 · Europe/Berlin",
   items: [
     {
@@ -143,6 +143,13 @@ export const systemProgress = {
       label: "Fünf transparente lokale Agenten-Workflows",
       evidence: "Echte Shared-Store-Quellen · verschlüsselte Läufe · Review, Pause und Fortsetzen · 0 externe Aktionen",
       href: "#agents",
+      status: "complete",
+    },
+    {
+      id: "local-skills",
+      label: "Sichere wiederverwendbare lokale Skills",
+      evidence: "Versionierte Definitionen · feste Prozeduren · verschlüsselte Vorschauen · 0 Netzwerk/Modelle/externe Writes",
+      href: "#skills",
       status: "complete",
     },
     {
