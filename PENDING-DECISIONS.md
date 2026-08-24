@@ -62,9 +62,9 @@ Stand: 24.08.2026, Europe/Berlin. Diese Punkte blockieren nicht die übrige loka
 
 - Benötigte Entscheidung: Für einen konkreten Dateityp und Quellordner festlegen, ob Agentic OS nur einen Verweis speichern oder eine verwaltete lokale Kopie anlegen darf.
 - Grund: Dateiübernahme ist eine persönliche Dateisystemmutation und kann sensible Inhalte, Duplikate oder veraltete Kopien erzeugen.
-- Auswirkung: Projekt- und Inbox-Einträge könnten später echte Dokumentreferenzen erhalten. Der aktuelle `Dateiverweis` bleibt absichtlich nur Text.
+- Auswirkung: Projekt und Inbox können bereits private verschlüsselte Web-/Dateiverweise mit einem Kurztitel verwalten. Erst nach Freigabe dürfte eine spätere Funktion Dateien inventarisieren, öffnen oder als verwaltete Kopie übernehmen.
 - Kosten/Datenschutz: Keine Kosten; hohe lokale Datenschutzrelevanz. Persönliche Dateien, Pfade und Vorschauen dürfen nicht in Git, Logs oder Screenshots gelangen.
-- Sicherer nächster Schritt: Erst eine inhaltsfreie Inventar-/Konfliktvorschau für einen ausdrücklich gewählten Ordner erstellen, dann Referenz oder Kopie separat freigeben.
+- Sicherer nächster Schritt: Vorhandene reine Referenzfunktion nutzen. Für mehr zuerst eine inhaltsfreie Inventar-/Konfliktvorschau für einen ausdrücklich gewählten Ordner erstellen, dann Öffnen oder Kopie separat freigeben.
 
 ## Physische iPhone-Abnahme des aktuellen Stands
 

@@ -9,7 +9,7 @@ export type ProgressItem = {
 };
 
 export const systemProgress = {
-  currentPhase: "Private API und ehrliche Offline-Zustände gehärtet · Projektressourcen als nächster lokaler Schritt",
+  currentPhase: "Lokale MASTER-GAPS abgearbeitet · Recovery- und Restlückenaudit aktiv",
   lastVerifiedAt: "24.08.2026 · Europe/Berlin",
   items: [
     {
@@ -269,6 +269,13 @@ export const systemProgress = {
       label: "Private Status- und Preview-API vereinheitlichen",
       evidence: "Vault/Provider/Calendar signiert · cachefrei · keine Produktions-Mockevents · alte Mock-Endpunkte deaktiviert",
       href: "#integrations",
+      status: "complete",
+    },
+    {
+      id: "project-resource-references",
+      label: "Private Projektressourcen ohne Dateizugriff",
+      evidence: "Validierte Web-/Dateiverweise · Ziel verschlüsselt · kein Öffnen/Kopieren/Upload",
+      href: "#projects",
       status: "complete",
     },
     {
