@@ -31,6 +31,7 @@ Aktive Shared-Store-Ansichten härten den Laufzeitpfad zusätzlich: Netzwerkfehl
 
 Auch „reversibel archiviert“ ist jetzt vollständig bedienbar: das lokale Datensatz-Archiv kann eine exakte Version in ihren vorherigen Status zurückholen. Das ist ausdrücklich kein Backup-Restore und keine externe Aktion.
 Projekt, Journal und eigene Agent-Konfiguration besitzen zusätzlich einen zweistufigen Archiv-Einstieg. Die Transaktion blockiert Projekte beziehungsweise Agenten mit aktiven Verknüpfungen, bevor der Status geändert wird; damit bleibt der gemeinsame Datengraph konsistent.
+Die Einzelwiederherstellung im Archiv ist ebenfalls zweistufig und abbrechbar. Der erste Klick verändert nichts; erst die sichtbare Bestätigung darf den bereits versions- und abhängigkeitsgesicherten lokalen Restore aufrufen.
 Der lokale Bedienaudit ist abgeschlossen: 16 Kernansichten wurden auf Desktop und 390×844 ohne horizontalen Überlauf geprüft; alle sichtbaren aktiven mobilen Buttons erreichen mindestens 32 px in beiden Dimensionen, Menü/Journal-Impulse mindestens 44 px. Der physische Expo-Nachtest bleibt eine gebündelte Nutzeraktion.
 
 ## Nutzerentscheidung oder externe Grenze

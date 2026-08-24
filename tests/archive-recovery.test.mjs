@@ -62,7 +62,11 @@ test("settings expose real archive recovery without claiming a database restore"
   for (const truth of ["DATENSATZ-ARCHIV · LOKAL", "Archiviert statt gelöscht", "Wiederherstellen", "Das ist kein Datenbank-Restore", "keine gelöschten oder Beispiel-Datensätze"]) assert.match(page, new RegExp(truth));
   assert.match(page, /fetch\("\/api\/state\/archive"/);
   assert.match(page, /method:"PATCH"/);
+  assert.match(page, /restoreArchiveArmed!==key/);
+  assert.match(page, /Wiederherstellung bestätigen/);
+  assert.match(page, /setRestoreArchiveArmed\(""\)/);
   assert.match(css, /\.archiveRecords/);
+  assert.match(css, /\.archiveRestoreActions/);
   assert.match(css, /@media\(max-width:720px\)\{\.archiveRecords/);
 });
 
