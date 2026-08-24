@@ -2019,6 +2019,7 @@ function Settings({ brand, save, theme, changeTheme, note }: any) {
   const [restorePreview, setRestorePreview] = useState<any>(null);
   const [backupBusy, setBackupBusy] = useState(false);
   const [diagnosis,setDiagnosis]=useState<any>({state:"idle"});
+  const [archiveState,setArchiveState]=useState<any>({state:"loading",records:[]});
   useEffect(() => setD(brand), [brand]);
   const loadBackups = useCallback(async () => {
     try {
@@ -2033,7 +2034,8 @@ function Settings({ brand, save, theme, changeTheme, note }: any) {
       note(error instanceof Error ? error.message : "Backup-Status nicht verfügbar");
     }
   }, [note]);
-  useEffect(() => { loadBackups(); }, [loadBackups]);
+  const loadArchive=useCallback(async()=>{try{await fetch("/api/state/session",{method:"POST"});const response=await fetch("/api/state/archive",{cache:"no-store"}),result=await response.json();if(!response.ok)throw new Error(result.error);setArchiveState({state:"online",records:result.records||[]})}catch(error){setArchiveState({state:"error",records:[],error:error instanceof Error?error.message:"Archiv nicht erreichbar"})}},[]);
+  useEffect(() => { loadBackups(); loadArchive(); }, [loadArchive,loadBackups]);
   const createBackup = async () => {
     setBackupBusy(true);
     try {
@@ -2068,6 +2070,7 @@ function Settings({ brand, save, theme, changeTheme, note }: any) {
     } finally { setBackupBusy(false); }
   };
   const runRecoveryCheck=async()=>{setDiagnosis({state:"loading"});try{const session=await fetch("/api/state/session",{method:"POST"});if(!session.ok)throw new Error("Private Sitzung nicht erreichbar");const [storeResponse,healthResponse,backupResponse]=await Promise.all([fetch("/api/state/status",{cache:"no-store"}),fetch("/api/integrations/health",{cache:"no-store"}),fetch("/api/state/backups",{cache:"no-store"})]);const [storeResult,healthResult,backupResult]=await Promise.all([storeResponse.json(),healthResponse.json(),backupResponse.json()]);if(!storeResponse.ok||!healthResponse.ok||!backupResponse.ok)throw new Error("Mindestens eine private Diagnosequelle ist nicht erreichbar");const connectors=healthResult.connectors||[],online=connectors.filter((item:any)=>item.status==="online").length,degraded=connectors.filter((item:any)=>item.status==="degraded"||item.status==="offline").length;setDiagnosis({state:"ready",checkedAt:healthResult.checkedAt,storeOnline:Boolean(storeResult.online),schemaVersion:storeResult.schemaVersion,wal:Boolean(storeResult.wal),connectorCount:connectors.length,onlineConnectors:online,degradedConnectors:degraded,backupCount:backupResult.backups?.length||0,latestBackupAt:backupResult.backups?.[0]?.createdAt||null,externalWritesPerformed:false,restorePerformed:false})}catch(error){setDiagnosis({state:"error",error:error instanceof Error?error.message:"Lokale Diagnose fehlgeschlagen",externalWritesPerformed:false,restorePerformed:false})}};
+  const restoreArchiveRecord=async(record:any)=>{try{const response=await fetch("/api/state/archive",{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({kind:record.kind,id:record.id,version:record.version})}),result=await response.json();if(!response.ok)throw new Error(result.error||"Datensatz konnte nicht wiederhergestellt werden");await loadArchive();note("Datensatz aus dem lokalen Archiv wiederhergestellt")}catch(error){await loadArchive();note(error instanceof Error?error.message:"Wiederherstellung fehlgeschlagen")}};
   const brandingValid = d.name.trim().length >= 2 && /^[A-ZÄÖÜ0-9]{1,3}$/i.test(d.short.trim()) && /^#[0-9a-f]{6}$/i.test(d.accent);
   return (
     <>
@@ -2189,6 +2192,14 @@ function Settings({ brand, save, theme, changeTheme, note }: any) {
           {diagnosis.state==="error"&&<p className="plannerError" role="alert"><I.TriangleAlert/>{diagnosis.error}</p>}
           <ol className="recoverySteps"><li>Agentic OS über den Desktop-Shortcut neu starten.</li><li>Diese Diagnose erneut ausführen und Verbindungen im Health Center prüfen.</li><li>Nur bei Datenproblem ein Backup vergleichen; Restore bleibt bis zur exakten Freigabe gesperrt.</li></ol>
           <a className="btn soft" href="#integrations">Zum Health Center</a>
+        </Card>
+        <Card className="archiveCard">
+          <div className="row"><div><Tag>DATENSATZ-ARCHIV · LOKAL</Tag><h3>Archiviert statt gelöscht</h3></div><i className={`badge ${archiveState.state==="online"?"online":"offline"}`}>{archiveState.state==="online"?`${archiveState.records.length} Einträge`:archiveState.state==="loading"?"Lädt":"Fehler"}</i></div>
+          <p>Hier lassen sich lokale Datensätze einzeln in ihren vorherigen Status zurückholen. Das ist kein Datenbank-Restore und löst keine externe Aktion aus.</p>
+          {archiveState.state==="online"&&archiveState.records.length===0&&<div className="honestEmpty"><I.ArchiveRestore/><span><b>Lokales Archiv ist leer</b>Es werden keine gelöschten oder Beispiel-Datensätze gezeigt.</span></div>}
+          {archiveState.state==="error"&&<p className="plannerError" role="alert"><I.TriangleAlert/>{archiveState.error}</p>}
+          <div className="archiveRecords">{archiveState.records.map((record:any)=><div key={`${record.kind}:${record.id}`}><I.Archive/><span><b>{record.title}</b><small>{({projects:"Projekt",tasks:"Aufgabe",habits:"Habit",journal_metadata:"Journal",inbox_items:"Inbox",agents:"Agent",skills:"Skill",area_records:"Lebensbereich"} as Record<string,string>)[record.kind]||record.kind} · archiviert {new Intl.DateTimeFormat("de-DE",{dateStyle:"short",timeStyle:"short"}).format(new Date(record.archivedAt))}</small></span><button onClick={()=>restoreArchiveRecord(record)} type="button">Wiederherstellen</button></div>)}</div>
+          <small className="settingsHint"><I.ShieldCheck/>Versionskonflikte werden abgewiesen; verknüpfte archivierte Projekte oder Agenten müssen zuerst selbst wiederhergestellt werden.</small>
         </Card>
         <Card>
           <Tag>DATENGRENZEN</Tag>

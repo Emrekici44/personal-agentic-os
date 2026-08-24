@@ -36,6 +36,7 @@
 - Project workspaces now include shared resource references: allowlisted web links and local file references with a visible short title, encrypted private target, project linkage, explicit reveal and no file open/copy/upload primitive. Validation was executed against an isolated temporary store; no user record or file was created.
 - Settings now has a signed, read-only recovery diagnosis. It checks Shared Store/WAL/schema, connector-health evidence and local backup availability, presents an ordered restart/check/preview runbook, and cannot reconnect, restore or write externally.
 - All remaining sensitive Shared Store/API responses now explicitly use `no-store, private`. Unauthorized reads and mutations consistently return 401 (not a misleading validation 400), including records, preferences, backups, audit, migration preview and Calendar proposal/write routes.
+- Reversible archive is now truthful end-to-end: a private content-light archive lists local records, restores one exact version to its prior status in a transaction, rejects stale/dependency conflicts and never deletes or performs an external action. Backup restore remains a separate locked boundary.
 
 ## Complete – Bedienwahrheit and responsive refinement
 

@@ -9,7 +9,7 @@ export type ProgressItem = {
 };
 
 export const systemProgress = {
-  currentPhase: "Lokale Lücken und API-/Recovery-Härtung abgeschlossen · gebündelte Nutzergrenzen offen",
+  currentPhase: "Lokale Lücken, Archiv und API-/Recovery-Härtung abgeschlossen · Nutzergrenzen offen",
   lastVerifiedAt: "24.08.2026 · Europe/Berlin",
   items: [
     {
@@ -282,6 +282,13 @@ export const systemProgress = {
       id: "read-only-recovery-diagnosis",
       label: "Private Wiederanlaufdiagnose",
       evidence: "Store/WAL/Schema · Connector-Health · Backup-Inventar · 0 Restore/Reconnect/Writes",
+      href: "#settings",
+      status: "complete",
+    },
+    {
+      id: "reversible-record-archive",
+      label: "Reversibles lokales Datensatz-Archiv",
+      evidence: "Inhaltsarme Liste · exakte Version · Transaktion/Audit · kein Delete/externer Write",
       href: "#settings",
       status: "complete",
     },

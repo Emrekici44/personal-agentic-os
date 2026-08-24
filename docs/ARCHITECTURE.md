@@ -10,6 +10,8 @@ Next.js is the single shared UI and server source of truth. It can run in three 
 
 All sensitive operational API methods enforce the signed local session before validation and use `Cache-Control: no-store, private`, including reads and mutations for records, preferences, audit, backups, migration preview and Calendar proposal/write. Missing authorization is uniformly a 401 and never falls through to a misleading validation response.
 
+Archive is a normal reversible record state, not deletion. A separate content-light signed endpoint lists archived metadata and restores one exact row version transactionally to the status retained in its stored payload. Related project or agent dependencies must be restored first. Database backup restore remains absent and separately gated.
+
 The Electron main process starts a loopback-only Next development server on port 3210, waits for readiness, and then opens it in a sandboxed window. The renderer has context isolation, no Node integration, guarded top-level navigation, denied permission requests, and no cloud dependency. The current deliverable is a verified development shell, not a packaged installer.
 
 The Expo SDK 54 companion is intentionally minimal because current Expo Go physical-device compatibility requires that SDK during the SDK transition. Its only runtime configuration is the non-secret `EXPO_PUBLIC_AGENTIC_OS_URL`, set dynamically by the Windows launcher to the current LAN address or verified private Tailscale Serve URL. The WebView accepts its configured origin, routes external HTTPS links to the operating system, and provides branded loading, invalid-config, connection-error, and retry states. No EAS account, public tunnel, build, update, or hosting service is used.
