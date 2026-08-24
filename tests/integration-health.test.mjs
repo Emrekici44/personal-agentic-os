@@ -8,6 +8,9 @@ const ui = await readFile(new URL("../app/page.tsx", import.meta.url), "utf8");
 test("integration health derives online states from real server checks", () => {
   assert.match(route, /verifyLocalSession/);
   assert.match(route, /refreshedAccessToken/);
+  assert.match(route, /catch \{ calendarError = "Google-Tokenprüfung vorübergehend nicht erreichbar"; \}/);
+  assert.match(route, /connectionCheck: calendarError \? "error" : "complete"/);
+  assert.match(route, /recentError: calendarConnected \? null : calendarError/);
   assert.match(route, /readVaultPreview/);
   assert.match(route, /storeStatus/);
   assert.match(route, /providerPolicy/);
@@ -33,4 +36,15 @@ test("health UI provides a real refresh and expandable evidence without activati
   assert.match(ui, /fetch\("\/api\/integrations\/health"/);
   assert.match(ui, /setSelectedConnectorId/);
   assert.doesNotMatch(ui.slice(ui.indexOf("function Integrations"), ui.indexOf("function Brain")), /Verbindung erfolgreich aktiviert|Plugin installiert|API aktiviert/i);
+});
+
+test("calendar recovery keeps status, token check and catalog evidence separate", async () => {
+  const statusRoute = await readFile(new URL("../app/api/calendar/status/route.ts", import.meta.url), "utf8");
+  assert.match(statusRoute, /connectionCheck: "complete" \| "error"/);
+  assert.match(statusRoute, /recentError = "Google-Tokenprüfung vorübergehend nicht erreichbar"/);
+  assert.match(statusRoute, /connectionCheck === "error"/);
+  assert.match(ui, /catalogState=calendarsResponse\.ok\?"online":statusResult\.connected\?"error":"unavailable"/);
+  assert.match(ui, /calendarStatus\.connectionCheck !== "error" && calendarStatus\.configured/);
+  assert.match(ui, /Der Kalenderkatalog wird erst nach einer verifizierten Verbindung gelesen/);
+  assert.match(ui, /Tokenstatus erneut prüfen/);
 });

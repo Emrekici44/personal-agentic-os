@@ -103,6 +103,7 @@ Last verified: 25.08.2026, Europe/Berlin.
 - Auch die lokale Einzelwiederherstellung benötigt jetzt zwei sichtbare Schritte: erst auswählen, dann ausdrücklich bestätigen oder abbrechen. Vor der Bestätigung gibt es keinen PATCH; danach bleiben Versions-/Abhängigkeitsprüfung und Audit serverseitig maßgeblich. Das reale Archiv war beim UI-Test leer, daher wurde kein Nutzerdatensatz verändert.
 - Eine physische iPhone-Abnahme des aktuellen Nachtstands ist in `PENDING-DECISIONS.md` gebündelt und wird nicht automatisch behauptet. Der vorherige Expo-Navigationsstand bleibt physisch bestätigt.
 - Nach dem lokalen Abschlussaudit bleiben Root 78/78, TypeScript, ESLint, Electron 2/2, Expo TypeScript/Lint/Web-Export und Next-Produktionsbuild grün.
+- Calendar-Recovery trennt jetzt drei unabhängige Wahrheiten: erreichbarer Statusendpunkt, Tokenprüfung und Kalenderkatalog. Ein Katalogfehler verdeckt weder die OAuth-Konfiguration noch den sicheren Retry; eine unklare Tokenprüfung sperrt Reconnect und Reads bis zur erneuten Prüfung. Integration Health bleibt bei diesem Teilfehler erreichbar und zeigt niemals gleichzeitig `Online` und einen fehlenden Token.
 
 ## Verification
 
@@ -128,6 +129,7 @@ Last verified: 25.08.2026, Europe/Berlin.
 - Nach der privaten Wissenssuche sind Root 73/73, TypeScript, ESLint, Produktionsbuild, Electron 2/2 und Expo TypeScript/Lint/Web-Export grün. Der Inhaltsaudit fand keine verbotene getrackte lokale Zustandsdatei und keine konkrete Secret-Signatur im Source-Diff.
 - Tagesbereich-Browser-Abnahme: Aufgaben- und Habit-Editor wurden auf Desktop und 390×844 geöffnet und abgebrochen; Priorität/Datum/Bereich/Projekt sowie täglicher/wöchentlicher Rhythmus renderten ohne horizontalen Überlauf. Es wurden keine Testdatensätze erzeugt.
 - Nach der Aufgaben-/Habit-Erweiterung sind Root 74/74, TypeScript, ESLint, Produktionsbuild, Electron 2/2 und Expo TypeScript/Lint/Web-Export grün. `git diff --check`, Secret- und verbotene-Inhaltsprüfung sind sauber.
+- Calendar-Recovery-Browserabnahme: die verbundene Quelle zeigt `EVENTS LIVE · KONTROLLIERT`, acht reale Kalenderrollen und keinen widersprüchlichen Tokenfehler. Desktop sowie 390×844 hatten keine Console-Warnung und keinen horizontalen Überlauf; es wurde kein Kalender gelesen, OAuth gestartet oder Write vorbereitet.
 
 ## User boundaries
 

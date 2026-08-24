@@ -1750,9 +1750,10 @@ function Integrations({ note }: any) {
       configured: false,
       connected: false,
       mode: "unavailable",
+      catalogState: "loading",
     }),[integrationHealth,setIntegrationHealth]=useState<any>({state:"loading",connectors:[]}),[selectedConnectorId,setSelectedConnectorId]=useState("");
   const loadIntegrationHealth=useCallback(async()=>{setIntegrationHealth({state:"loading",connectors:[]});setSelectedConnectorId("");try{const session=await fetch("/api/state/session",{method:"POST"});if(!session.ok)throw new Error("Private Sitzung nicht erreichbar");const response=await fetch("/api/integrations/health",{cache:"no-store"}),result=await response.json();if(!response.ok)throw new Error(result.error);setIntegrationHealth({state:"online",...result});setSelectedConnectorId(result.connectors?.[0]?.id||"")}catch(cause){setIntegrationHealth({state:"error",connectors:[],error:cause instanceof Error?cause.message:"Health Center nicht erreichbar"})}},[]);
-  const loadCalendarState=useCallback(async()=>{setCalendarStatus({state:"loading",configured:false,connected:false,mode:"unavailable"});setLiveCalendars([]);setSelectedCalendars([]);setCalendarRead({state:"idle",events:[]});try{const session=await fetch("/api/state/session",{method:"POST"});if(!session.ok)throw new Error();const [statusResponse,calendarsResponse]=await Promise.all([fetch("/api/calendar/status",{cache:"no-store"}),fetch("/api/calendar/calendars",{cache:"no-store"})]);const [statusResult,calendarResult]=await Promise.all([statusResponse.json(),calendarsResponse.json()]);if(!statusResponse.ok||!calendarsResponse.ok)throw new Error();const calendars=calendarResult.calendars||[];setCalendarStatus({state:"online",...statusResult});setLiveCalendars(calendars);setSelectedCalendars(calendars.filter((calendar:any)=>calendar.selected).slice(0,6).map((calendar:any)=>calendar.id))}catch{setCalendarStatus({state:"error",configured:false,connected:false,mode:"unavailable"});setLiveCalendars([]);setSelectedCalendars([])}},[]);
+  const loadCalendarState=useCallback(async()=>{setCalendarStatus({state:"loading",configured:false,connected:false,mode:"unavailable",catalogState:"loading"});setLiveCalendars([]);setSelectedCalendars([]);setCalendarRead({state:"idle",events:[]});try{const session=await fetch("/api/state/session",{method:"POST"});if(!session.ok)throw new Error();const [statusResponse,calendarsResponse]=await Promise.all([fetch("/api/calendar/status",{cache:"no-store"}),fetch("/api/calendar/calendars",{cache:"no-store"})]);const [statusResult,calendarResult]=await Promise.all([statusResponse.json(),calendarsResponse.json()]);if(!statusResponse.ok)throw new Error();const catalogState=calendarsResponse.ok?"online":statusResult.connected?"error":"unavailable";const calendars=calendarsResponse.ok?(calendarResult.calendars||[]):[];setCalendarStatus({state:"online",...statusResult,catalogState,catalogError:catalogState==="error"?(calendarResult.error||"Kalenderkatalog nicht erreichbar"):""});setLiveCalendars(calendars);setSelectedCalendars(calendars.filter((calendar:any)=>calendar.selected).slice(0,6).map((calendar:any)=>calendar.id))}catch{setCalendarStatus({state:"error",configured:false,connected:false,mode:"unavailable",catalogState:"error"});setLiveCalendars([]);setSelectedCalendars([])}},[]);
   useEffect(() => {
     void loadCalendarState();
     void loadIntegrationHealth();
@@ -1812,13 +1813,14 @@ function Integrations({ note }: any) {
           </span>
           <div>
             <Tag>
-              GOOGLE CALENDAR · {calendarStatus.state === "loading" ? "STATUS WIRD GEPRÜFT" : calendarStatus.state === "error" ? "STATUS NICHT ERREICHBAR" : calendarStatus.eventWriteReady ? "EVENTS LIVE · KONTROLLIERT" : calendarStatus.connected ? "READ-ONLY · NEUE FREIGABE NÖTIG" : calendarStatus.configured ? "OAUTH BEREIT" : "NICHT KONFIGURIERT"}
+              GOOGLE CALENDAR · {calendarStatus.state === "loading" ? "STATUS WIRD GEPRÜFT" : calendarStatus.state === "error" ? "STATUS NICHT ERREICHBAR" : calendarStatus.connectionCheck === "error" ? "TOKENPRÜFUNG NICHT ERREICHBAR" : calendarStatus.eventWriteReady ? "EVENTS LIVE · KONTROLLIERT" : calendarStatus.connected ? "READ-ONLY · NEUE FREIGABE NÖTIG" : calendarStatus.configured ? "OAUTH BEREIT" : "NICHT KONFIGURIERT"}
             </Tag>
             <h3>Wochenplanung sicher verbinden</h3>
           </div>
-          <em>{calendarStatus.state === "loading" ? "Prüft" : calendarStatus.state === "error" ? "Offline" : calendarStatus.connected ? "Online" : calendarStatus.configured ? "Bereit" : "Unkonfiguriert"}</em>
+          <em>{calendarStatus.state === "loading" ? "Prüft" : calendarStatus.state === "error" ? "Offline" : calendarStatus.connectionCheck === "error" ? "Eingeschränkt" : calendarStatus.connected ? "Online" : calendarStatus.configured ? "Bereit" : "Unkonfiguriert"}</em>
         </div>
         {calendarStatus.state === "error" && <RetryNotice message="Google-Status und Kalenderkatalog sind gerade nicht erreichbar." onRetry={loadCalendarState} label="Kalenderstatus neu laden"/>}
+        {calendarStatus.state === "online" && calendarStatus.connectionCheck === "error" && <RetryNotice message={calendarStatus.recentError || "Google-Tokenprüfung ist gerade nicht erreichbar. Eine neue Freigabe wird aus diesem unklaren Zustand nicht gestartet."} onRetry={loadCalendarState} label="Tokenstatus erneut prüfen"/>}
         {calendarStatus.state === "online" && !calendarStatus.configured && (
           <div className="setupBoundary">
             <I.Shield />
@@ -1829,7 +1831,7 @@ function Integrations({ note }: any) {
             </span>
           </div>
         )}
-        {calendarStatus.state === "online" && calendarStatus.configured && !calendarStatus.eventWriteReady && (
+        {calendarStatus.state === "online" && calendarStatus.connectionCheck !== "error" && calendarStatus.configured && !calendarStatus.eventWriteReady && (
           <button className="btn soft" onClick={beginCalendarConnect}>
             Lesen + kontrollierte Event-Writes freigeben <I.ExternalLink />
           </button>
@@ -1852,8 +1854,8 @@ function Integrations({ note }: any) {
                 {calendar.summary} · {calendar.writable ? "schreibbar" : "nur lesen"}
               </label>
             ))}
-            {calendarStatus.state === "loading" ? <p role="status">Kalenderkatalog wird geladen …</p> : calendarStatus.state === "online" && !liveCalendars.length ? <p className="emptyInline">Die verifizierte Kalenderliste ist leer. Es werden keine Ersatzkalender eingesetzt.</p> : null}
-            <Btn soft onClick={calendarStatus.state === "online" && calendarStatus.connected && calendarRead.state !== "loading" ? readWeek : undefined}>
+            {calendarStatus.state === "loading" || calendarStatus.catalogState === "loading" ? <p role="status">Kalenderkatalog wird geladen …</p> : calendarStatus.catalogState === "error" ? <RetryNotice message={calendarStatus.catalogError || "Kalenderkatalog ist gerade nicht erreichbar."} onRetry={loadCalendarState} label="Kalenderkatalog neu laden"/> : calendarStatus.catalogState === "unavailable" ? <p className="emptyInline">Der Kalenderkatalog wird erst nach einer verifizierten Verbindung gelesen.</p> : calendarStatus.catalogState === "online" && !liveCalendars.length ? <p className="emptyInline">Die verifizierte Kalenderliste ist leer. Es werden keine Ersatzkalender eingesetzt.</p> : null}
+            <Btn soft onClick={calendarStatus.state === "online" && calendarStatus.catalogState === "online" && calendarStatus.connected && calendarRead.state !== "loading" ? readWeek : undefined}>
               Nächste 8 Tage lesen
             </Btn>
           </div>

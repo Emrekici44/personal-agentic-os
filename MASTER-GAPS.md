@@ -72,6 +72,7 @@ Die gebündelten Details stehen in `PENDING-DECISIONS.md`. Kein Punkt hier block
 - Die lokale Session-Ausgabe ist ebenfalls vollständig cachefrei: Hostprüfung, HttpOnly/SameSite-Cookie und finaler `no-store, private`-Header gelten auf Erfolg und Ablehnung. Laufzeitnachweis erfolgte ohne Ausgabe des signierten Cookie-Werts.
 - Projekt-Workspace-, Agenten-Workflow- und Tageskalender-Responses sind auf allen Pfaden cachefrei/privat. Anonyme GET-/POST-/PATCH-Probes belegen, dass 401 vor Datenquelle, Request-Body-Verarbeitung oder externer Kommunikation greift.
 - OAuth-Start- und Callback-Redirects sind ebenfalls final cachefrei; der 10-Minuten-State-Cookie wird auf Erfolg und Fehler gelöscht. Der Laufzeitnachweis verwendete nur fehlende/ungültige Eingaben und startete weder Google-Navigation noch Tokenaustausch.
+- Calendar-Status, Tokenprüfung und Katalog sind getrennte Recovery-Evidenz. Ein temporärer Refresh- oder Katalogfehler kann den Health-Endpunkt nicht mehr mitreißen, keinen Online-/Fehler-Widerspruch erzeugen und keinen Reconnect aus unklarem Status freischalten.
 - Produktmodule enthalten keine eingebetteten Kalender-, Ereignis-, Fokusblock- oder Provider-Mocks mehr; Testverträge prüfen echte Guards ohne sie als Nutzerdatenpfad bereitzuhalten.
 - ChatGPT Pro ist kein API-Zugang. Companion Mode ist ein manueller Übergabepfad.
 - SQLite ist operative Quelle, Obsidian dauerhafte Wissensquelle und Google Calendar externe Ereignisquelle, bis Emre eine andere Migration ausdrücklich freigibt.

@@ -11,7 +11,9 @@ const base = (checkedAt: string) => ({ checkedAt, externalWritesPerformed: false
 export async function GET(request: NextRequest) {
   if (!verifyLocalSession(request.cookies.get("agentic_os_local_session")?.value)) return NextResponse.json({ error: "Lokale Sitzung erforderlich" }, { status: 401, headers });
   const checkedAt = new Date().toISOString(), calendarConfiguration = calendarConfig(), grantedScopes = tokenScopes(request.cookies.get("agentic_os_google_token")?.value);
-  const calendarConnected = Boolean(await refreshedAccessToken(request.cookies.get("agentic_os_google_token")?.value));
+  let calendarConnected = false, calendarError = "";
+  try { calendarConnected = Boolean(await refreshedAccessToken(request.cookies.get("agentic_os_google_token")?.value)); }
+  catch { calendarError = "Google-Tokenprüfung vorübergehend nicht erreichbar"; }
   let vault: any = null, vaultError = "";
   if (vaultConfigured()) {
     try { vault = await readVaultPreview(); } catch { vaultError = "Lokaler Vault-Index konnte nicht gelesen werden"; }
@@ -24,14 +26,14 @@ export async function GET(request: NextRequest) {
   const connectors = [
     {
       id: "google-calendar", name: "Google Calendar", area: "Kalender & Wochenplanung",
-      status: calendarConnected ? "online" : calendarConfiguration.configured ? "degraded" : "unconfigured",
+      status: calendarConnected ? "online" : calendarConfiguration.configured || calendarError ? "degraded" : "unconfigured",
       costClass: "Free", classification: "direct_api", lastSuccessfulSync: calendarConnected ? checkedAt : null,
-      currentAction: calendarConnected ? "Verbindung und gewährte Scopes serverseitig verifiziert" : calendarConfiguration.configured ? "OAuth ist konfiguriert; Verbindung erneut freigeben" : "Lokalen OAuth-Client konfigurieren",
-      recentError: calendarConnected ? null : calendarConfiguration.configured ? "Kein aktuell verwendbarer Google-Token" : null,
+      currentAction: calendarConnected ? "Verbindung und gewährte Scopes serverseitig verifiziert" : calendarError ? "Tokenprüfung wiederholen; keine neue Freigabe aus einem unklaren Status starten" : calendarConfiguration.configured ? "OAuth ist konfiguriert; Verbindung erneut freigeben" : "Lokalen OAuth-Client konfigurieren",
+      recentError: calendarConnected ? null : calendarError || (calendarConfiguration.configured ? "Kein aktuell verwendbarer Google-Token" : null),
       permissionScope: calendarScopes.map((scope) => scope.split("/").at(-1)),
       privacy: "Kalenderdaten bleiben im privaten Serverpfad; 8-Tage-Reads, keine Hintergrundwrites, Deletes/ACL/Sharing gesperrt.",
       reconnect: calendarConfiguration.configured ? "Im Calendar-Bereich „Lesen + kontrollierte Event-Writes freigeben“ öffnen und Google-Zustimmung selbst bestätigen." : "Google-Cloud-Webclient und lokale .env.local gemäß Setup einrichten; keine Secrets im Chat.",
-      evidence: { configured: calendarConfiguration.configured, connected: calendarConnected, storedToken: hasStoredToken(), exactApproval: true, grantedRequiredScopes: calendarScopes.every((scope) => grantedScopes.includes(scope)) },
+      evidence: { configured: calendarConfiguration.configured, connected: calendarConnected, connectionCheck: calendarError ? "error" : "complete", storedToken: hasStoredToken(), exactApproval: true, grantedRequiredScopes: calendarScopes.every((scope) => grantedScopes.includes(scope)) },
       ...base(checkedAt),
     },
     {

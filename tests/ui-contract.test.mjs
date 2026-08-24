@@ -243,10 +243,12 @@ test("backup and archive recovery never render unavailable inventory as empty", 
 test("integration health clears stale catalogs and exposes real calendar retry states", async () => {
   const page = await readFile(pagePath, "utf8");
   assert.match(page, /setIntegrationHealth\(\{state:"loading",connectors:\[\]\}\);setSelectedConnectorId\(""\)/);
-  assert.match(page, /setCalendarStatus\(\{state:"loading",configured:false,connected:false,mode:"unavailable"\}\);setLiveCalendars\(\[\]\);setSelectedCalendars\(\[\]\)/);
-  assert.match(page, /setCalendarStatus\(\{state:"online",\.\.\.statusResult\}\)/);
+  assert.match(page, /setCalendarStatus\(\{state:"loading",configured:false,connected:false,mode:"unavailable",catalogState:"loading"\}\);setLiveCalendars\(\[\]\);setSelectedCalendars\(\[\]\)/);
+  assert.match(page, /setCalendarStatus\(\{state:"online",\.\.\.statusResult,catalogState,catalogError:/);
   assert.match(page, /Google-Status und Kalenderkatalog sind gerade nicht erreichbar/);
-  assert.match(page, /calendarStatus\.state === "online" && !liveCalendars\.length/);
+  assert.match(page, /calendarStatus\.catalogState === "online" && !liveCalendars\.length/);
+  assert.match(page, /calendarStatus\.catalogState === "unavailable"/);
+  assert.match(page, /calendarStatus\.connectionCheck !== "error" && calendarStatus\.configured/);
   assert.match(page, /Begrenzter Kalenderabruf nicht erreichbar/);
   assert.doesNotMatch(page, /TESTADAPTER/);
 });

@@ -16,7 +16,9 @@ test("calendar status, catalogs, reads and OAuth entry require the signed local 
 
 test("disconnected production calendar routes return honest empty states, never mock events", async () => {
   const [status, calendars, events] = await Promise.all([route("status"), route("calendars"), route("events")]);
-  assert.match(status, /'unconfigured'/);
+  assert.match(status, /["']unconfigured["']/);
+  assert.match(status, /connectionCheck/);
+  assert.match(status, /["']degraded["']/);
   assert.doesNotMatch(status, /mode:connected\?'google':c\.configured\?'oauth-ready':'mock'/);
   assert.match(calendars, /calendars:\[\]/);
   assert.match(calendars, /mockDataUsed:false/);

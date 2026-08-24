@@ -62,6 +62,7 @@
 - Reversible archive is now truthful end-to-end: a private content-light archive lists local records, restores one exact version to its prior status in a transaction, rejects stale/dependency conflicts and never deletes or performs an external action. Backup restore remains a separate locked boundary.
 - Project, Journal and custom Agent surfaces now expose deliberate two-step archive entry points. Archiving itself is transactional and refuses active Project/Agent dependencies before changing state, so cross-client recovery does not create orphaned references.
 - Local single-record restore now also has a two-step UI gate with an explicit cancel path. No restore request is sent on the first click; the existing exact-version/dependency checks remain authoritative on confirmation.
+- Calendar recovery now keeps endpoint, token-refresh and catalog checks independent. A catalog outage no longer erases a reachable OAuth/configuration state; an uncertain token check exposes a retry-only degraded state and blocks reconnection/read controls until evidence is fresh. Integration Health survives that connector-local failure.
 
 ## Complete – Bedienwahrheit and responsive refinement
 

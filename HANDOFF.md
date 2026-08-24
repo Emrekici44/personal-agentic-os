@@ -70,6 +70,7 @@ Project root: `outputs/agentic-os`. Private source remote: `https://github.com/E
 - Shared record requests now also mark genuine network/invalid-server failures offline immediately. A successful central interval/focus/online check broadcasts recovery to all active record views, which reload from the laptop source; the manual retry uses the same path and never creates a local fallback copy.
 - Project history, Agent workflows, Skills, Planner sources, Knowledge audit, backup inventory and archive errors now render an accessible scoped retry instead of a dead error sentence. Agent proposal execution is disabled while workflow profiles are unavailable. Online Agent/Skill checks remained error-free on desktop and 390×844.
 - A 16-view desktop/390×844 audit found and fixed undersized mobile menu-close and Journal prompt controls; the repeat pass had 0 overflow and 0 active controls below 32×32 px. Do not claim physical acceptance of these newest screens until Emre performs the bundled Expo retest in `PENDING-DECISIONS.md`.
+- Calendar recovery now treats the private status endpoint, Google token refresh and calendar catalog as independent evidence. Connected UI was verified on desktop/390×844 with no contradictory token warning, overflow or console error. The test intentionally performed no event read, OAuth navigation or calendar write.
 
 ## Immediate continuation
 
