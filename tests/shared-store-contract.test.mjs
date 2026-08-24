@@ -11,6 +11,14 @@ test('shared operational records expose authenticated CRUD and route skills thro
   assert.match(store,/createSkillDefinition/);
   assert.match(store,/INSERT INTO audit_log/);
 });
+test('tasks and habits validate planning fields before shared persistence',()=>{
+  assert.match(store,/kind==='tasks'.*Fälligkeit muss ein gültiges Datum sein/s);
+  assert.match(store,/\['low','medium','high'\]/);
+  assert.match(store,/\['Inbox','Glaube','Karriere','Gesundheit','Finanzen','Beziehungen','Projekte'\]/);
+  assert.match(store,/kind==='habits'.*\['daily','weekly'\]/s);
+  assert.match(store,/completedOn\.length>90/);
+  assert.match(store,/UPDATE \$\{kind\} SET status='archived'/);
+});
 test('life-area CRUD encrypts private content and archives instead of deleting',()=>{
   assert.match(store,/version:3.*CREATE TABLE IF NOT EXISTS area_records/s);
   assert.match(store,/sensitive_enc TEXT NOT NULL/);

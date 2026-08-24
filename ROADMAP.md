@@ -26,6 +26,7 @@
 - Universal Inbox supports real shared capture and validated triage to life area, existing project and existing agent reference. Full content is encrypted, empty capture is disabled and file handling is truthfully limited to a text reference with no upload.
 - Custom Agent configuration now persists purpose, allowlisted life areas, explicit manual Companion/no-provider mode, no-model truth and metadata-only/paused status. Unverified API models and executable custom-agent claims are rejected server-side.
 - Private Obsidian metadata search now uses the real 27-note index behind the signed local session. It searches only title, relative path and frontmatter key names; note bodies/values stay server-side and existing Vault files remain untouched.
+- Daily task and habit planning now persists validated priority, due date, life area, real project links, daily/weekly cadence, completion and reversible archive state. Editors are shared across Electron/Expo and never seed example records or pressure-oriented streaks.
 
 ## Complete – Bedienwahrheit and responsive refinement
 

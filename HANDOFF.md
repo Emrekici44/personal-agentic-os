@@ -34,6 +34,7 @@ Project root: `outputs/agentic-os`. Private source remote: `https://github.com/E
 - Inbox now captures into encrypted `content` and supports shared review/triage to life area, real project, real agent reference and status. `Dateiverweis` is text only. Current inventory: 0 Inbox rows and 0 legacy plaintext rows; validation was completed without creating fake user records.
 - Custom Agent cards/configurator now store purpose, life areas, manual Companion/no-provider choice, no-model boundary and metadata-only/paused state. OpenAI API is a disabled option pending separate cost/provider approval. Empty configuration was opened/cancelled without creating a record.
 - Knowledge search is now a signed, private metadata-only view over the real 27-note Vault index. It searches title, relative path and frontmatter key names only; bodies/values are not exposed and the Vault remains unchanged.
+- Today now has shared task planning (priority, due date, area, optional real project) and daily/weekly habit cadence. Both support edit, completion and reversible archive; validation opened/cancelled the editors without creating fake records.
 
 ## Immediate continuation
 

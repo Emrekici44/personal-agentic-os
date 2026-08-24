@@ -973,59 +973,89 @@ function DailyArea({ initialTab, text, setText, mood, setMood, note }: any) {
   );
 }
 function Habits({ embedded = false }: { embedded?: boolean }) {
-  const [taskText, setTaskText] = useState("");
-  const [habitText, setHabitText] = useState("");
+  const emptyTask = { title: "", dueAt: "", priority: "medium", area: "Inbox", projectId: "" };
+  const emptyHabit = { title: "", cadence: "daily" };
+  const [taskDraft, setTaskDraft] = useState<any>(emptyTask);
+  const [habitDraft, setHabitDraft] = useState<any>(emptyHabit);
+  const [editingTaskId, setEditingTaskId] = useState("");
+  const [editingHabitId, setEditingHabitId] = useState("");
+  const [taskEditorOpen, setTaskEditorOpen] = useState(false);
+  const [habitEditorOpen, setHabitEditorOpen] = useState(false);
   const [error, setError] = useState("");
   const {
     records: tasks,
     state: taskState,
     create: createTask,
     update: updateTask,
+    archive: archiveTask,
   } = useSharedRecords("tasks");
   const {
     records: habits,
     state: habitState,
     create: createHabit,
     update: updateHabit,
+    archive: archiveHabit,
   } = useSharedRecords("habits");
+  const { records: projects } = useSharedRecords("projects");
   const today = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Europe/Berlin",
   }).format(new Date());
-  const addTask = async () => {
-    const title = taskText.trim();
+  const todayAtNoon = new Date(`${today}T12:00:00Z`);
+  const mondayOffset = (todayAtNoon.getUTCDay() + 6) % 7;
+  const monday = new Date(todayAtNoon);
+  monday.setUTCDate(monday.getUTCDate() - mondayOffset);
+  const weekStart = monday.toISOString().slice(0, 10);
+  const habitComplete = (habit: any) => {
+    const dates = Array.isArray(habit.completedOn) ? habit.completedOn : [];
+    return habit.cadence === "weekly"
+      ? dates.some((date: string) => date >= weekStart && date <= today)
+      : dates.includes(today);
+  };
+  const saveTask = async () => {
+    const title = String(taskDraft.title || "").trim();
     if (title.length < 2) return setError("Aufgabe benötigt mindestens 2 Zeichen");
     try {
-      await createTask({ title, status: "active", area: "Inbox", done: false });
-      setTaskText("");
+      const payload = { ...taskDraft, title, projectId: taskDraft.projectId || undefined, status: taskDraft.done ? "completed" : "active" };
+      if (editingTaskId) await updateTask({ ...tasks.find((task: any) => task.id === editingTaskId), ...payload });
+      else await createTask({ ...payload, done: false });
+      setTaskDraft(emptyTask);
+      setEditingTaskId("");
+      setTaskEditorOpen(false);
       setError("");
-    } catch {
-      setError("Aufgabe konnte nicht gespeichert werden");
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Aufgabe konnte nicht gespeichert werden");
     }
   };
-  const addHabit = async () => {
-    const title = habitText.trim();
+  const saveHabit = async () => {
+    const title = String(habitDraft.title || "").trim();
     if (title.length < 2) return setError("Habit benötigt mindestens 2 Zeichen");
     try {
-      await createHabit({ title, status: "active", cadence: "daily", completedOn: [] });
-      setHabitText("");
+      if (editingHabitId) await updateHabit({ ...habits.find((habit: any) => habit.id === editingHabitId), ...habitDraft, title });
+      else await createHabit({ ...habitDraft, title, status: "active", completedOn: [] });
+      setHabitDraft(emptyHabit);
+      setEditingHabitId("");
+      setHabitEditorOpen(false);
       setError("");
-    } catch {
-      setError("Habit konnte nicht gespeichert werden");
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Habit konnte nicht gespeichert werden");
     }
   };
   const toggleHabit = async (habit: any) => {
-    const completedOn = Array.isArray(habit.completedOn) ? habit.completedOn : [];
-    await updateHabit({
-      ...habit,
-      completedOn: completedOn.includes(today)
-        ? completedOn.filter((date: string) => date !== today)
-        : [...completedOn, today].slice(-90),
-    });
+    try {
+      const completedOn = Array.isArray(habit.completedOn) ? habit.completedOn : [];
+      const remaining = habit.cadence === "weekly"
+        ? completedOn.filter((date: string) => date < weekStart || date > today)
+        : completedOn.filter((date: string) => date !== today);
+      await updateHabit({ ...habit, completedOn: habitComplete(habit) ? remaining : [...completedOn, today].slice(-90) });
+      setError("");
+    } catch { setError("Habit konnte nicht aktualisiert werden"); }
   };
-  const completedHabits = habits.filter((habit: any) =>
-    Array.isArray(habit.completedOn) && habit.completedOn.includes(today),
-  ).length;
+  const toggleTask = async (task: any) => { try { await updateTask({ ...task, done: !task.done, status: !task.done ? "completed" : "active" }); setError(""); } catch { setError("Aufgabe konnte nicht aktualisiert werden"); } };
+  const editTask = (task: any) => { setTaskDraft({ ...emptyTask, ...task, projectId: task.projectId || "" }); setEditingTaskId(task.id); setTaskEditorOpen(true); setError(""); };
+  const editHabit = (habit: any) => { setHabitDraft({ ...emptyHabit, ...habit }); setEditingHabitId(habit.id); setHabitEditorOpen(true); setError(""); };
+  const completedHabits = habits.filter(habitComplete).length;
   const openTasks = tasks.filter((task: any) => !task.done).length;
+  const dueTasks = tasks.filter((task: any) => !task.done && task.dueAt && task.dueAt <= today).length;
   return (
     <>
       {!embedded && (
@@ -1037,77 +1067,34 @@ function Habits({ embedded = false }: { embedded?: boolean }) {
         <Card>
           <div className="row">
             <Tag>HABITS · GEMEINSAMER SERVERZUSTAND</Tag>
-            <b>{completedHabits}/{habits.length} heute</b>
+            <b>{completedHabits}/{habits.length} im Rhythmus</b>
           </div>
-          <div className="taskadd">
-            <input
-              aria-label="Neues Habit"
-              onChange={(event) => setHabitText(event.target.value)}
-              placeholder="Neues tägliches Habit …"
-              value={habitText}
-            />
-            <button aria-label="Habit hinzufügen" onClick={addHabit} type="button">
-              <I.Plus />
-            </button>
-          </div>
+          <button className="taskCreate" onClick={() => { setHabitDraft(emptyHabit); setEditingHabitId(""); setHabitEditorOpen(true); }} type="button"><I.Plus /> Habit anlegen</button>
+          {habitEditorOpen && <div className="dailyRecordEditor"><label>Habit<input aria-label="Habit-Name" value={habitDraft.title || ""} onChange={(event) => setHabitDraft({ ...habitDraft, title: event.target.value })} placeholder="Eine freiwillige Routine …" /></label><label>Rhythmus<select value={habitDraft.cadence || "daily"} onChange={(event) => setHabitDraft({ ...habitDraft, cadence: event.target.value })}><option value="daily">Täglich</option><option value="weekly">Wöchentlich</option></select></label><div><Btn onClick={String(habitDraft.title || "").trim().length >= 2 ? saveHabit : undefined}>{editingHabitId ? "Änderung speichern" : "Habit speichern"}</Btn><button onClick={() => { setHabitEditorOpen(false); setEditingHabitId(""); }}>Abbrechen</button>{editingHabitId && <button className="dangerQuiet" onClick={async () => { await archiveHabit(editingHabitId); setHabitEditorOpen(false); setEditingHabitId(""); }}>Archivieren</button>}</div></div>}
           {habitState === "loading" && <p role="status">Habits werden geladen …</p>}
           {habitState === "error" && <p role="alert">Gemeinsame Habits sind gerade nicht erreichbar.</p>}
           {habitState === "online" && habits.length === 0 && (
             <p>Noch keine Habits erfasst. Es werden keine Routinen vorgegeben.</p>
           )}
           {habits.map((habit: any) => (
-            <button
-              aria-pressed={Array.isArray(habit.completedOn) && habit.completedOn.includes(today)}
-              className="taskrow"
-              key={habit.id}
-              onClick={() => toggleHabit(habit)}
-              type="button"
-            >
-              <i className={habit.completedOn?.includes(today) ? "done" : ""}>
-                {habit.completedOn?.includes(today) && <I.Check />}
-              </i>
-              <span>
-                {habit.title}
-                <small>{habit.cadence === "daily" ? "Täglich" : habit.cadence}</small>
-              </span>
-            </button>
+            <div className="dailyRecord" key={habit.id}><button aria-label={`${habit.title} ${habitComplete(habit) ? "wieder öffnen" : "abschließen"}`} aria-pressed={habitComplete(habit)} className="taskrow" onClick={() => toggleHabit(habit)} type="button"><i className={habitComplete(habit) ? "done" : ""}>{habitComplete(habit) && <I.Check />}</i><span>{habit.title}<small>{habit.cadence === "weekly" ? "Wöchentlich" : "Täglich"} · ohne Streak-Druck</small></span></button><button aria-label={`${habit.title} bearbeiten`} className="recordEdit" onClick={() => editHabit(habit)} type="button"><I.Pencil /></button></div>
           ))}
         </Card>
         <Card>
           <Tag>AUFGABEN · GEMEINSAMER SERVERZUSTAND</Tag>
-          <div className="taskadd">
-            <input
-              aria-label="Neue Aufgabe"
-              value={taskText}
-              onChange={(e) => setTaskText(e.target.value)}
-              placeholder="Neue Aufgabe …"
-            />
-            <button aria-label="Aufgabe hinzufügen" onClick={addTask} type="button">
-              <I.Plus />
-            </button>
-          </div>
+          <button className="taskCreate" onClick={() => { setTaskDraft(emptyTask); setEditingTaskId(""); setTaskEditorOpen(true); }} type="button"><I.Plus /> Aufgabe anlegen</button>
+          {taskEditorOpen && <div className="dailyRecordEditor taskFields"><label className="wide">Aufgabe<input aria-label="Aufgabentitel im Tagesbereich" value={taskDraft.title || ""} onChange={(event) => setTaskDraft({ ...taskDraft, title: event.target.value })} placeholder="Konkreter nächster Schritt …" /></label><label>Priorität<select value={taskDraft.priority || "medium"} onChange={(event) => setTaskDraft({ ...taskDraft, priority: event.target.value })}><option value="low">Niedrig</option><option value="medium">Mittel</option><option value="high">Hoch</option></select></label><label>Fällig<input type="date" value={taskDraft.dueAt || ""} onChange={(event) => setTaskDraft({ ...taskDraft, dueAt: event.target.value })} /></label><label>Lebensbereich<select value={taskDraft.area || "Inbox"} onChange={(event) => setTaskDraft({ ...taskDraft, area: event.target.value })}>{["Inbox","Glaube","Karriere","Gesundheit","Finanzen","Beziehungen","Projekte"].map(area => <option key={area} value={area}>{area}</option>)}</select></label><label>Projekt (optional)<select value={taskDraft.projectId || ""} onChange={(event) => setTaskDraft({ ...taskDraft, projectId: event.target.value })}><option value="">Kein Projekt</option>{projects.map((project: any) => <option key={project.id} value={project.id}>{project.title}</option>)}</select></label><div className="wide"><Btn onClick={String(taskDraft.title || "").trim().length >= 2 ? saveTask : undefined}>{editingTaskId ? "Änderung speichern" : "Aufgabe speichern"}</Btn><button onClick={() => { setTaskEditorOpen(false); setEditingTaskId(""); }}>Abbrechen</button>{editingTaskId && <button className="dangerQuiet" onClick={async () => { await archiveTask(editingTaskId); setTaskEditorOpen(false); setEditingTaskId(""); }}>Archivieren</button>}</div></div>}
           {taskState === "loading" && <p role="status">Aufgaben werden geladen …</p>}
           {taskState === "error" && <p role="alert">Gemeinsame Aufgaben sind gerade nicht erreichbar.</p>}
           {taskState === "online" && tasks.length === 0 && <p>Noch keine gemeinsamen Aufgaben.</p>}
           {tasks.map((t: any) => (
-            <button
-              className="taskrow"
-              onClick={() => updateTask({ ...t, done: !t.done })}
-              key={t.id}
-              type="button"
-            >
-              <i className={t.done ? "done" : ""}>{t.done && <I.Check />}</i>
-              <span className={t.done ? "strike" : ""}>
-                {t.title}
-                <small>{t.area}</small>
-              </span>
-            </button>
+            <div className="dailyRecord" key={t.id}><button aria-label={`${t.title} ${t.done ? "wieder öffnen" : "erledigen"}`} aria-pressed={Boolean(t.done)} className="taskrow" onClick={() => toggleTask(t)} type="button"><i className={t.done ? "done" : ""}>{t.done && <I.Check />}</i><span className={t.done ? "strike" : ""}>{t.title}<small>{t.area || "Inbox"} · Priorität {t.priority === "high" ? "hoch" : t.priority === "low" ? "niedrig" : "mittel"}{t.dueAt ? ` · fällig ${t.dueAt}` : ""}{t.projectId ? " · Projekt" : ""}</small></span></button><button aria-label={`${t.title} bearbeiten`} className="recordEdit" onClick={() => editTask(t)} type="button"><I.Pencil /></button></div>
           ))}
         </Card>
         <Card>
           <Tag>HEUTIGER ÜBERBLICK · ECHTE DATEN</Tag>
           <h3>{openTasks} offene Aufgaben</h3>
-          <p>{completedHabits} von {habits.length} Habits heute markiert.</p>
+          <p>{dueTasks} heute fällig oder überfällig · {completedHabits} von {habits.length} Habits im jeweiligen Rhythmus markiert.</p>
           <p>Kein verlorener Streak und keine erfundete Serie. Morgen ist ein neuer Tag.</p>
           {error && <p role="alert">{error}</p>}
         </Card>

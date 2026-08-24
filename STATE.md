@@ -52,6 +52,7 @@ Last verified: 24.08.2026, Europe/Berlin.
 - Voller Inbox-Inhalt wird bei neuen Creates/Updates ausschließlich feldverschlüsselt gespeichert; im öffentlichen JSON bleibt nur ein kurzer operativer Titel. Das reale Inventar meldet 0 Inbox-Datensätze und 0 Legacy-Klartextzeilen, sodass keine Migration oder Nutzerentscheidung nötig war.
 - Eigene Agent-Konfigurationen erfassen jetzt echten Zweck, zugeordnete Lebensbereiche, Arbeitsmodus, Modellgrenze und Status. Zulässig sind nur `Kein Provider` oder eine manuelle ChatGPT-Companion-Übergabe; OpenAI API bleibt sichtbar gesperrt. Der Server lehnt nicht verifizierte Modelle, Provider und ausführbare Status ab. Karten zeigen Bereiche, Modell und reale Aktivität `Keine Ausführung` statt Online-Behauptungen.
 - Die Wissensansicht besitzt jetzt eine echte private Metadatensuche über den vorhandenen Emre-Vault-Index. Sie filtert ausschließlich Titel, relative Pfade und Frontmatter-Schlüsselnamen; Notiztexte und Frontmatter-Werte werden weder durchsucht noch an den Client geliefert. Der Statusendpunkt verlangt die signierte lokale Sitzung und ist `no-store, private`.
+- Der Tagesbereich verwaltet Aufgaben jetzt mit validierter Priorität, Fälligkeit, Lebensbereich und optionaler Verknüpfung zu einem echten Projekt. Aufgaben können bearbeitet, abgeschlossen/wieder geöffnet und reversibel archiviert werden. Habits unterstützen tägliche oder wöchentliche Rhythmen, Bearbeitung, periodenbezogene Erledigung und Archivierung ohne Streak-Druck.
 
 ## Verification
 
@@ -75,6 +76,8 @@ Last verified: 24.08.2026, Europe/Berlin.
 - Agentenbrowser-Abnahme: sicherer leerer Konfigurator mit sechs Bereichszuordnungen, `Kein Provider`, `Kein Modell`, deaktivierter OpenAI-API-Option und deaktiviertem Leer-Speichern. Abbruch erzeugte keine Daten; fünf lokale Workflowprofile und mobile 390×844 blieben ohne Überlauf.
 - Knowledge-Browser-Abnahme: der private 27-Notizen-Index, die Metadatensuche und ihr ehrlicher Leerzustand rendern auf Desktop und 390×844 ohne horizontalen Überlauf. Die Prüfung verwendete nur eine absichtlich nicht passende technische Suchfolge und las/änderte keine persönlichen Inhalte.
 - Nach der privaten Wissenssuche sind Root 73/73, TypeScript, ESLint, Produktionsbuild, Electron 2/2 und Expo TypeScript/Lint/Web-Export grün. Der Inhaltsaudit fand keine verbotene getrackte lokale Zustandsdatei und keine konkrete Secret-Signatur im Source-Diff.
+- Tagesbereich-Browser-Abnahme: Aufgaben- und Habit-Editor wurden auf Desktop und 390×844 geöffnet und abgebrochen; Priorität/Datum/Bereich/Projekt sowie täglicher/wöchentlicher Rhythmus renderten ohne horizontalen Überlauf. Es wurden keine Testdatensätze erzeugt.
+- Nach der Aufgaben-/Habit-Erweiterung sind Root 74/74, TypeScript, ESLint, Produktionsbuild, Electron 2/2 und Expo TypeScript/Lint/Web-Export grün. `git diff --check`, Secret- und verbotene-Inhaltsprüfung sind sauber.
 
 ## User boundaries
 

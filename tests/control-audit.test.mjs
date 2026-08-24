@@ -51,6 +51,13 @@ test("daily workspace and knowledge audit use shared real sources", async () => 
   assert.match(source, /function DailyArea/);
   assert.match(source, /useSharedRecords\("habits"\)/);
   assert.match(source, /HABITS · GEMEINSAMER SERVERZUSTAND/);
+  assert.match(source, /Habit anlegen/);
+  assert.match(source, /Wöchentlich/);
+  assert.match(source, /Aufgabe anlegen/);
+  assert.match(source, /Priorität/);
+  assert.match(source, /Projekt \(optional\)/);
+  assert.match(source, /archiveTask/);
+  assert.match(source, /archiveHabit/);
   assert.match(source, /fetch\("\/api\/state\/audit"/);
   assert.doesNotMatch(source, /Mock-Kalender gelesen|Wochenplan vorgeschlagen|5 Tage im Rhythmus/);
 });

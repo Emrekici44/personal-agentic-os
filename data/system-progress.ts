@@ -9,7 +9,7 @@ export type ProgressItem = {
 };
 
 export const systemProgress = {
-  currentPhase: "Private Vault-Metadatensuche bereit · vollständiger Restlückenaudit aktiv",
+  currentPhase: "Echte Aufgaben- und Habitplanung bereit · vollständiger Restlückenaudit aktiv",
   lastVerifiedAt: "24.08.2026 · Europe/Berlin",
   items: [
     {
@@ -206,6 +206,13 @@ export const systemProgress = {
       label: "Private Wissenssuche im Emre Vault",
       evidence: "27 Notizen · Titel/Pfad/Frontmatter-Schlüssel · keine Notiztexte · 0 Writes",
       href: "#brain",
+      status: "complete",
+    },
+    {
+      id: "daily-planning-controls",
+      label: "Echte Aufgaben- und Habitplanung",
+      evidence: "Priorität/Fälligkeit/Bereich/Projekt · täglich/wöchentlich · Bearbeiten/Archivieren · keine Testdaten",
+      href: "#habits",
       status: "complete",
     },
     {
