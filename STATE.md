@@ -1,43 +1,37 @@
 # Current state
 
-## Clean implementation handoff — 2026-08-24
+Last verified: 24.08.2026, Europe/Berlin.
 
-The explicitly approved Google Calendar event `Kurzes Training Push` was created once in the writable `Training` calendar for 2026-08-24 21:00–21:30 Europe/Berlin. It was read back through the bounded API and matched exactly; the local audit record confirms approved create plus idempotency evidence. No other event change and no delete occurred.
+## Operational
 
-Electron is the primary user interface and remains usable in the foreground. The OAuth token is encrypted in git-ignored local state so browser, Electron, and Expo can use the same laptop connector without exposing credentials. The user is now defining the next master task list; no further speculative product/UI work should occur until that list is approved.
+- Electron remains the primary desktop UI; the verified window loads the current Next.js app.
+- Expo/iPhone and Electron use the same server UI. Operational records are shared through a signed private API and the laptop-local SQLite bridge.
+- Real shared CRUD is active for projects, tasks, inbox, agents, skill metadata and journal metadata. Sensitive journal text is field-encrypted. No device localStorage migration occurred.
+- Shared Light/Dark preference is stored in the private operational store. The mobile wrapper follows automatic system chrome while the shared web UI uses the selected theme.
+- The Emre Vault path is present in ignored local configuration. The live read-only index reports 27 Markdown notes, 37 local links and 34 resolved relationships. Existing notes remain untouched.
+- Google Calendar is connected. Eight-day selected-calendar reads work. No write is prepared. Deletes, ACL, sharing, settings and background writes remain disabled.
+- The one user-approved event `Kurzes Training Push` was created once, read back and audited. No other calendar write is authorized.
+- Tailscale remains private/tailnet-only; Funnel and public ingress are absent.
 
-The started shared-state foundation is checkpointed but contains no migrated user data: Node 24 built-in `node:sqlite`, versioned transactional schema, WAL, explicit operational tables, signed private API session, localStorage inventory/conflict preview, sensitive-field encryption helper, and local backup/restore preview. Existing device localStorage has not been imported or merged. The Vault normalization endpoint is preview-only; existing 27 notes remain unchanged. The current development process lacks the vault environment variable, so live normalization counts must be re-run after starting through the verified launcher that supplies the authorized vault path.
+## Current implementation phase
 
-## Superseded pause checkpoint — 2026-08-24 Europe/Berlin
+- Global control audit: every JSX `button`/`Btn` has a real handler or an explicit disabled boundary.
+- Removed: obsolete first-event proposal/write control, fake Calendar week read, fake project-chat creation, fake model conversation and fake connector-details toasts.
+- Added: real Calendar list + bounded read, manual ChatGPT-summary import, explicit demo boundaries for unconnected life-area data, truthful home status, grouped desktop navigation and responsive shared theme.
+- PostgreSQL server evaluation and an unstarted loopback-only PoC are documented. Docker/Podman/psql are absent; no install, account or migration occurred.
+- Graphify 0.17.2 TypeScript line was evaluated from official repository/package material; it remains uninstalled and non-core.
 
-This checkpoint was recorded, then immediately superseded by the user's correction to continue working. Services were not stopped. The user-owned Desktop shortcut `C:\Users\ekici\Desktop\Agentic OS.lnk` exists, targets the verified `Agentic OS - Laptop starten.cmd`, and uses this project root as its working directory. A double-click is sufficient to start the current hardened Electron desktop client and its local Next.js backend.
+## Verification
 
-Google Calendar read-only OAuth completed and a bounded eight-day read returned five events without exposing event details in reports. The user then explicitly requested controlled event creation/update. The connector now requests only `calendar.calendarlist.readonly` plus `calendar.events`; ACL, sharing, settings, deletes, background writes, and broad calendar administration remain disabled. A fresh Google consent is required. OAuth credentials remain only in git-ignored `.env.local`.
+- Root tests: 27/27 passed after the final UI/documentation refresh.
+- Root lint and optimized Next build: passed after the final UI/documentation refresh.
+- Electron security checks: 2/2 passed. Expo TypeScript, lint and static web export passed.
+- Browser: desktop 1280-wide and mobile 390×844 had no horizontal overflow or console errors. Mobile bottom navigation, drawer and theme toggle worked. Live bounded Calendar read returned a count only; no event details were surfaced in artifacts.
+- Electron: current window visually and accessibly loaded the refreshed dashboard; Obsidian and Calendar both reported Online from verified sources.
 
-The Emre vault adapter remains read-only and last verified 27 Markdown notes, 37 local links, and 34 resolved relationships without logging note bodies or modifying vault content. Tailscale remains installed and configured, with the private Serve route recorded as tailnet-only. Next and Electron remain active; Expo/Metro remains intentionally inactive because it is unnecessary for the Calendar consent step.
+## User boundaries
 
-Private GitHub `main` includes the Windows PowerShell OAuth importer compatibility fix and was clean/current before this checkpoint documentation commit. No secrets, environment files, vault contents, credential JSON, databases, screenshots, or personal runtime state are tracked.
-
-## Durable checkpoint — 2026-08-23 Europe/Berlin
-
-The complete responsive command center uses an original dark futuristic blue/cyan system with persistent left desktop navigation and touch-friendly mobile bottom navigation. Emre is the verified local user identity and the avatar is exactly `E`. Life areas retain controlled secondary accents. Implemented surfaces include command center, faith, split career, health analytics, finance, relationship constellation, flexible projects, journal, habits/tasks/checklists, universal inbox, agents, skills, ChatGPT Companion Mode, integrations, knowledge graph, Usage & Limits, provider cost guard, PWA, and editable temporary branding.
-
-Three clients share the same Next.js UI/server source of truth:
-
-- responsive web/PWA;
-- hardened Electron Windows shell with context isolation, sandboxing, disabled renderer Node integration, guarded navigation, and no cloud dependency;
-- Expo SDK 54 iPhone companion whose WebView URL is non-secret runtime configuration.
-
-Physical iPhone launch through Expo Go is verified. After the first device test, LAN HMR/font access, iOS form zoom, safe-area viewport coverage, WebView bounce/pull/back-swipe conflicts, top-document HTTP error handling, and iOS content-process failure handling were fixed. Mobile bottom navigation and the hamburger drawer now use real hash/history navigation with active state and back behavior; Emre confirmed the controls on the physical iPhone. Other prominent controls were audited and either wired to meaningful local actions or visibly disabled. Browser checks pass at 390×844 and 393×852 with no horizontal overflow.
-
-Private remote architecture is implemented with the official Tailscale Windows ARM64 client and the free Personal tailnet. Windows and iPhone have been observed online in the same tailnet. `tailscale serve` private HTTPS/MagicDNS is verified with HTTP 200 to a local Agentic OS backend; the CLI reports the route as **tailnet only**. Funnel, router port forwarding, public tunnels, paid hosting, and power-plan changes are absent. Expo Metro is running on the dynamically discovered Tailscale address and the WebView receives the verified private HTTPS URL. Emre confirmed dashboard and navigation over the Tailscale Expo route in the current hotspot topology. A true separate-network cellular test with Wi-Fi disabled remains deliberately deferred and is not claimed.
-
-The authorized Emre vault was inventoried before writes. All original Markdown files—including both Graphify dossier files—remain untouched, and the additive system/index/template/project layer remains present. A live server-only read-only adapter now indexes bounded Markdown titles, relative paths, frontmatter keys, and local relationships. The Knowledge and Integrations surfaces show real health evidence while note bodies, absolute paths, and frontmatter values stay out of responses/logs/screenshots. No existing file was deleted, moved, renamed, overwritten, or written by this adapter.
-
-Latest completed verification: eighteen web/safety contracts (including the live Obsidian and structured-progress boundaries), clean root lint, Expo TypeScript/lint/static export, two Electron security tests, responsive browser checks, real Electron development-window load, physical Expo/Tailscale launch with accepted mobile navigation, private Serve status, private HTTPS response, a successful real-vault health read, and a successful optimized Next.js production build including `/api/obsidian/status`. The command center now exposes a mobile-accessible `Systemaufbau / Fortschritt` checklist derived from `data/system-progress.ts`; it reports discrete evidence and user actions rather than a decorative percentage.
-
-Repository ownership: complete safe source is a normal local Git project and the audited history is published privately at `https://github.com/Emrekici44/personal-agentic-os`. Environment files, databases, backups, caches, screenshots, local personal state, Tailscale addresses, vault content, and credentials are excluded.
-
-Google Calendar retains its secure server-only OAuth boundary, encrypted HTTP-only session, bounded eight-day reads, proposal-only focus blocks, and exact approval contract. It requests read-only scope and mock data stays labeled. Real Google account consent and writes are not claimed.
-
-Next user-controlled boundary: create a Google Cloud Web OAuth client locally, enable Calendar API access, register the displayed callback URL, and place the client ID/secret only in `.env.local`. Then verify selected-calendar reads stay inside the eight-day window. Obsidian write-back and Calendar writes remain impossible until separately approved diff/scope and exact proposal gates are implemented.
+- Do not install a container runtime or start the PostgreSQL PoC without approval.
+- Do not create a cloud database/account or migrate SQLite without inventory, mapping, conflict preview, backup/restore proof and explicit approval.
+- Do not install/run Graphify or send Vault content to a model without a separate pilot proposal and approval.
+- Do not perform another Calendar write without a new exact proposal and action-time confirmation.

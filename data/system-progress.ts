@@ -9,7 +9,7 @@ export type ProgressItem = {
 };
 
 export const systemProgress = {
-  currentPhase: "Wahrheit & gemeinsamer Datenkern",
+  currentPhase: "Bedienwahrheit & responsive Verifikation",
   lastVerifiedAt: "24.08.2026 · Europe/Berlin",
   items: [
     {
@@ -50,7 +50,7 @@ export const systemProgress = {
     {
       id: "vault-health",
       label: "Vault-Health und Sicherheitsprüfungen",
-      evidence: "Wissen + Integrationszentrum · 18/18 Tests",
+      evidence: "Wissen + Integrationszentrum · Datenschutzvertrag getestet",
       href: "#integrations",
       status: "complete",
     },
@@ -80,14 +80,35 @@ export const systemProgress = {
       label: "Gemeinsame echte Daten für Kernbereiche",
       evidence: "Projekte, Aufgaben, Inbox, Agenten, Skills und Journal-Metadaten",
       href: "#projects",
-      status: "active",
+      status: "complete",
     },
     {
       id: "server-evaluation",
       label: "Laptop-unabhängige PostgreSQL-Architektur prüfen",
       evidence: "Kosten, Datenschutz, Backups, Offline und Exit vergleichen",
       href: "#settings",
-      status: "pending",
+      status: "complete",
+    },
+    {
+      id: "graphify-evaluation",
+      label: "Graphify- und Integrationsprüfung",
+      evidence: "Primärquellen geprüft · nicht installiert · keine externen Datenwrites",
+      href: "#brain",
+      status: "complete",
+    },
+    {
+      id: "ui-truth",
+      label: "Globale Bedienwahrheit und responsive UX",
+      evidence: "Buttons, Status, Kalender, Companion, Theme und Mockgrenzen",
+      href: "#home",
+      status: "complete",
+    },
+    {
+      id: "final-verification",
+      label: "Desktop-/Expo-Abnahme und privater Push",
+      evidence: "Tests, Builds, Inhaltsaudit und physischer Retest",
+      href: "#settings",
+      status: "active",
     },
   ] as ProgressItem[],
 };
