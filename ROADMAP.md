@@ -5,8 +5,9 @@
 - Desktop ownership: `Agentic OS.lnk` on Emre's Desktop targets the verified launcher; complete.
 - Emre vault read-only preview: 27 notes, 37 links, 34 resolved relationships; complete and unchanged.
 - Google OAuth local configuration: complete and git-ignored.
-- Google Calendar live connection: active at Emre Ekici account selection; read-only consent pending user action.
-- Google Calendar writes: disabled and out of scope.
+- Google Calendar read-only connection and bounded read: verified.
+- Controlled Calendar event create/update: implementation active; revised least-privilege consent pending user action.
+- Google Calendar deletes, ACL, sharing, settings, and background writes: disabled and out of scope.
 - Tailscale: installed/configured with Serve tailnet-only; local backend and Electron remain active.
 - Next resume milestone: user completes account selection/read-only consent, then verify connected status, selected calendars, and bounded eight-day reads.
 

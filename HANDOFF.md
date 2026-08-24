@@ -4,7 +4,7 @@
 
 The initially requested pause was immediately cancelled by the user. Next and Electron remain active, and the existing Tailscale Serve configuration can reach the app without enabling Funnel or changing Windows power settings. The verified Desktop shortcut remains available for future starts.
 
-After the desktop loads, open `http://localhost:3000/api/calendar/connect` if the preserved Google tab is no longer available. Stop at the Google-owned screen and let Emre select the displayed `Emre Ekici` account and personally approve only the read-only Calendar consent. Expected status before that click is exactly: `configured=true`, `connected=false`, permission `calendar.readonly`, writes disabled. Never expose `.env.local`, print credentials, or delete the downloaded OAuth JSON before successful connection verification.
+Read-only OAuth and the bounded read were verified before Emre requested controlled event writes. Open `http://localhost:3000/api/calendar/connect` for the revised consent and stop at the Google-owned screen. The intended grants are only calendar-list read access and event access. Every real create/update still requires a separate exact local proposal and per-action approval; deletes remain disabled. Never expose `.env.local`, print credentials, or delete the downloaded OAuth JSON before the revised connection succeeds.
 
 Last real-vault evidence: 27 Markdown notes, 37 local links, and 34 resolved relationships, read-only. Tailscale installation and tailnet-only Serve configuration remain in place. Private GitHub `main` is the source-of-truth checkpoint.
 

@@ -1,11 +1,12 @@
 # Security notes
 
 - Never commit `.env*`, OAuth secrets, refresh tokens, financial credentials, or health exports.
-- Google starts with `calendar.readonly`; request event write scope only when the user enables it.
+- Google requests only `calendar.calendarlist.readonly` and `calendar.events` after the user's explicit enablement. Calendar ACL/sharing, settings, deletes, broad administration, and background writes remain disabled.
 - Tokens are encrypted in HTTP-only, SameSite cookies and never returned to client code. OAuth state is random, encrypted, short-lived, and verified.
 - Reads are limited to eight days, twelve selected calendars, and 100 events per calendar.
 - The labeled mock adapter always reports `writesPerformed: false`, including after approval.
 - Consequential writes require a visible preview, explicit approval, an expiring single-use approval token, and an audit entry.
+- Each event create/update is bound to a selected calendar, an exact diff, a 15-minute approval token, the literal per-action confirmation `DIESEN_TERMIN_JETZT_SCHREIBEN`, and an idempotency key checked before create. Audit metadata is stored only under git-ignored `local-state/`.
 - Obsidian integration begins with an inventory and read-only preview. Existing vault files are never modified without separate confirmation.
 - The live Obsidian adapter is server-only and imports no write primitive. It skips internals, trash, caches, attachments, non-Markdown, oversized files, and symlinks; health responses omit absolute paths, note bodies, and frontmatter values.
 - A future Obsidian write-back must be a separate preview/diff → explicit approval → backup → write → audit workflow. The current endpoint always reports `writesEnabled: false`.

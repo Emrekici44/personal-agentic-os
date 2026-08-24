@@ -1680,7 +1680,7 @@ function Integrations({ note }: any) {
           </span>
           <div>
             <Tag>
-              GOOGLE CALENDAR · {calendarStatus.connected ? "READ-ONLY LIVE" : calendarStatus.configured ? "OAUTH BEREIT" : "TESTADAPTER"}
+              GOOGLE CALENDAR · {calendarStatus.eventWriteReady ? "EVENTS LIVE · KONTROLLIERT" : calendarStatus.connected ? "READ-ONLY · NEUE FREIGABE NÖTIG" : calendarStatus.configured ? "OAUTH BEREIT" : "TESTADAPTER"}
             </Tag>
             <h3>Wochenplanung sicher verbinden</h3>
           </div>
@@ -1696,9 +1696,9 @@ function Integrations({ note }: any) {
             </span>
           </div>
         )}
-        {calendarStatus.configured && !calendarStatus.connected && (
+        {calendarStatus.configured && !calendarStatus.eventWriteReady && (
           <a className="btn soft" href="/api/calendar/connect">
-            Read-only mit Google verbinden <I.ExternalLink />
+            Lesen + kontrollierte Event-Writes freigeben <I.ExternalLink />
           </a>
         )}
         <div className="flow">
@@ -1735,21 +1735,19 @@ function Integrations({ note }: any) {
             <b>3 · Approval</b>
             <p>
               {proposed
-                ? "2 Vorschläge · 0 Writes"
+                ? "2 exakte Vorschläge · 0 Writes · einzeln freizugeben"
                 : "Keine Änderung vorbereitet"}
             </p>
             <Btn
-              onClick={() =>
-                note("Mock-Freigabe geprüft · keine externen Writes")
-              }
+              disabled
             >
-              Explizit freigeben
+              Einzelwrite erst nach exakter Vorschau
             </Btn>
           </div>
         </div>
         <small>
           <I.ShieldCheck />
-          Mock: kann Google weder lesen noch schreiben.
+          Keine Hintergrundwrites. Create/Update nur nach exakter Einzelvorschau und Bestätigung; Duplikatschutz + Audit aktiv. Deletes bleiben deaktiviert.
         </small>
       </Card>
       <div className="connections">

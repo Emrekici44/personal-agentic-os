@@ -1,5 +1,7 @@
 # Architecture
 
+Google Calendar separates bounded reads, exact proposal creation, and execution. OAuth grants only `calendar.calendarlist.readonly` and `calendar.events`; it does not grant ACL/sharing, settings, delete, or broad calendar administration. Encrypted proposal tokens contain one exact create/update, expire after 15 minutes, require a second literal confirmation, perform idempotency checking, and append a metadata-only local audit record after success.
+
 Next.js is the single shared UI and server source of truth. It can run in three local clients without duplicating product screens: a normal browser/PWA, a hardened Electron desktop window, and an Expo Go mobile WebView pointed at the same laptop over the local network. Modules use one shared state envelope for inbox items, approvals, preferences, and audit records. Settings can export this state as a portable backup.
 
 The Electron main process starts a loopback-only Next development server on port 3210, waits for readiness, and then opens it in a sandboxed window. The renderer has context isolation, no Node integration, guarded top-level navigation, denied permission requests, and no cloud dependency. The current deliverable is a verified development shell, not a packaged installer.

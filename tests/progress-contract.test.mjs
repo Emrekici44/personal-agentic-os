@@ -15,7 +15,8 @@ test("system progress is a discrete structured checklist without a decorative pe
 
 test("system progress exposes verified vault evidence and accessible live status", () => {
   assert.match(progressSource, /27 Markdown · 37 Links · 34 Beziehungen · 0 Writes/);
-  assert.match(progressSource, /Google Calendar · Read-only OAuth/);
+  assert.match(progressSource, /Google Calendar · Lesen \+ kontrollierte Events/);
+  assert.match(progressSource, /Erster kontrollierter Testtermin/);
   assert.match(pageSource, /SYSTEMAUFBAU · FORTSCHRITT/);
   assert.match(pageSource, /aria-live="polite" role="status"/);
   assert.match(pageSource, /progressChecklist/);

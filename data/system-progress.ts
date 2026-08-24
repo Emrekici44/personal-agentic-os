@@ -9,8 +9,8 @@ export type ProgressItem = {
 };
 
 export const systemProgress = {
-  currentPhase: "Google Calendar · wartet auf sicheren OAuth-Schritt",
-  lastVerifiedAt: "23.08.2026 · 21:20 Europe/Berlin",
+  currentPhase: "Google Calendar · kontrollierte Event-Freigabe",
+  lastVerifiedAt: "24.08.2026 · Europe/Berlin",
   items: [
     {
       id: "foundation",
@@ -63,10 +63,17 @@ export const systemProgress = {
     },
     {
       id: "google-oauth",
-      label: "Google Calendar · Read-only OAuth",
-      evidence: "Wartet auf lokalen Google-Cloud-OAuth-Client",
+      label: "Google Calendar · Lesen + kontrollierte Events",
+      evidence: "Online · Calendar list read + event scope verifiziert",
+      href: "#integrations",
+      status: "complete",
+    },
+    {
+      id: "google-first-event",
+      label: "Erster kontrollierter Testtermin",
+      evidence: "Wartet auf exakte Vorschau und separate Einzelbestätigung",
       href: "#integrations",
       status: "user_action",
     },
-  ] satisfies ProgressItem[],
+  ] as ProgressItem[],
 };
