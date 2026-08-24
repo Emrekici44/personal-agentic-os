@@ -9,7 +9,7 @@ export type ProgressItem = {
 };
 
 export const systemProgress = {
-  currentPhase: "Echte Lebensbereiche bereit · Datenmigration gesperrt",
+  currentPhase: "Echter Wochenplaner bereit · Kalenderwrites einzeln gesperrt",
   lastVerifiedAt: "24.08.2026 · Europe/Berlin",
   items: [
     {
@@ -122,6 +122,13 @@ export const systemProgress = {
       label: "Echte gemeinsame Lebensbereiche",
       evidence: "Glaube, Gesundheit, Finanzen, Beziehungen und Karriere · private Felder verschlüsselt",
       href: "#areas",
+      status: "complete",
+    },
+    {
+      id: "weekly-planner",
+      label: "Sonntags-Wochenplaner mit echten Quellen",
+      evidence: "8 Tage · Europe/Berlin · max. 3 Ziele · 35% Puffer · Review synchronisiert · 0 Hintergrundwrites",
+      href: "#weekly",
       status: "complete",
     },
     {

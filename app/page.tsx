@@ -15,6 +15,7 @@ type View =
   | "faith"
   | "career"
   | "projects"
+  | "weekly"
   | "inbox"
   | "chat"
   | "integrations"
@@ -57,6 +58,7 @@ const navGroups: any[] = [
     ["home", "Kommando", I.Gauge],
     ["inbox", "Inbox", I.Inbox],
     ["journal", "Heute", I.NotebookPen],
+    ["weekly", "Wochenplanung", I.CalendarRange],
     ["projects", "Projekte", I.PanelsTopLeft],
   ]],
   ["SYSTEM", [
@@ -321,6 +323,7 @@ export default function App() {
           {v === "health" && <Health note={note} />}
           {v === "relations" && <Relations note={note} />}
           {v === "projects" && <Projects note={note} />}
+          {v === "weekly" && <WeeklyPlanner note={note} />}
           {(v === "habits" || v === "journal") && (
             <DailyArea
               initialTab={v === "habits" ? "tasks" : "journal"}
@@ -401,6 +404,7 @@ function Intro({ eyebrow, title, children, action }: any) {
 function Home({ go, vaultOnline }: any) {
   const { records: tasks, state: taskState } = useSharedRecords("tasks");
   const [calendarState, setCalendarState] = useState("loading");
+  const [plannerState, setPlannerState] = useState<any>({ state: "loading", plan: null });
   useEffect(() => {
     fetch("/api/calendar/status", { cache: "no-store" })
       .then((response) => response.json())
@@ -408,6 +412,11 @@ function Home({ go, vaultOnline }: any) {
         setCalendarState(status.connected ? "online" : status.configured ? "offline" : "unconfigured"),
       )
       .catch(() => setCalendarState("offline"));
+    fetch("/api/state/session", { method: "POST" })
+      .then(() => fetch("/api/planner", { cache: "no-store" }))
+      .then((response) => response.json().then((data) => ({ ok: response.ok, data })))
+      .then(({ ok, data }) => setPlannerState({ state: ok ? (data.plan ? "online" : "unconfigured") : "offline", plan: data.plan || null }))
+      .catch(() => setPlannerState({ state: "offline", plan: null }));
   }, []);
   const openTasks = tasks.filter((task: any) => !task.done && task.status !== "archived");
   return (
@@ -480,7 +489,7 @@ function Home({ go, vaultOnline }: any) {
         <Card>
           <Tag>SYSTEMSTATUS</Tag>
           {[
-            ["Wochenplaner", "unconfigured"],
+            ["Wochenplaner", plannerState.state],
             ["Google Calendar", calendarState],
             ["OpenAI", "unconfigured"],
             ["Obsidian", vaultOnline ? "online" : "unconfigured"],
@@ -493,9 +502,10 @@ function Home({ go, vaultOnline }: any) {
           ))}
         </Card>
         <Card className="capacity">
-          <Tag>DATENWAHRHEIT</Tag>
-          <h3>Keine erfundene Auslastung</h3>
-          <p>Kapazität und Puffer erscheinen erst, wenn der Wochenplaner reale Kalender- und Aufgabendaten ausgewertet hat.</p>
+          <Tag>WOCHENKAPAZITÄT · ECHTE QUELLEN</Tag>
+          <h3>{plannerState.plan ? `${plannerState.plan.capacity.bufferPercent}% Puffer geschützt` : "Keine erfundene Auslastung"}</h3>
+          <p>{plannerState.plan ? `${plannerState.plan.sourceEvidence.eventCount} Kalenderereignisse und ${plannerState.plan.outcomes.length} Outcomes im letzten Vorschlag · 0 Hintergrundwrites.` : "Kapazität und Puffer erscheinen erst, wenn der Wochenplaner reale Kalender- und Aufgabendaten ausgewertet hat."}</p>
+          <Btn soft onClick={() => go("weekly")}>Wochenplanung öffnen</Btn>
         </Card>
       </div>
     </>
@@ -1401,6 +1411,168 @@ function Inbox({ note }: any) {
     </>
   );
 }
+function WeeklyPlanner({ note }: any) {
+  const [status, setStatus] = useState<any>({ state: "loading", connected: false });
+  const [calendars, setCalendars] = useState<any[]>([]);
+  const [selectedCalendars, setSelectedCalendars] = useState<string[]>([]);
+  const [plan, setPlan] = useState<any>(null);
+  const [selectedOutcomes, setSelectedOutcomes] = useState<string[]>([]);
+  const [selectedBlocks, setSelectedBlocks] = useState<string[]>([]);
+  const [busy, setBusy] = useState<"idle" | "generate" | "review" | "approval">("idle");
+  const [error, setError] = useState("");
+  const [approval, setApproval] = useState<any>(null);
+  const [confirmation, setConfirmation] = useState("");
+
+  const load = useCallback(async () => {
+    setError("");
+    try {
+      await fetch("/api/state/session", { method: "POST" });
+      const [calendarResponse, catalogResponse, planResponse] = await Promise.all([
+        fetch("/api/calendar/status", { cache: "no-store" }),
+        fetch("/api/calendar/calendars", { cache: "no-store" }),
+        fetch("/api/planner", { cache: "no-store" }),
+      ]);
+      const [calendarStatus, catalog, latest] = await Promise.all([calendarResponse.json(), catalogResponse.json(), planResponse.json()]);
+      setStatus({ state: calendarResponse.ok ? "ready" : "error", ...calendarStatus });
+      const available = catalog.calendars || [];
+      setCalendars(available);
+      setSelectedCalendars((current) => current.length ? current : available.filter((item: any) => item.selected).slice(0, 12).map((item: any) => item.id));
+      if (planResponse.ok && latest.plan) {
+        setPlan(latest.plan);
+        setSelectedOutcomes(latest.plan.decisions?.selectedOutcomeIds || latest.plan.outcomes?.map((item: any) => item.id) || []);
+        setSelectedBlocks(latest.plan.decisions?.selectedBlockIds || latest.plan.blocks?.map((item: any) => item.id) || []);
+      }
+    } catch {
+      setStatus({ state: "error", connected: false });
+      setError("Private Planner-Quelle ist gerade nicht erreichbar.");
+    }
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const toggleLimited = (id: string, setter: (value: string[]) => void, current: string[]) => {
+    if (current.includes(id)) return setter(current.filter((item) => item !== id));
+    if (current.length >= 3) return note("Maximal drei Einträge auswählen");
+    setter([...current, id]);
+  };
+
+  const generate = async () => {
+    if (!selectedCalendars.length) return note("Bitte mindestens einen Kalender auswählen");
+    setBusy("generate"); setError(""); setApproval(null);
+    try {
+      const response = await fetch("/api/planner", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ selectedCalendarIds: selectedCalendars }) });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Vorschlag konnte nicht erzeugt werden");
+      setPlan(result.plan);
+      setSelectedOutcomes(result.plan.outcomes.map((item: any) => item.id));
+      setSelectedBlocks(result.plan.blocks.map((item: any) => item.id));
+      note("Echter Wochenvorschlag erzeugt · 0 Kalenderwrites");
+    } catch (reason) { setError(reason instanceof Error ? reason.message : "Vorschlag fehlgeschlagen"); }
+    finally { setBusy("idle"); }
+  };
+
+  const review = async () => {
+    if (!plan || !selectedOutcomes.length) return note("Bitte mindestens ein Wochenziel wählen");
+    setBusy("review"); setError("");
+    try {
+      const response = await fetch("/api/planner", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ planId: plan.id, selectedOutcomeIds: selectedOutcomes, selectedBlockIds: selectedBlocks }) });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Review konnte nicht gespeichert werden");
+      setPlan(result.plan);
+      note("Review gemeinsam gespeichert · weiterhin 0 Writes");
+    } catch (reason) { setError(reason instanceof Error ? reason.message : "Review fehlgeschlagen"); }
+    finally { setBusy("idle"); }
+  };
+
+  const prepareApproval = async (block: any) => {
+    setBusy("approval"); setError(""); setApproval(null); setConfirmation("");
+    try {
+      const response = await fetch("/api/calendar/write-proposal", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ selectedCalendarIds: selectedCalendars, change: { action: "create", calendarId: block.calendarId, title: block.title, start: block.start, end: block.end, idempotencyKey: `weekly:${plan.id}:${block.id}` } }) });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Schreibvorschlag konnte nicht vorbereitet werden");
+      setApproval({ ...result, block });
+      note("Exakte Einzelvorschau vorbereitet · noch nicht geschrieben");
+    } catch (reason) { setError(reason instanceof Error ? reason.message : "Freigabevorbereitung fehlgeschlagen"); }
+    finally { setBusy("idle"); }
+  };
+
+  const executeApprovedWrite = async () => {
+    if (!approval || confirmation !== "DIESEN_TERMIN_JETZT_SCHREIBEN") return;
+    setBusy("approval"); setError("");
+    try {
+      const response = await fetch("/api/calendar/write", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ approvalToken: approval.approvalToken, confirmation }) });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Kalenderwrite wurde abgelehnt");
+      setApproval(null); setConfirmation("");
+      note(result.duplicatePrevented ? "Duplikat verhindert · nichts geschrieben" : "Einzeltermin geschrieben und auditiert");
+    } catch (reason) { setError(reason instanceof Error ? reason.message : "Kalenderwrite fehlgeschlagen"); }
+    finally { setBusy("idle"); }
+  };
+
+  const formatMoment = (value: string) => new Intl.DateTimeFormat("de-DE", { weekday: "short", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit", timeZone: "Europe/Berlin" }).format(new Date(value));
+  const reviewed = plan?.decisions?.reviewed;
+  return <>
+    <Intro eyebrow="SONNTAGSRESET · 11:00–11:30" title="Deine Woche realistisch planen">
+      <p>Reale Kalenderbelegung und gemeinsame Aufgaben werden zu höchstens drei Outcomes. 35% bleiben bewusst frei.</p>
+    </Intro>
+    <section className="plannerFlow" aria-label="Geführte Wochenplanung">
+      <Card className="plannerSources">
+        <div className="plannerStep"><span>1</span><div><Tag>QUELLENSTATUS</Tag><h3>{status.connected ? "Google Calendar ist verbunden" : status.configured ? "Google-Verbindung braucht Freigabe" : "Google Calendar ist unkonfiguriert"}</h3></div></div>
+        <p className="sourceLine"><I.Database /> Aufgaben, Inbox und Projekte: Laptop Shared Store · Kalender: begrenzter 8-Tage-Read · Zeitzone Europe/Berlin.</p>
+        {calendars.length > 0 ? <div className="plannerCalendars" role="group" aria-label="Kalender auswählen">
+          {calendars.map((calendar) => <label key={calendar.id}><input checked={selectedCalendars.includes(calendar.id)} onChange={() => setSelectedCalendars((current) => current.includes(calendar.id) ? current.filter((id) => id !== calendar.id) : current.length < 12 ? [...current, calendar.id] : current)} type="checkbox"/><span><b>{calendar.summary}</b><small>{calendar.writable ? "Schreibziel möglich" : "Nur Lesen"}</small></span></label>)}
+        </div> : <div className="honestEmpty"><I.CloudOff /><span><b>Keine echte Kalenderliste verfügbar</b>Ohne verbundene Quelle erzeugt Agentic OS keine Fake-Blöcke.</span></div>}
+        <Btn onClick={status.connected && busy === "idle" ? generate : undefined}>{busy === "generate" ? "Wird ausgewertet …" : "Echten Vorschlag erzeugen"} <I.WandSparkles /></Btn>
+      </Card>
+
+      {error && <div className="plannerError" role="alert"><I.TriangleAlert />{error}</div>}
+      {!plan && status.state !== "loading" && <Card className="honestEmpty"><I.CalendarRange /><span><b>Noch kein Wochenplan vorhanden</b>Wähle die relevanten Kalender und erzeuge den ersten Vorschlag. Es erfolgt kein Kalenderwrite.</span></Card>}
+      {plan && <>
+        <Card>
+          <div className="plannerStep"><span>2</span><div><Tag>ECHTER VORSCHLAG · 0 WRITES</Tag><h3>{plan.weekStart} bis {plan.windowEnd}</h3></div><em>{plan.capacity.bufferPercent}% Puffer</em></div>
+          <div className="plannerEvidence">
+            {[["Termine", plan.sourceEvidence.eventCount], ["Aufgaben", plan.sourceEvidence.taskCount], ["Inbox", plan.sourceEvidence.inboxCount], ["Projekte", plan.sourceEvidence.projectCount]].map(([label, count]) => <span key={label as string}><b>{count}</b>{label}</span>)}
+          </div>
+          <div className="plannerProtection">
+            {plan.protections.map((item: any) => <span className={item.status === "verified" ? "verified" : "unverified"} key={item.id || item}><I.ShieldCheck /><b>{item.label || item}</b><small>{item.detail || "Generatorregel aktiv"}</small></span>)}
+          </div>
+        </Card>
+        <div className="plannerColumns">
+          <Card>
+            <div className="row"><div><Tag>WOCHENZIELE</Tag><h3>Bis zu drei auswählen</h3></div><b>{selectedOutcomes.length}/3</b></div>
+            <div className="plannerChoices">
+              {plan.outcomes.map((outcome: any) => <label className={selectedOutcomes.includes(outcome.id) ? "selected" : ""} key={outcome.id}><input checked={selectedOutcomes.includes(outcome.id)} onChange={() => toggleLimited(outcome.id, setSelectedOutcomes, selectedOutcomes)} type="checkbox"/><span><b>{outcome.title}</b><small>{outcome.area} · {outcome.reason}</small></span></label>)}
+              {!plan.outcomes.length && <div className="honestEmpty"><I.ListTodo /><span><b>Keine offenen Quellen gefunden</b>Erfasse zuerst eine gemeinsame Aufgabe, Inbox-Notiz oder ein Projekt.</span></div>}
+            </div>
+          </Card>
+          <Card>
+            <div className="row"><div><Tag>FOKUSBLÖCKE</Tag><h3>Noch nicht im Kalender</h3></div><b>{selectedBlocks.length}/3</b></div>
+            <div className="plannerChoices">
+              {plan.blocks.map((block: any) => <label className={selectedBlocks.includes(block.id) ? "selected" : ""} key={block.id}><input checked={selectedBlocks.includes(block.id)} onChange={() => toggleLimited(block.id, setSelectedBlocks, selectedBlocks)} type="checkbox"/><span><b>{block.title}</b><small>{formatMoment(block.start)}–{new Intl.DateTimeFormat("de-DE", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Berlin" }).format(new Date(block.end))} · {block.calendarName}</small></span><em>Vorschlag</em></label>)}
+              {!plan.blocks.length && <div className="honestEmpty"><I.CalendarX2 /><span><b>Keine sichere Blockzeit vorgeschlagen</b>{plan.writableTargetAvailable ? "Keine freie Zeit innerhalb der Schutzregeln." : "Kein ausgewählter Kalender ist beschreibbar."}</span></div>}
+            </div>
+          </Card>
+        </div>
+        <Card className="plannerReview">
+          <div className="plannerStep"><span>3</span><div><Tag>REVIEW</Tag><h3>Auswahl gemeinsam speichern</h3><p>Der Review synchronisiert Desktop und iPhone. Er schreibt keinen Kalendertermin.</p></div></div>
+          <Btn onClick={selectedOutcomes.length && busy === "idle" ? review : undefined}>{busy === "review" ? "Speichert …" : reviewed ? "Review aktualisieren" : "Review speichern"} <I.Check /></Btn>
+        </Card>
+        {reviewed && <Card className="plannerApproval">
+          <div className="plannerStep"><span>4</span><div><Tag>EXAKTE WRITE-FREIGABE</Tag><h3>Ausgewählte Blocks sind weiterhin ungeschrieben</h3><p>Jeder Termin wird einzeln vorbereitet, 15 Minuten gültig und braucht die exakte Bestätigung. Keine Batch- oder Hintergrundwrites.</p></div></div>
+          <div className="approvalBlocks">{plan.blocks.filter((block: any) => selectedBlocks.includes(block.id)).map((block: any) => <button key={block.id} onClick={() => prepareApproval(block)} disabled={busy !== "idle"}><I.FileCheck2 /><span><b>{block.title}</b><small>{formatMoment(block.start)} · {block.calendarName}</small></span><I.ArrowRight /></button>)}</div>
+          {!selectedBlocks.length && <p className="muted">Im Review wurde kein Fokusblock zur Write-Vorbereitung ausgewählt.</p>}
+        </Card>}
+        {approval && <Card className="exactApproval">
+          <Tag>LETZTE GRENZE · EIN EXTERNER WRITE</Tag><h3>{approval.exactChange.title}</h3>
+          <dl><dt>Ziel</dt><dd>{approval.block.calendarName}</dd><dt>Start</dt><dd>{formatMoment(approval.exactChange.start)}</dd><dt>Ende</dt><dd>{formatMoment(approval.exactChange.end)}</dd><dt>Aktion</dt><dd>Neuen Termin erstellen · keine Gäste/kein Ort</dd></dl>
+          <label>Zur Einzelbestätigung exakt eingeben<input value={confirmation} onChange={(event) => setConfirmation(event.target.value)} placeholder="DIESEN_TERMIN_JETZT_SCHREIBEN" /></label>
+          <Btn onClick={confirmation === "DIESEN_TERMIN_JETZT_SCHREIBEN" && busy === "idle" ? executeApprovedWrite : undefined}>Diesen einen Termin jetzt schreiben</Btn>
+        </Card>}
+      </>}
+    </section>
+  </>;
+}
+
 function Integrations({ note }: any) {
   const [liveCalendars, setLiveCalendars] = useState<any[]>([]),
     [selectedCalendars, setSelectedCalendars] = useState<string[]>([]),
@@ -1813,7 +1985,7 @@ function MobileNav({ v, go }: any) {
         ["areas", "Bereiche", I.Orbit],
         ["inbox", "Erfassen", I.PlusCircle],
         ["habits", "Aufgaben", I.CheckSquare],
-        ["agents", "Agenten", I.Bot],
+        ["weekly", "Woche", I.CalendarRange],
       ].map(([id, n, Icon]: any) => (
         <button
           aria-current={v === id ? "page" : undefined}

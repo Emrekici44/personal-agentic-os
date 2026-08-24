@@ -14,6 +14,7 @@
 - Unified daily workspace with shared tasks, persistent habits and encrypted journal completion.
 - Real content-free shared-store audit in Knowledge; static activity claims removed.
 - Real shared life-area records for faith, health, finance, relationships and split career; encrypted private fields, honest empty states and reversible archive.
+- Real Sunday weekly planner: signed private GET/generate/review API, encrypted shared plans/outcomes/focus proposals, Europe/Berlin DST-safe 8-day window, real Calendar/task/inbox/project evidence, max. 3 outcomes, 35% buffer and exact single-write handoff.
 
 ## Complete – Bedienwahrheit and responsive refinement
 
@@ -34,3 +35,4 @@
 2. Produce SQLite → PostgreSQL inventory, field mapping, conflict preview and tested rollback; request explicit migration approval.
 3. Build Obsidian Inbox → normalization → exact diff → backup → approved write; request approval before touching existing notes.
 4. Evaluate each new connector independently; no implicit OAuth scope expansion or paid activation.
+5. Seed real shared tasks/projects/inbox items through the normal UI so the planner can propose the first useful three-outcome week; each eventual Calendar event still requires its own action-time approval.

@@ -4035,6 +4035,33 @@ textarea::placeholder {
 .os[data-theme="light"] .backButton{color:#3e687d;border-color:rgba(31,125,162,.18)}
 .os[data-theme="light"] .toast{background:#ffffff;color:#16394d;border-color:rgba(20,146,191,.25)}
 
+/* Weekly planner: guided, source-backed and write-safe. */
+.plannerFlow{display:grid;gap:16px}
+.plannerStep{display:flex;align-items:flex-start;gap:14px}
+.plannerStep>span{display:grid;place-items:center;width:36px;height:36px;flex:0 0 36px;border:1px solid rgba(39,211,255,.42);border-radius:50%;background:rgba(39,211,255,.08);color:var(--cyan);font:700 14px/1 monospace;box-shadow:0 0 20px rgba(39,211,255,.1)}
+.plannerStep>div{min-width:0;flex:1}.plannerStep h3{margin:5px 0 4px}.plannerStep p{margin:0}.plannerStep>em{font-style:normal;color:var(--cyan);border:1px solid rgba(39,211,255,.22);border-radius:999px;padding:7px 10px;white-space:nowrap}
+.plannerCalendars{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:16px 0}
+.plannerCalendars label,.plannerChoices label{display:flex;align-items:flex-start;gap:10px;min-width:0;padding:12px;border:1px solid var(--line);border-radius:8px;background:var(--panel-soft);cursor:pointer;transition:border-color .18s ease,background .18s ease,transform .18s ease}
+.plannerCalendars label:hover,.plannerChoices label:hover{border-color:rgba(39,211,255,.42);transform:translateY(-1px)}
+.plannerCalendars input,.plannerChoices input{width:18px;height:18px;flex:0 0 18px;margin-top:1px;accent-color:var(--cyan)}
+.plannerCalendars span,.plannerChoices span{display:grid;gap:3px;min-width:0}.plannerCalendars small,.plannerChoices small{color:var(--muted);line-height:1.35}
+.plannerEvidence{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:18px 0}
+.plannerEvidence span{display:grid;gap:2px;padding:12px;border:1px solid var(--line);border-radius:8px;background:var(--panel-soft);color:var(--muted)}
+.plannerEvidence b{font-size:22px;color:var(--ink)}
+.plannerProtection{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.plannerProtection>span{display:grid;grid-template-columns:22px 1fr;gap:2px 8px;align-items:center;padding:11px;border:1px solid var(--line);border-radius:8px}
+.plannerProtection svg{grid-row:1/3;width:18px;color:#55cda1}.plannerProtection .unverified svg{color:#e0a04d}.plannerProtection small{color:var(--muted)}
+.plannerColumns{display:grid;grid-template-columns:1fr 1fr;gap:16px}.plannerChoices{display:grid;gap:8px;margin-top:14px}.plannerChoices label.selected{border-color:rgba(39,211,255,.5);background:rgba(39,211,255,.075)}.plannerChoices label>em{margin-left:auto;font-style:normal;color:#e0a04d;font-size:11px;text-transform:uppercase;letter-spacing:.08em}
+.honestEmpty{display:flex;align-items:flex-start;gap:11px;padding:15px;border:1px dashed var(--line);border-radius:8px;color:var(--muted)}.honestEmpty svg{width:20px;flex:0 0 20px;color:#e0a04d}.honestEmpty span{display:grid;gap:4px}.honestEmpty b{color:var(--ink)}
+.plannerError{display:flex;align-items:center;gap:9px;padding:13px 15px;border:1px solid rgba(241,102,102,.4);border-radius:8px;background:rgba(180,40,40,.09);color:#ffb0b0}.plannerError svg{width:18px}
+.plannerReview,.plannerApproval{display:flex;align-items:center;justify-content:space-between;gap:18px}.plannerReview .btn{flex:0 0 auto}
+.approvalBlocks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:16px}.approvalBlocks button{display:flex;align-items:center;gap:9px;min-height:64px;padding:11px;border:1px solid var(--line);border-radius:8px;background:var(--panel-soft);color:var(--ink);text-align:left;cursor:pointer}.approvalBlocks button:hover{border-color:rgba(39,211,255,.48)}.approvalBlocks button svg{width:18px;color:var(--cyan);flex:0 0 18px}.approvalBlocks button span{display:grid;gap:3px;flex:1}.approvalBlocks button small{color:var(--muted)}
+.exactApproval{border-color:rgba(224,160,77,.44)!important;box-shadow:0 0 32px rgba(224,160,77,.08)!important}.exactApproval dl{display:grid;grid-template-columns:max-content 1fr;gap:8px 16px;margin:16px 0}.exactApproval dt{color:var(--muted)}.exactApproval dd{margin:0}.exactApproval>label{display:grid;gap:7px;margin:14px 0}.exactApproval input{min-height:44px;padding:10px 12px;border:1px solid var(--line);border-radius:7px;background:var(--panel-soft);color:var(--ink)}
+.os[data-theme="light"] .plannerCalendars label,.os[data-theme="light"] .plannerChoices label,.os[data-theme="light"] .plannerEvidence span,.os[data-theme="light"] .approvalBlocks button{background:#fff}
+
+@media(max-width:900px){.plannerCalendars{grid-template-columns:repeat(2,minmax(0,1fr))}.plannerColumns{grid-template-columns:1fr}.approvalBlocks{grid-template-columns:1fr}}
+@media(max-width:560px){.plannerFlow{gap:12px}.plannerCalendars,.plannerEvidence,.plannerProtection{grid-template-columns:1fr}.plannerStep{gap:10px}.plannerStep>span{width:32px;height:32px;flex-basis:32px}.plannerStep>em{font-size:11px;padding:6px 8px}.plannerReview,.plannerApproval{display:grid}.plannerReview .btn{width:100%}.plannerChoices label,.plannerCalendars label{padding:13px;min-height:52px}.exactApproval dl{grid-template-columns:1fr;gap:3px}.exactApproval dd{margin-bottom:8px}}
+
 @media (max-width:720px){
   .themeSwitch{width:42px;height:42px;flex:0 0 42px}
   .themeChoices{display:grid;grid-template-columns:1fr 1fr}

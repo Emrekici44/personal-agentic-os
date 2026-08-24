@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'node:crypto';
-import { accessToken } from '@/lib/google-calendar';
+import { refreshedAccessToken } from '@/lib/google-calendar';
 import { auditCalendarWrite, consumeApproval } from '@/lib/calendar-write';
+import { verifyLocalSession } from '@/lib/shared-store';
 
 export async function POST(req: NextRequest) {
   try {
-    const access = accessToken(req.cookies.get('agentic_os_google_token')?.value);
+    if (!verifyLocalSession(req.cookies.get('agentic_os_local_session')?.value)) return NextResponse.json({ error: 'Lokale Sitzung erforderlich' }, { status: 401 });
+    const access = await refreshedAccessToken(req.cookies.get('agentic_os_google_token')?.value);
     if (!access) throw new Error('Google Calendar ist nicht verbunden');
     const body = await req.json();
     const change = consumeApproval(body.approvalToken, body.confirmation);
