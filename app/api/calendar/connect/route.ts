@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { oauthUrl, seal } from "@/lib/google-calendar";
 import { publicApiError } from "@/lib/public-api-error";
+import { secureCookieForRequest } from "@/lib/request-security";
 import { verifyLocalSession } from "@/lib/shared-store";
 
 const headers = { "Cache-Control": "no-store, private" };
@@ -16,7 +17,7 @@ export async function GET(req: NextRequest) {
     response.cookies.set("agentic_os_oauth_state", seal(state), {
       httpOnly: true,
       sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
+      secure: secureCookieForRequest(req),
       maxAge: 600,
       path: "/",
     });

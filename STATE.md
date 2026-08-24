@@ -110,6 +110,7 @@ Last verified: 25.08.2026, Europe/Berlin.
 - Sichtbare technische Enum-Werte sind aus den Hauptansichten entfernt: Connector- und Kostenklassen, Bereichsstatus, Beziehungsart, Rhythmus und Trainingsintensität werden verständlich deutsch dargestellt. Die serverseitigen Codes bleiben unverändert für stabile Verträge. Usage & Limits verbindet Calendar-Berechtigungen lesbar und zeigt keine englischen Kostenbadges mehr.
 - Die strukturierte Dashboard-Fortschrittsquelle enthält die verifizierten Recovery-/Bedieninkremente als eigene abgeschlossene Checklistenpunkte. Es bleibt genau ein lokaler Audit aktiv; physischer iPhone-Nachtest und PostgreSQL-Ziel bleiben getrennte Nutzeraktionen. Der Zähler wird ausschließlich aus diesen diskreten Zuständen berechnet.
 - Private API error handling now exposes only an allowlisted, length-bounded set of actionable validation messages. Runtime, filesystem, database and credential-shaped details collapse to content-free recovery text; Calendar read/planner failures distinguish stale selection (409), provider transport (502) and token-check uncertainty (503) without writes or automatic OAuth.
+- Session, OAuth-state and Google-token cookies now share one request-aware `Secure` policy. Direct HTTPS is accepted; forwarded HTTPS counts only when the normalized request host matches the configured private Tailscale host. Plain localhost remains usable and a spoofed forwarded host cannot alter the policy.
 
 ## Verification
 
@@ -140,6 +141,7 @@ Last verified: 25.08.2026, Europe/Berlin.
 - Anonyme Write-Laufzeitprobe: 401, `no-store, private`, `written=false`, `approvalConsumed=false`; Request-Body, Approval-Ledger und Google-Transport wurden nicht erreicht.
 - Bedienprobe: Integration Health zeigt `Verbindungsart · Direkte API`, `Kostenfrei/Nutzungsbasiert/Ungeklärt`, `Berechtigungen` und keine internen Klassencodes. Usage & Limits rendert dieselben verständlichen Kostenklassen auf 390×844 ohne Überlauf oder Console-Warnung. Leere Bereichsdaten blieben unverändert; es wurden keine Beispieldatensätze für die Enum-Prüfung erzeugt.
 - Private-API-Fehlergrenze: Root 113/113, Lint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export und isolierter Produktionsbuild grün. Dashboard zeigt 46/49 diskrete Punkte; 390×844 ohne horizontalen Überlauf. Inhaltsaudit: 0 Secretmuster, 0 Vault-Dateipfade, 0 verbotene getrackte lokale Dateien.
+- HTTPS-Cookie-Policy: Root 115/115, Lint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export und isolierter Produktionsbuild grün. Dashboard zeigt 47/50 diskrete Punkte; die Browserprüfung bestätigte den laufenden Stand. Der private Host ist im aktuellen Shell-Prozess nicht konfiguriert, daher bleibt ein Live-Header-Check ehrlich offen statt behauptet.
 
 ## User boundaries
 

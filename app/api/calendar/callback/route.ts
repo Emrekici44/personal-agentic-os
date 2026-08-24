@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { calendarConfig, open, seal, storeTokenBundle } from "@/lib/google-calendar";
 import { googleRequestSignal } from "@/lib/google-transport";
+import { secureCookieForRequest } from "@/lib/request-security";
 
 const protectRedirect = (response: NextResponse) => {
   response.headers.set("Cache-Control", "no-store, private");
@@ -35,7 +36,7 @@ export async function GET(req: NextRequest) {
     response.cookies.set("agentic_os_google_token", seal(JSON.stringify(data)), {
       httpOnly: true,
       sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
+      secure: secureCookieForRequest(req),
       maxAge: data.expires_in || 3600,
       path: "/",
     });

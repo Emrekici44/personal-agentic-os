@@ -342,6 +342,13 @@ export const systemProgress = {
       status: "complete",
     },
     {
+      id: "private-https-cookie-policy",
+      label: "Private HTTPS-Cookies konsistent absichern",
+      evidence: "Session/OAuth gemeinsam · Secure bei echter HTTPS-/Tailscale-Evidenz · Host-Spoofing abgewiesen · localhost weiter nutzbar",
+      href: "#integrations",
+      status: "complete",
+    },
+    {
       id: "ongoing-local-gap-audit",
       label: "Nächste lokale Bedien-/Recovery-Lücke prüfen",
       evidence: "Nur reversible lokale Änderungen · keine externen Writes, Migrationen, Installationen oder Kosten",

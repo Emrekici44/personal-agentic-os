@@ -78,6 +78,8 @@ Project root: `outputs/agentic-os`. Private source remote: `https://github.com/E
 - `data/system-progress.ts` lists the verified recovery/UX increments explicitly. The UI derives completed/total counts from the checklist, keeps one active local audit and does not fold the two remaining user decisions into fake progress.
 - Private route error output is now centralized and redacted. Known validation/conflict messages remain actionable, unexpected runtime/DB/path/credential-shaped text never reaches the client, and Calendar read/planner recovery separates 409, 502 and 503 while preserving `writesPerformed: false`.
 - Verification for this increment: Root 113/113, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed. Progress rendered 46/49 on desktop and without horizontal overflow at 390×844; content audit found no secrets, Vault note paths or forbidden tracked local state.
+- Session and OAuth cookie `Secure` flags now use one request-aware policy: direct HTTPS or configured Tailscale forwarding is accepted, an unrelated forwarded host is rejected and localhost remains available. The current shell environment does not expose `AGENTIC_OS_PRIVATE_HOST`, so live-header evidence was not fabricated; deterministic helper and route contracts cover the boundary.
+- Full verification after the cookie change: Root 115/115, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed. The live dashboard rendered 47/50 discrete items.
 
 ## Immediate continuation
 
