@@ -188,6 +188,17 @@ test("cross-source references remain blocked until their real source is verified
   assert.match(page, /\(!triageDraft\.agentId \|\| agentState === "online"\)/);
 });
 
+test("agent and skill procedure clients discard stale controls on transport failure", async () => {
+  const page = await readFile(pagePath, "utf8");
+  assert.match(page, /workflowState\.state!=="online"\)throw new Error\("Private Workflow-Quelle ist nicht schreibbereit"\)/);
+  assert.match(page, /setWorkflowState\(\{state:"error",profiles:\[\],runs:\[\]\}\);setActiveRunId\(""\)/);
+  assert.match(page, /Private Workflow-Quelle wird geladen/);
+  assert.match(page, /skillState\.state!=="online"\)throw new Error\("Private Skill-Quelle ist nicht schreibbereit"\)/);
+  assert.match(page, /setSkillState\(\{state:"error",definitions:\[\],runs:\[\],catalog:\[\]\}\)/);
+  assert.match(page, /skillState\.state==="online"&&editing&&<Card className="skillEditor">/);
+  assert.match(page, /Private Skill-Quelle wird geladen/);
+});
+
 test("knowledge search stays inside the signed metadata-only vault preview", async () => {
   const [page, route] = await Promise.all([
     readFile(pagePath, "utf8"),

@@ -16,6 +16,7 @@
 - Task and life-area surfaces now distinguish verified zero counts from loading/offline sources. Domain insights, records and create controls appear only when the shared source is online; no outage is rendered as an honest empty dataset.
 - Shared-record mutations now fail closed while their source is loading/offline. Stale in-memory rows are removed from active views and prominent Today/Journal/Project/Area/Agent/Inbox/Companion controls stay disabled until the signed private source is reverified.
 - Cross-source selectors now carry independent readiness: Tasks, Project Coach, project snapshot Skills, Companion capture and Inbox triage cannot save or run a project/agent reference whose real source has not been verified Online.
+- Agent workflow and Skill procedure clients now clear stale definitions/runs and disable review actions on transport or malformed-response failures, while preserving the distinction between an offline source and a server-side validation rejection.
 - Unified daily workspace with shared tasks, persistent habits and encrypted journal completion.
 - Real content-free shared-store audit in Knowledge; static activity claims removed.
 - Real shared life-area records for faith, health, finance, relationships and split career; encrypted private fields, honest empty states and reversible archive.

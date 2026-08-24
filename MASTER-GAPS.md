@@ -56,6 +56,7 @@ Die gebündelten Details stehen in `PENDING-DECISIONS.md`. Kein Punkt hier block
 - Ein sichtbarer Wert `0` erscheint nur nach erfolgreicher Quellprüfung. Lade-/Offlinezustände unterdrücken Zähler, Charts und mutierende Bereichscontrols, statt Nichterreichbarkeit als leeren Bestand darzustellen.
 - Der gemeinsame Records-Client hält bei Loading/Offline keine sichtbaren Altstände bereit und lehnt Create/Update/Archive vor dem Request ab. Entwürfe dürfen lokal erhalten bleiben, werden aber nie still als zweite operative Datenquelle gespeichert.
 - Fremdschlüssel-Auswahlen für Projekte, Agenten und Skill-Referenzen bleiben ebenfalls fail-closed: fehlende Kataloge werden als Loading/Offline bezeichnet und können keinen scheinbar gültigen leeren oder alten Bezug speichern.
+- Deterministische Agenten- und Skill-Läufe folgen derselben Recovery-Wahrheit: alte Runs/Definitionen verschwinden nach Transportfehlern aus aktiven Controls; Retry lädt den privaten Stand neu, ohne lokale Ersatzläufe oder autonome Fortsetzung.
 - Produktmodule enthalten keine eingebetteten Kalender-, Ereignis-, Fokusblock- oder Provider-Mocks mehr; Testverträge prüfen echte Guards ohne sie als Nutzerdatenpfad bereitzuhalten.
 - ChatGPT Pro ist kein API-Zugang. Companion Mode ist ein manueller Übergabepfad.
 - SQLite ist operative Quelle, Obsidian dauerhafte Wissensquelle und Google Calendar externe Ereignisquelle, bis Emre eine andere Migration ausdrücklich freigibt.
