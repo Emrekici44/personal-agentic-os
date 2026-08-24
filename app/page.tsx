@@ -56,8 +56,7 @@ const navGroups: any[] = [
   ["FOKUS", [
     ["home", "Kommando", I.Gauge],
     ["inbox", "Inbox", I.Inbox],
-    ["journal", "Heute & Journal", I.NotebookPen],
-    ["habits", "Aufgaben & Routinen", I.ListChecks],
+    ["journal", "Heute", I.NotebookPen],
     ["projects", "Projekte", I.PanelsTopLeft],
   ]],
   ["SYSTEM", [
@@ -72,6 +71,7 @@ const navGroups: any[] = [
 const nav: any[] = navGroups.flatMap(([, items]) => items);
 const viewIds = new Set<View>([
   "areas",
+  "habits",
   ...nav.map(([id]) => id as View),
   ...areas.map(([id]) => id as View),
 ]);
@@ -218,7 +218,8 @@ export default function App() {
     window.addEventListener("keydown", closeOnEscape);
     return () => window.removeEventListener("keydown", closeOnEscape);
   }, [menu]);
-  const title = nav.find((n) => n[0] === v)?.[1] || brand.name;
+  const title =
+    v === "habits" ? "Heute" : nav.find((n) => n[0] === v)?.[1] || brand.name;
   return (
     <div className="os" data-theme={theme}>
       <aside
@@ -319,9 +320,9 @@ export default function App() {
           {v === "health" && <Health />}
           {v === "relations" && <Relations />}
           {v === "projects" && <Projects note={note} />}
-          {v === "habits" && <Habits />}{" "}
-          {v === "journal" && (
-            <Journal
+          {(v === "habits" || v === "journal") && (
+            <DailyArea
+              initialTab={v === "habits" ? "tasks" : "journal"}
               text={journal}
               setText={(x: string) => {
                 setJournal(x);
@@ -1101,63 +1102,180 @@ function Projects({ note }: any) {
     </>
   );
 }
-function Habits() {
-  const [txt, setTxt] = useState("");
-  const { records: tasks, state, create, update } = useSharedRecords("tasks");
-  const add = async () => {
-    if (txt.trim()) {
-      await create({ title: txt, status: "active", area: "Inbox", done: false });
-      setTxt("");
-    }
-  };
+function DailyArea({ initialTab, text, setText, mood, setMood, note }: any) {
+  const [tab, setTab] = useState<"tasks" | "journal">(initialTab);
+  useEffect(() => setTab(initialTab), [initialTab]);
   return (
     <>
       <Intro
-        eyebrow="KLARHEIT STATT DRUCK"
-        title="Habits, Aufgaben & Checklisten."
+        eyebrow="DEIN TAG · GEMEINSAMER DATENKERN"
+        title={new Intl.DateTimeFormat("de-DE", {
+          weekday: "long",
+          day: "2-digit",
+          month: "long",
+          timeZone: "Europe/Berlin",
+        }).format(new Date())}
       >
-        <p>Kein Punktesystem. Nur ein ehrlicher Blick auf das, was trägt.</p>
+        <p>Aufgaben, Gewohnheiten und Reflexion an einem ruhigen Ort.</p>
       </Intro>
+      <div className="dailyTabs" role="tablist" aria-label="Tagesbereich">
+        <button
+          aria-selected={tab === "tasks"}
+          className={tab === "tasks" ? "active" : ""}
+          onClick={() => setTab("tasks")}
+          role="tab"
+          type="button"
+        >
+          <I.ListChecks /> Aufgaben & Habits
+        </button>
+        <button
+          aria-selected={tab === "journal"}
+          className={tab === "journal" ? "active" : ""}
+          onClick={() => setTab("journal")}
+          role="tab"
+          type="button"
+        >
+          <I.NotebookPen /> Journal
+        </button>
+      </div>
+      {tab === "tasks" ? (
+        <Habits embedded />
+      ) : (
+        <Journal
+          embedded
+          mood={mood}
+          note={note}
+          setMood={setMood}
+          setText={setText}
+          text={text}
+        />
+      )}
+    </>
+  );
+}
+function Habits({ embedded = false }: { embedded?: boolean }) {
+  const [taskText, setTaskText] = useState("");
+  const [habitText, setHabitText] = useState("");
+  const [error, setError] = useState("");
+  const {
+    records: tasks,
+    state: taskState,
+    create: createTask,
+    update: updateTask,
+  } = useSharedRecords("tasks");
+  const {
+    records: habits,
+    state: habitState,
+    create: createHabit,
+    update: updateHabit,
+  } = useSharedRecords("habits");
+  const today = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Berlin",
+  }).format(new Date());
+  const addTask = async () => {
+    const title = taskText.trim();
+    if (title.length < 2) return setError("Aufgabe benötigt mindestens 2 Zeichen");
+    try {
+      await createTask({ title, status: "active", area: "Inbox", done: false });
+      setTaskText("");
+      setError("");
+    } catch {
+      setError("Aufgabe konnte nicht gespeichert werden");
+    }
+  };
+  const addHabit = async () => {
+    const title = habitText.trim();
+    if (title.length < 2) return setError("Habit benötigt mindestens 2 Zeichen");
+    try {
+      await createHabit({ title, status: "active", cadence: "daily", completedOn: [] });
+      setHabitText("");
+      setError("");
+    } catch {
+      setError("Habit konnte nicht gespeichert werden");
+    }
+  };
+  const toggleHabit = async (habit: any) => {
+    const completedOn = Array.isArray(habit.completedOn) ? habit.completedOn : [];
+    await updateHabit({
+      ...habit,
+      completedOn: completedOn.includes(today)
+        ? completedOn.filter((date: string) => date !== today)
+        : [...completedOn, today].slice(-90),
+    });
+  };
+  const completedHabits = habits.filter((habit: any) =>
+    Array.isArray(habit.completedOn) && habit.completedOn.includes(today),
+  ).length;
+  const openTasks = tasks.filter((task: any) => !task.done).length;
+  return (
+    <>
+      {!embedded && (
+        <Intro eyebrow="KLARHEIT STATT DRUCK" title="Aufgaben & Habits.">
+          <p>Kein Punktesystem. Nur ein ehrlicher Blick auf das, was trägt.</p>
+        </Intro>
+      )}
       <div className="habitgrid">
         <Card>
           <div className="row">
-            <Tag>HABIT-VORLAGE · NOCH NICHT PERSISTENT</Tag>
-            <b>Beispiel</b>
+            <Tag>HABITS · GEMEINSAMER SERVERZUSTAND</Tag>
+            <b>{completedHabits}/{habits.length} heute</b>
           </div>
-          {[
-            ["Fajr bewusst beten", true, "Glaube"],
-            ["10 Minuten bewegen", true, "Gesundheit"],
-            ["Qurʾān lesen", true, "Glaube"],
-            ["2 Liter Wasser", false, "Gesundheit"],
-            ["Tagesjournal", false, "Reflexion"],
-            ["Früh schlafen", false, "Gesundheit"],
-          ].map((x) => (
-            <Checkline
-              key={x[0] as string}
-              t={x[0] as string}
-              done={x[1] as boolean}
-              meta={x[2] as string}
+          <div className="taskadd">
+            <input
+              aria-label="Neues Habit"
+              onChange={(event) => setHabitText(event.target.value)}
+              placeholder="Neues tägliches Habit …"
+              value={habitText}
             />
+            <button aria-label="Habit hinzufügen" onClick={addHabit} type="button">
+              <I.Plus />
+            </button>
+          </div>
+          {habitState === "loading" && <p role="status">Habits werden geladen …</p>}
+          {habitState === "error" && <p role="alert">Gemeinsame Habits sind gerade nicht erreichbar.</p>}
+          {habitState === "online" && habits.length === 0 && (
+            <p>Noch keine Habits erfasst. Es werden keine Routinen vorgegeben.</p>
+          )}
+          {habits.map((habit: any) => (
+            <button
+              aria-pressed={Array.isArray(habit.completedOn) && habit.completedOn.includes(today)}
+              className="taskrow"
+              key={habit.id}
+              onClick={() => toggleHabit(habit)}
+              type="button"
+            >
+              <i className={habit.completedOn?.includes(today) ? "done" : ""}>
+                {habit.completedOn?.includes(today) && <I.Check />}
+              </i>
+              <span>
+                {habit.title}
+                <small>{habit.cadence === "daily" ? "Täglich" : habit.cadence}</small>
+              </span>
+            </button>
           ))}
         </Card>
         <Card>
           <Tag>AUFGABEN · GEMEINSAMER SERVERZUSTAND</Tag>
           <div className="taskadd">
             <input
-              value={txt}
-              onChange={(e) => setTxt(e.target.value)}
+              aria-label="Neue Aufgabe"
+              value={taskText}
+              onChange={(e) => setTaskText(e.target.value)}
               placeholder="Neue Aufgabe …"
             />
-            <button onClick={add}>
+            <button aria-label="Aufgabe hinzufügen" onClick={addTask} type="button">
               <I.Plus />
             </button>
           </div>
-          {state === "online" && tasks.length === 0 && <p>Noch keine gemeinsamen Aufgaben.</p>}
+          {taskState === "loading" && <p role="status">Aufgaben werden geladen …</p>}
+          {taskState === "error" && <p role="alert">Gemeinsame Aufgaben sind gerade nicht erreichbar.</p>}
+          {taskState === "online" && tasks.length === 0 && <p>Noch keine gemeinsamen Aufgaben.</p>}
           {tasks.map((t: any) => (
             <button
               className="taskrow"
-              onClick={() => update({ ...t, done: !t.done })}
+              onClick={() => updateTask({ ...t, done: !t.done })}
               key={t.id}
+              type="button"
             >
               <i className={t.done ? "done" : ""}>{t.done && <I.Check />}</i>
               <span className={t.done ? "strike" : ""}>
@@ -1168,22 +1286,17 @@ function Habits() {
           ))}
         </Card>
         <Card>
-          <Tag>KONTINUITÄTSVORSCHAU · BEISPIEL</Tag>
-          <div className="weekdots">
-            {["M", "D", "M", "D", "F", "S", "S"].map((d, i) => (
-              <i className={i < 5 ? "done" : ""} key={i}>
-                {d}
-              </i>
-            ))}
-          </div>
-          <h3>5 Tage im Rhythmus</h3>
-          <p>Kein verlorener Streak. Morgen ist einfach ein neuer Tag.</p>
+          <Tag>HEUTIGER ÜBERBLICK · ECHTE DATEN</Tag>
+          <h3>{openTasks} offene Aufgaben</h3>
+          <p>{completedHabits} von {habits.length} Habits heute markiert.</p>
+          <p>Kein verlorener Streak und keine erfundete Serie. Morgen ist ein neuer Tag.</p>
+          {error && <p role="alert">{error}</p>}
         </Card>
       </div>
     </>
   );
 }
-function Journal({ text, setText, mood, setMood, note }: any) {
+function Journal({ text, setText, mood, setMood, note, embedded = false }: any) {
   const { records: entries, create } = useSharedRecords("journal_metadata");
   const [energy, setEnergy] = useState(3);
   const insertPrompt = (prompt: string) => {
@@ -1192,9 +1305,11 @@ function Journal({ text, setText, mood, setMood, note }: any) {
   };
   return (
     <>
-      <Intro eyebrow="TAGESJOURNAL" title={new Intl.DateTimeFormat("de-DE", { weekday: "long", day: "2-digit", month: "long", timeZone: "Europe/Berlin" }).format(new Date())}>
-        <p>Ein ruhiger Ort für das, was war und was bleiben darf.</p>
-      </Intro>
+      {!embedded && (
+        <Intro eyebrow="TAGESJOURNAL" title={new Intl.DateTimeFormat("de-DE", { weekday: "long", day: "2-digit", month: "long", timeZone: "Europe/Berlin" }).format(new Date())}>
+          <p>Ein ruhiger Ort für das, was war und was bleiben darf.</p>
+        </Intro>
+      )}
       <div className="journalgrid">
         <Card className="editor">
           <div className="row">
@@ -1705,6 +1820,7 @@ function Integrations({ note }: any) {
 }
 function Brain() {
   const [vault, setVault] = useState<any>({ status: "loading" });
+  const [audit, setAudit] = useState<any>({ status: "loading", entries: [] });
   const loadVault = useCallback(async () => {
     setVault((current: any) => ({ ...current, status: "loading" }));
     try {
@@ -1714,11 +1830,39 @@ function Brain() {
       setVault({ status: "degraded", error: "Lokaler Vault-Index nicht erreichbar" });
     }
   }, []);
+  const loadAudit = useCallback(async () => {
+    setAudit((current: any) => ({ ...current, status: "loading" }));
+    try {
+      await fetch("/api/state/session", { method: "POST" });
+      const response = await fetch("/api/state/audit", { cache: "no-store" });
+      if (!response.ok) throw new Error();
+      const result = await response.json();
+      setAudit({ status: "online", entries: result.entries || [] });
+    } catch {
+      setAudit({ status: "error", entries: [] });
+    }
+  }, []);
   useEffect(() => {
     void loadVault();
-  }, [loadVault]);
+    void loadAudit();
+  }, [loadAudit, loadVault]);
 
   const connected = vault.status === "online";
+  const graphNodes = connected
+    ? [
+        ...new Set(
+          (vault.relationships || [])
+            .filter((item: any) => !item.sensitive)
+            .flatMap((item: any) => [item.source, item.target]),
+        ),
+      ].slice(0, 7)
+    : [];
+  const auditLabels: Record<string, string> = {
+    archive: "Eintrag archiviert",
+    create: "Eintrag erstellt",
+    "preference.update": "Einstellung aktualisiert",
+    update: "Eintrag aktualisiert",
+  };
   return (
     <>
       <Intro eyebrow="WISSEN & SHARED MEMORY" title="Dein zweites Gedächtnis.">
@@ -1735,19 +1879,14 @@ function Brain() {
             </span>
           </div>
           <div className="nodes">
-            {[
-              "Glaube",
-              "Wochenplan",
-              "Gesundheit",
-              "Projekte",
-              "Beruf",
-              "Menschen",
-              "Notizen",
-            ].map((x, i) => (
+            {graphNodes.map((x: any, i) => (
               <i className={"node n" + i} key={x}>
                 {x}
               </i>
             ))}
+            {graphNodes.length === 0 && (
+              <p>Graphknoten erscheinen nur aus dem echten read-only Vault-Index.</p>
+            )}
           </div>
         </Card>
         <Card className="vaultHealth">
@@ -1792,7 +1931,7 @@ function Brain() {
           <Btn soft onClick={loadVault}>Read-only Index neu laden</Btn>
         </Card>
         <Card>
-          <Tag>MEMORY</Tag>
+          <Tag>SYSTEMREGELN · PLANER-KONFIGURATION</Tag>
           {[
             ["Präferenz", "Nach Training kein Deep Work"],
             ["Regel", "Maximal 3 Wochen-Outcomes"],
@@ -1806,19 +1945,23 @@ function Brain() {
           ))}
         </Card>
         <Card>
-          <Tag>AUDIT</Tag>
-          {[
-            "Mock-Kalender gelesen",
-            "Wochenplan vorgeschlagen",
-            "Journal lokal gespeichert",
-            "Backup erstellt",
-          ].map((x, i) => (
-            <div className="audit" key={x}>
+          <Tag>AUDIT · GEMEINSAMER SERVERZUSTAND</Tag>
+          {audit.status === "loading" && <p role="status">Audit wird geladen …</p>}
+          {audit.status === "error" && <p role="alert">Audit ist gerade nicht erreichbar.</p>}
+          {audit.status === "online" && audit.entries.length === 0 && <p>Noch keine gemeinsamen Aktionen protokolliert.</p>}
+          {audit.entries.map((entry: any, index: number) => (
+            <div className="audit" key={`${entry.createdAt}-${index}`}>
               <I.History />
               <span>
-                <b>{x}</b>
+                <b>{auditLabels[entry.action] || entry.action}</b>
                 <small>
-                  {i + 8}:2{i} · lokal
+                  {entry.entityType} · {new Intl.DateTimeFormat("de-DE", {
+                    day: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    month: "2-digit",
+                    timeZone: "Europe/Berlin",
+                  }).format(new Date(entry.createdAt))}
                 </small>
               </span>
             </div>

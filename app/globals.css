@@ -3021,6 +3021,40 @@ textarea::placeholder {
   box-shadow: inset 0 0 16px rgba(42, 215, 255, 0.07);
 }
 
+.dailyTabs {
+  display: inline-grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  margin: -4px 0 18px;
+  border: 1px solid rgba(64, 186, 229, 0.16);
+  border-radius: 9px;
+  background: rgba(5, 19, 32, 0.7);
+  padding: 4px;
+}
+
+.dailyTabs button {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  padding: 9px 14px;
+  color: var(--muted);
+}
+
+.dailyTabs button.active {
+  border-color: rgba(42, 215, 255, 0.34);
+  background: rgba(20, 108, 255, 0.16);
+  color: var(--cyan);
+}
+
+.dailyTabs svg {
+  width: 17px;
+}
+
 .skilltable {
   border-color: rgba(67, 181, 224, 0.17);
   border-radius: 8px;
@@ -3773,11 +3807,14 @@ textarea::placeholder {
 .os[data-theme="light"] .mobileNav button{color:#607a8b}
 .os[data-theme="light"] .mobileNav a.active,
 .os[data-theme="light"] .mobileNav button.active{color:#0879ac;background:rgba(25,160,211,.08)}
+.os[data-theme="light"] .dailyTabs{background:rgba(232,245,249,.8);border-color:rgba(31,125,162,.16)}
+.os[data-theme="light"] .dailyTabs button.active{background:#fff;color:#0879ac;border-color:rgba(31,125,162,.25)}
 .os[data-theme="light"] .toast{background:#ffffff;color:#16394d;border-color:rgba(20,146,191,.25)}
 
 @media (max-width:720px){
   .themeSwitch{width:42px;height:42px;flex:0 0 42px}
   .themeChoices{display:grid;grid-template-columns:1fr 1fr}
   .themeChoices button{justify-content:center;min-height:48px}
+  .dailyTabs{display:grid;width:100%}
 }
 button:disabled{cursor:not-allowed;opacity:.48}

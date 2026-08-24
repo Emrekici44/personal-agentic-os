@@ -9,7 +9,7 @@ export type ProgressItem = {
 };
 
 export const systemProgress = {
-  currentPhase: "Meilenstein geprüft · physischer Retest offen",
+  currentPhase: "Bedienkern physisch abgenommen · Datenmigration gesperrt",
   lastVerifiedAt: "24.08.2026 · Europe/Berlin",
   items: [
     {
@@ -99,22 +99,29 @@ export const systemProgress = {
     {
       id: "ui-truth",
       label: "Globale Bedienwahrheit und responsive UX",
-      evidence: "Buttons, Status, Kalender, Companion, Theme und Mockgrenzen",
+      evidence: "AST-Buttonaudit · echte Tagesdaten · Status-, Theme- und Mockgrenzen",
       href: "#home",
       status: "complete",
     },
     {
       id: "final-verification",
       label: "Desktop-/Expo-Abnahme und privater Push",
-      evidence: "Tests, Builds, Inhaltsaudit und physischer Retest",
+      evidence: "Tests, Builds, Inhaltsaudit und physische iPhone-Abnahme",
       href: "#settings",
       status: "complete",
     },
     {
       id: "iphone-retest",
       label: "Aktualisierte Oberfläche auf dem iPhone bestätigen",
-      evidence: "Browser 390×844 grün · physisches Gerät benötigt Emre",
+      evidence: "Von Emre nach vollständigem Expo-Neustart physisch bestätigt",
       href: "#home",
+      status: "complete",
+    },
+    {
+      id: "migration-boundary",
+      label: "PostgreSQL-Ziel und reale Datenmigration entscheiden",
+      evidence: "Kein Account, Container oder Datentransfer ohne separate Freigabe",
+      href: "#settings",
       status: "user_action",
     },
   ] as ProgressItem[],

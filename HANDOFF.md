@@ -15,14 +15,14 @@ Project root: `outputs/agentic-os`. Private source remote: `https://github.com/E
 - Existing Vault notes remain unchanged.
 - PostgreSQL PoC is files-only and deliberately inactive. Docker/Podman/psql were not installed.
 - Graphify is not installed.
+- Physical iPhone navigation acceptance passed after the private-origin/hydration repair. No new QR was required.
 
 ## Immediate continuation
 
-1. Run root tests/lint/build plus Electron and Expo checks after the final UI/docs changes.
-2. Reload the local app and verify desktop + 390×844: no overflow/errors; navigation, drawer, Calendar bounded-read UI and Light/Dark work.
-3. Perform tracked-content and secret audit.
-4. Commit coherent UI/truth/theme work, then research/PoC/docs if splitting remains useful; push private `main`.
-5. Ask Emre only for the physical iPhone retest or a gated database/Graphify/migration decision.
+1. Finish root/Electron/Expo checks and the tracked-content/secret audit for the shared daily workspace and real knowledge audit.
+2. Commit and push that coherent verified milestone to private `main`.
+3. Continue only with ungated local documentation/audit work.
+4. Ask Emre before any PostgreSQL target/account, real migration, Vault mutation, Graphify installation or new external connector activation.
 
 ## Non-negotiable boundaries
 

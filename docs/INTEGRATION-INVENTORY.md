@@ -6,7 +6,7 @@ Stand: 24.08.2026. Status bedeutet nur dann „Online“, wenn die laufende App 
 |---|---|---|---|---|
 | Google Calendar | Direkte Google OAuth/API | API selbst für diesen Umfang ohne aktivierte Abrechnung; Kontingente gelten | Kalenderliste + Lesen; Event Create/Update nur nach exakter Einzelvorschau; Delete/ACL/Sharing gesperrt | Verbunden und kontrolliert; keine weiteren Writes beauftragt |
 | Emre Obsidian Vault | Lokaler Dateiadapter | Kostenlos | Metadaten/Links read-only; bestehende Notizen nur nach Migrationsvorschau und Freigabe ändern | Read-only Index verifiziert: 27 Markdown, 37 Links, 34 Beziehungen |
-| Tailscale | Offizieller Client + Serve, kein Funnel | Personal-Nutzung kostenlos gemäß bestehender Konfiguration | Privates Tailnet; Laptop muss erreichbar sein | Einrichtung und iPhone-Pfad physisch bestätigt; UI-Laufzeitstatus wird noch nicht dynamisch geprüft |
+| Tailscale | Offizieller Client + Serve, kein Funnel | Personal-Nutzung kostenlos gemäß bestehender Konfiguration | Privates Tailnet; Laptop muss erreichbar sein | Einrichtung und iPhone-Pfad physisch bestätigt; Launcher prüft vor Expo einen JavaScript-Abruf vom exakten privaten Origin |
 | ChatGPT Companion | Link zur ChatGPT-App + bewusster Zusammenfassungsimport | Im bestehenden Abo; keine API-Behauptung | Kein Verlaufsscraping, nur manuell ausgewählter Text | Funktionaler manueller Import in gemeinsame Inbox |
 | OpenAI API | Responses API, serverseitiger Schlüssel | Nutzungsbasiert | Schlüssel nie im Client; Kill Switch + Limits + Kostenfreigabe vor Aktivierung | Deaktiviert/unconfigured |
 | Lokales Modell | Später Ollama-kompatibler Provider | Keine Kosten pro Call, aber lokale Ressourcen | Hardware-/ARM-Kompatibilität und Modelllizenz zuerst prüfen | Nicht konfiguriert |

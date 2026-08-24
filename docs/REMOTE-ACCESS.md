@@ -33,4 +33,4 @@ Double-click `Agentic OS - Privat stoppen.cmd` to stop only the Agentic OS loopb
 
 ## Current verification boundary
 
-The official Windows ARM64 client is installed. Private Serve, MagicDNS HTTPS, the Tailscale Expo QR, and cellular access must remain labeled unverified until Windows reports `Running/Connected` and each check succeeds.
+The official Windows ARM64 client is installed. Private Serve and MagicDNS HTTPS are verified tailnet-only, and Emre physically accepted the Expo UI and navigation after the interactive-origin repair. A fully independent cellular-away-from-home reliability test remains a separate operational check; no public access is implied.

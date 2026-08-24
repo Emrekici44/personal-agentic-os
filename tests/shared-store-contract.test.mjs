@@ -19,3 +19,15 @@ test('shared theme preference is authenticated, validated and audited',async()=>
   assert.match(store,/\['dark','light'\]/);
   assert.match(store,/preference\.update/);
 });
+
+test('audit feed exposes only action metadata behind the private session',async()=>{
+  const [store,route]=await Promise.all([
+    readFile(new URL('../lib/shared-store.ts',import.meta.url),'utf8'),
+    readFile(new URL('../app/api/state/audit/route.ts',import.meta.url),'utf8'),
+  ]);
+  const auditFunction=store.slice(store.indexOf('export function listAuditEntries'),store.indexOf('const preferenceIds'));
+  assert.match(store,/SELECT action,entity_type,created_at FROM audit_log/);
+  assert.doesNotMatch(auditFunction,/metadata_json|entity_id/);
+  assert.match(route,/verifyLocalSession/);
+  assert.match(route,/personalContentExposed: false/);
+});

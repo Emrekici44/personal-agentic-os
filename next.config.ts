@@ -10,6 +10,7 @@ if (privateHost) allowedDevOrigins.push(privateHost);
 const nextConfig: NextConfig = {
   allowedDevOrigins,
   devIndicators: false,
+  distDir: process.env.AGENTIC_OS_BUILD_DIR || ".next",
   turbopack: { root: process.cwd() },
 };
 

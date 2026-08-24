@@ -10,13 +10,16 @@
 - Shared operational SQLite bridge with signed private API, migrations, WAL, encryption helper, audit and migration-preview gate.
 - Real shared projects/tasks/inbox/agent/skill/journal-metadata flows.
 - Global progress checklist without invented percentages.
+- Global native-button audit enforced by AST test; private Tailscale/Expo hydration guard physically accepted on iPhone.
+- Unified daily workspace with shared tasks, persistent habits and encrypted journal completion.
+- Real content-free shared-store audit in Knowledge; static activity claims removed.
 
-## Active – Bedienwahrheit and responsive refinement
+## Complete – Bedienwahrheit and responsive refinement
 
 - Complete button/status/demo audit and keep every visible action truthful.
 - Reduce desktop density while preserving the left navigation; maintain high-quality touch/mobile layouts.
 - Share Light/Dark preference across server-backed clients.
-- Re-run full web/Electron/Expo verification and obtain a physical iPhone retest when Emre is available.
+- Full web/Electron/Expo verification and physical iPhone navigation retest completed.
 
 ## Decision-ready, not activated
 
