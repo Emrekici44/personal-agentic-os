@@ -1,5 +1,15 @@
 # Current state
 
+## Superseded pause checkpoint — 2026-08-24 Europe/Berlin
+
+This checkpoint was recorded, then immediately superseded by the user's correction to continue working. Services were not stopped. The user-owned Desktop shortcut `C:\Users\ekici\Desktop\Agentic OS.lnk` exists, targets the verified `Agentic OS - Laptop starten.cmd`, and uses this project root as its working directory. A double-click is sufficient to start the current hardened Electron desktop client and its local Next.js backend.
+
+Google Calendar is `configured=true`, `connected=false`, requests only `calendar.readonly`, and has writes disabled. The visible Google flow is paused at account selection for Emre Ekici; no account or consent click was performed by the agent. OAuth credentials remain only in git-ignored `.env.local`. The original downloaded Google OAuth JSON remains recoverably in the user's Downloads folder and must not be deleted until the read-only connection succeeds.
+
+The Emre vault adapter remains read-only and last verified 27 Markdown notes, 37 local links, and 34 resolved relationships without logging note bodies or modifying vault content. Tailscale remains installed and configured, with the private Serve route recorded as tailnet-only. Next and Electron remain active; Expo/Metro remains intentionally inactive because it is unnecessary for the Calendar consent step.
+
+Private GitHub `main` includes the Windows PowerShell OAuth importer compatibility fix and was clean/current before this checkpoint documentation commit. No secrets, environment files, vault contents, credential JSON, databases, screenshots, or personal runtime state are tracked.
+
 ## Durable checkpoint — 2026-08-23 Europe/Berlin
 
 The complete responsive command center uses an original dark futuristic blue/cyan system with persistent left desktop navigation and touch-friendly mobile bottom navigation. Emre is the verified local user identity and the avatar is exactly `E`. Life areas retain controlled secondary accents. Implemented surfaces include command center, faith, split career, health analytics, finance, relationship constellation, flexible projects, journal, habits/tasks/checklists, universal inbox, agents, skills, ChatGPT Companion Mode, integrations, knowledge graph, Usage & Limits, provider cost guard, PWA, and editable temporary branding.

@@ -1,5 +1,15 @@
 # Roadmap
 
+## Active user boundary — 2026-08-24
+
+- Desktop ownership: `Agentic OS.lnk` on Emre's Desktop targets the verified launcher; complete.
+- Emre vault read-only preview: 27 notes, 37 links, 34 resolved relationships; complete and unchanged.
+- Google OAuth local configuration: complete and git-ignored.
+- Google Calendar live connection: active at Emre Ekici account selection; read-only consent pending user action.
+- Google Calendar writes: disabled and out of scope.
+- Tailscale: installed/configured with Serve tailnet-only; local backend and Electron remain active.
+- Next resume milestone: user completes account selection/read-only consent, then verify connected status, selected calendars, and bounded eight-day reads.
+
 ## Expanded end-state checkpoint
 
 - Complete color-accented multi-domain UI and mobile-first navigation: implemented

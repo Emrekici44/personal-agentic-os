@@ -1,5 +1,13 @@
 # Resume handoff
 
+## Active Google Calendar boundary — 2026-08-24
+
+The initially requested pause was immediately cancelled by the user. Next and Electron remain active, and the existing Tailscale Serve configuration can reach the app without enabling Funnel or changing Windows power settings. The verified Desktop shortcut remains available for future starts.
+
+After the desktop loads, open `http://localhost:3000/api/calendar/connect` if the preserved Google tab is no longer available. Stop at the Google-owned screen and let Emre select the displayed `Emre Ekici` account and personally approve only the read-only Calendar consent. Expected status before that click is exactly: `configured=true`, `connected=false`, permission `calendar.readonly`, writes disabled. Never expose `.env.local`, print credentials, or delete the downloaded OAuth JSON before successful connection verification.
+
+Last real-vault evidence: 27 Markdown notes, 37 local links, and 34 resolved relationships, read-only. Tailscale installation and tailnet-only Serve configuration remain in place. Private GitHub `main` is the source-of-truth checkpoint.
+
 ## Current checkpoint
 
 Resume in `outputs/agentic-os`. The web/PWA, Electron desktop shell, and Expo Go companion share one Next.js product UI. Physical Expo launch, mobile navigation, and private Tailscale Serve are verified. Emre accepted dashboard/navigation over the Tailscale Expo route in the current hotspot topology; a true separate-network cellular test remains deferred. Exact local/Tailscale addresses are runtime-only and must never be committed.
@@ -33,3 +41,5 @@ The private repository is `https://github.com/Emrekici44/personal-agentic-os`. P
 3. The Obsidian read/index health connection is live. Any next write synchronization must show an exact diff, require approval for every write, audit, and backup.
 4. Perform the user-owned Google OAuth credential/consent step for read-only selected-calendar access and verify the eight-day boundary. Credentials belong only in local/server configuration, never chat or Git.
 5. Treat any future Google write scope, API spending, installer signing, or public/cloud deployment as a new explicit approval boundary.
+
+Current action: wait for Emre to select the visible Google account, then verify read-only consent and connection.
