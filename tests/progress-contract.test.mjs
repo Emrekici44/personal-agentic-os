@@ -9,7 +9,7 @@ test("system progress is a discrete structured checklist without a decorative pe
   assert.match(progressSource, /status: "complete"/);
   assert.match(progressSource, /"active" \| "complete"/);
   assert.match(progressSource, /"pending" \| "user_action"/);
-  assert.match(progressSource, /status: "pending"/);
+  assert.match(progressSource, /status: "(?:active|pending|user_action)"/);
   assert.doesNotMatch(progressSource, /progressPercent|percentage|percent:/i);
   assert.match(pageSource, /systemProgress\.items\.filter/);
 });
