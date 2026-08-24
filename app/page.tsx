@@ -1644,6 +1644,8 @@ function Inbox({ note }: any) {
 function Integrations({ note }: any) {
   const [loaded, setLoaded] = useState(false),
     [proposed, setProposed] = useState(false),
+    [liveCalendars, setLiveCalendars] = useState<any[]>([]),
+    [eventPreview, setEventPreview] = useState<any>(null),
     [vaultStatus, setVaultStatus] = useState<any>({ status: "unconfigured" }),
     [calendarStatus, setCalendarStatus] = useState<any>({
       configured: false,
@@ -1661,7 +1663,20 @@ function Integrations({ note }: any) {
       .catch(() =>
         setCalendarStatus({ configured: false, connected: false, mode: "mock" }),
       );
+    fetch("/api/calendar/calendars", { cache: "no-store" })
+      .then((response) => response.json())
+      .then((data) => setLiveCalendars(data.calendars || []))
+      .catch(() => setLiveCalendars([]));
   }, []);
+  const prepareFirstEvent = async () => {
+    const target = liveCalendars.find((calendar) => calendar.writable && /training|gesundheit|health|fitness/i.test(calendar.summary)) || liveCalendars.find((calendar) => calendar.writable && calendar.primary);
+    if (!target) return note("Kein eindeutig beschreibbarer Trainings- oder Primärkalender verfügbar");
+    const change = { action: "create", calendarId: target.id, title: "Kurzes Training Push", start: "2026-08-24T21:00:00+02:00", end: "2026-08-24T21:30:00+02:00", idempotencyKey: "agentic-os:2026-08-24:kurzes-training-push" };
+    const response = await fetch("/api/calendar/write-proposal", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ change, selectedCalendarIds: [target.id] }) });
+    const proposal = await response.json();
+    if (!response.ok) return note(proposal.error || "Vorschlag konnte nicht erstellt werden");
+    setEventPreview({ ...proposal, calendarName: target.summary, timezone: "Europe/Berlin" });
+  };
   return (
     <>
       <Intro
@@ -1701,6 +1716,11 @@ function Integrations({ note }: any) {
             Lesen + kontrollierte Event-Writes freigeben <I.ExternalLink />
           </a>
         )}
+        {calendarStatus.eventWriteReady && !calendarStatus.sharedWithDesktop && (
+          <button className="btn soft" onClick={async () => { const response = await fetch("/api/calendar/share-local-session", { method: "POST" }); if (response.ok) setCalendarStatus((current: any) => ({ ...current, sharedWithDesktop: true })); }}>
+            Verbindung verschlüsselt für Desktop übernehmen
+          </button>
+        )}
         <div className="flow">
           <div>
             <b>1 · Kalender</b>
@@ -1739,9 +1759,15 @@ function Integrations({ note }: any) {
                 : "Keine Änderung vorbereitet"}
             </p>
             <Btn
-              disabled
+              disabled={!eventPreview}
+              onClick={async () => {
+                if (!eventPreview) return;
+                const response = await fetch("/api/calendar/write", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ approvalToken: eventPreview.approvalToken, confirmation: "DIESEN_TERMIN_JETZT_SCHREIBEN" }) });
+                const result = await response.json();
+                note(response.ok ? "Termin nach Einzelbestätigung geschrieben · Audit gespeichert" : result.error || "Kalenderwrite abgelehnt");
+              }}
             >
-              Einzelwrite erst nach exakter Vorschau
+              {eventPreview ? "DIESEN TERMIN JETZT SCHREIBEN" : "Einzelwrite erst nach exakter Vorschau"}
             </Btn>
           </div>
         </div>
@@ -1749,6 +1775,16 @@ function Integrations({ note }: any) {
           <I.ShieldCheck />
           Keine Hintergrundwrites. Create/Update nur nach exakter Einzelvorschau und Bestätigung; Duplikatschutz + Audit aktiv. Deletes bleiben deaktiviert.
         </small>
+        {calendarStatus.eventWriteReady && (
+          <div className="setupBoundary">
+            <I.CalendarDays />
+            <span>
+              <b>Erster kontrollierter Vorschautest</b>
+              <button onClick={prepareFirstEvent}>Vorschau erzeugen · nichts schreiben</button>
+              {eventPreview && <span role="status" aria-live="polite">{eventPreview.calendarName} · Kurzes Training Push · 24.08.2026 · 21:00–21:30 · Europe/Berlin · Create · 0 Writes · Duplikatschutz aktiv · Freigabe gültig bis {new Date(eventPreview.expiresAt).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Berlin" })} Europe/Berlin</span>}
+            </span>
+          </div>
+        )}
       </Card>
       <div className="connections">
         {[

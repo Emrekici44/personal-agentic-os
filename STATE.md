@@ -1,5 +1,13 @@
 # Current state
 
+## Clean implementation handoff — 2026-08-24
+
+The explicitly approved Google Calendar event `Kurzes Training Push` was created once in the writable `Training` calendar for 2026-08-24 21:00–21:30 Europe/Berlin. It was read back through the bounded API and matched exactly; the local audit record confirms approved create plus idempotency evidence. No other event change and no delete occurred.
+
+Electron is the primary user interface and remains usable in the foreground. The OAuth token is encrypted in git-ignored local state so browser, Electron, and Expo can use the same laptop connector without exposing credentials. The user is now defining the next master task list; no further speculative product/UI work should occur until that list is approved.
+
+The started shared-state foundation is checkpointed but contains no migrated user data: Node 24 built-in `node:sqlite`, versioned transactional schema, WAL, explicit operational tables, signed private API session, localStorage inventory/conflict preview, sensitive-field encryption helper, and local backup/restore preview. Existing device localStorage has not been imported or merged. The Vault normalization endpoint is preview-only; existing 27 notes remain unchanged. The current development process lacks the vault environment variable, so live normalization counts must be re-run after starting through the verified launcher that supplies the authorized vault path.
+
 ## Superseded pause checkpoint — 2026-08-24 Europe/Berlin
 
 This checkpoint was recorded, then immediately superseded by the user's correction to continue working. Services were not stopped. The user-owned Desktop shortcut `C:\Users\ekici\Desktop\Agentic OS.lnk` exists, targets the verified `Agentic OS - Laptop starten.cmd`, and uses this project root as its working directory. A double-click is sufficient to start the current hardened Electron desktop client and its local Next.js backend.

@@ -47,6 +47,29 @@ export type VaultPreview = {
   writesEnabled: false;
 };
 
+const agentSchemaFields=["id","type","source","created","updated","life_area","project","person","status","privacy"] as const;
+
+export async function previewVaultNormalization(){
+  const preview=await readVaultPreview();
+  const missingByField=Object.fromEntries(agentSchemaFields.map(field=>[field,preview.notes.filter(note=>!note.frontmatterKeys.includes(field)).length]));
+  return{
+    vault:preview.rootLabel,
+    existingNotes:preview.noteCount,
+    existingNotesModified:0,
+    proposedMoves:0,
+    proposedRenames:0,
+    proposedMetadataAdditions:Object.values(missingByField).reduce((sum,count)=>sum+count,0),
+    missingByField,
+    stableSchema:[...agentSchemaFields,"relationships","backlinks","provenance","audit"],
+    flow:"Inbox → review/normalize → approved write",
+    sensitiveAreas:["faith","finance","health","relationships","personal"],
+    sensitiveWritesRequireApproval:true,
+    backupPlan:{beforeAnyExistingNoteWrite:true,format:"timestamped local vault backup manifest + changed-file copies",location:"outside Git under local-state/backups/vault"},
+    status:"review_required",
+    writesPerformed:false,
+  };
+}
+
 function parseScalar(raw: string): string | number | boolean {
   const value = raw.trim().replace(/^['"]|['"]$/g, "");
   if (/^(true|false)$/i.test(value)) return value.toLowerCase() === "true";

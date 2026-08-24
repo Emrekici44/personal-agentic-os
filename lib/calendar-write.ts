@@ -28,7 +28,8 @@ export function validateCalendarChange(change: CalendarChange) {
 export function createApproval(change: CalendarChange, selectedCalendarIds: string[]) {
   const exact = validateCalendarChange(change);
   if (!selectedCalendarIds.includes(exact.calendarId)) throw new Error('Zielkalender ist nicht ausdrücklich ausgewählt');
-  return seal(JSON.stringify({ change: exact, expiresAt: Date.now() + 15 * 60_000, nonce: crypto.randomUUID() }));
+  const expiresAt = Date.now() + 15 * 60_000;
+  return { approvalToken: seal(JSON.stringify({ change: exact, expiresAt, nonce: crypto.randomUUID() })), expiresAt: new Date(expiresAt).toISOString() };
 }
 
 export function consumeApproval(token: string, confirmation: string) {

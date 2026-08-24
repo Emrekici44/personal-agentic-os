@@ -1,5 +1,9 @@
 # Resume handoff
 
+## Awaiting approved master task list — 2026-08-24
+
+Keep the current Electron/Next services usable and make no further speculative UI or feature changes. Calendar create verification is complete. Shared SQLite/Vault normalization foundations are committed with zero localStorage imports and zero existing-vault mutations. Resume only from the originating thread's approved master list; first restore the vault path through the standard launcher, then re-run the read-only normalization preview before requesting any migration approval.
+
 ## Active Google Calendar boundary — 2026-08-24
 
 The initially requested pause was immediately cancelled by the user. Next and Electron remain active, and the existing Tailscale Serve configuration can reach the app without enabling Funnel or changing Windows power settings. The verified Desktop shortcut remains available for future starts.
