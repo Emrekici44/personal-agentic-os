@@ -211,6 +211,18 @@ test("planner invalidates stale plans and exact approvals when source certainty 
   assert.match(page, /!plan && status\.state === "ready"/);
 });
 
+test("vault previews and audit history fail closed across reload and transport loss", async () => {
+  const page = await readFile(pagePath, "utf8");
+  assert.match(page, /setVault\(\{ status: "loading" \}\)/);
+  assert.match(page, /setAudit\(\{ status: "loading", entries: \[\] \}\)/);
+  assert.match(page, /setWriteFlow\(\{state:"loading",proposals:\[\]\}\);setActiveProposalId\(""\);setApprovalToken\(""\);setConfirmation\(""\)/);
+  assert.match(page, /writeFlow\.state!=="online"\|\|!connected\)throw new Error\("Private Vault-Vorschauquelle ist nicht schreibbereit"\)/);
+  assert.match(page, /invalidateWriteFlow\("Private Vault-Vorschauquelle nicht erreichbar"\)/);
+  assert.match(page, /proposalInputValid=connected&&writeFlow\.state==="online"/);
+  assert.match(page, /!activeProposal&&writeFlow\.state==="online"/);
+  assert.match(page, /audit\.status === "online" && audit\.entries\.map/);
+});
+
 test("knowledge search stays inside the signed metadata-only vault preview", async () => {
   const [page, route] = await Promise.all([
     readFile(pagePath, "utf8"),

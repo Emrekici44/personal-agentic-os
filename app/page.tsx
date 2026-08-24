@@ -1866,9 +1866,10 @@ function Brain() {
   const [knowledgeQuery,setKnowledgeQuery]=useState("");
   const [writeFlow,setWriteFlow]=useState<any>({state:"loading",proposals:[]}),[writeMode,setWriteMode]=useState<"new_system_note"|"normalize_existing_note">("new_system_note"),[writeDraft,setWriteDraft]=useState<any>({title:"",body:"",noteType:"inbox",privacy:"private",relativePath:"",lifeArea:""}),[activeProposalId,setActiveProposalId]=useState(""),[approvalToken,setApprovalToken]=useState(""),[confirmation,setConfirmation]=useState(""),[writeBusy,setWriteBusy]=useState(false),[writeError,setWriteError]=useState("");
   const loadVault = useCallback(async () => {
-    setVault((current: any) => ({ ...current, status: "loading" }));
+    setVault({ status: "loading" });
     try {
-      await fetch("/api/state/session", { method: "POST" });
+      const session = await fetch("/api/state/session", { method: "POST" });
+      if (!session.ok) throw new Error();
       const response = await fetch("/api/obsidian/status", { cache: "no-store" });
       if (!response.ok) throw new Error();
       setVault(await response.json());
@@ -1877,9 +1878,10 @@ function Brain() {
     }
   }, []);
   const loadAudit = useCallback(async () => {
-    setAudit((current: any) => ({ ...current, status: "loading" }));
+    setAudit({ status: "loading", entries: [] });
     try {
-      await fetch("/api/state/session", { method: "POST" });
+      const session = await fetch("/api/state/session", { method: "POST" });
+      if (!session.ok) throw new Error();
       const response = await fetch("/api/state/audit", { cache: "no-store" });
       if (!response.ok) throw new Error();
       const result = await response.json();
@@ -1888,7 +1890,7 @@ function Brain() {
       setAudit({ status: "error", entries: [] });
     }
   }, []);
-  const loadWriteFlow=useCallback(async()=>{try{await fetch("/api/state/session",{method:"POST"});const response=await fetch("/api/obsidian/write-proposals",{cache:"no-store"}),result=await response.json();if(!response.ok)throw new Error(result.error);setWriteFlow({state:"online",...result});setActiveProposalId(current=>current||result.proposals?.[0]?.id||"")}catch(cause){setWriteFlow({state:"error",proposals:[]});setWriteError(cause instanceof Error?cause.message:"Vault-Vorschläge sind nicht erreichbar")}},[]);
+  const loadWriteFlow=useCallback(async()=>{setWriteFlow({state:"loading",proposals:[]});setActiveProposalId("");setApprovalToken("");setConfirmation("");try{const session=await fetch("/api/state/session",{method:"POST"});if(!session.ok)throw new Error();const response=await fetch("/api/obsidian/write-proposals",{cache:"no-store"}),result=await response.json();if(!response.ok)throw new Error(result.error);setWriteFlow({state:"online",...result});setActiveProposalId(result.proposals?.[0]?.id||"");setWriteError("")}catch(cause){setWriteFlow({state:"error",proposals:[]});setWriteError(cause instanceof Error?cause.message:"Vault-Vorschläge sind nicht erreichbar")}},[]);
   useEffect(() => {
     void loadVault();
     void loadAudit();
@@ -1916,9 +1918,11 @@ function Brain() {
     "vault_write.approve_preview": "Vault-Diff zur Apply-Grenze freigegeben",
   };
   const activeProposal=writeFlow.proposals.find((proposal:any)=>proposal.id===activeProposalId);
-  const generateVaultProposal=async()=>{setWriteBusy(true);setWriteError("");try{const response=await fetch("/api/obsidian/write-proposals",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({...writeDraft,proposalType:writeMode,expectedNoteCount:vault.noteCount})}),result=await response.json();if(!response.ok)throw new Error(result.error);setApprovalToken(result.approvalToken);setConfirmation("");await loadWriteFlow();setActiveProposalId(result.proposal.id)}catch(cause){setWriteError(cause instanceof Error?cause.message:"Diff-Vorschau konnte nicht erzeugt werden")}finally{setWriteBusy(false)}};
-  const approveVaultPreview=async()=>{if(!activeProposal||confirmation!==activeProposal.approvalPhrase)return;setWriteBusy(true);setWriteError("");try{const response=await fetch("/api/obsidian/write-proposals",{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({action:"approve_preview",proposalId:activeProposal.id,approvalToken,confirmation})}),result=await response.json();if(!response.ok)throw new Error(result.error);setApprovalToken("");setConfirmation("");await loadWriteFlow();setActiveProposalId(result.proposal.id)}catch(cause){setWriteError(cause instanceof Error?cause.message:"Vorschau-Freigabe fehlgeschlagen")}finally{setWriteBusy(false)}};
-  const proposalInputValid=connected&&(writeMode==="new_system_note"?String(writeDraft.title||"").trim().length>=2&&String(writeDraft.body||"").trim().length>=2:Boolean(writeDraft.relativePath));
+  const invalidateWriteFlow=(message:string)=>{setWriteFlow({state:"error",proposals:[]});setActiveProposalId("");setApprovalToken("");setConfirmation("");setWriteError(message)};
+  const writeProposalRequest=async(method:"POST"|"PATCH",body:any)=>{if(writeFlow.state!=="online"||!connected)throw new Error("Private Vault-Vorschauquelle ist nicht schreibbereit");let response:Response;try{response=await fetch("/api/obsidian/write-proposals",{method,headers:{"content-type":"application/json"},body:JSON.stringify(body)})}catch{invalidateWriteFlow("Private Vault-Vorschauquelle nicht erreichbar");throw new Error("Private Vault-Vorschauquelle nicht erreichbar")}let result:any;try{result=await response.json()}catch{invalidateWriteFlow("Ungültige Antwort der Vault-Vorschauquelle");throw new Error("Ungültige Antwort der Vault-Vorschauquelle")}if(!response.ok)throw new Error(result.error||"Vault-Vorschauanfrage abgelehnt");return result};
+  const generateVaultProposal=async()=>{setWriteBusy(true);setWriteError("");setActiveProposalId("");setApprovalToken("");setConfirmation("");try{const result=await writeProposalRequest("POST",{...writeDraft,proposalType:writeMode,expectedNoteCount:vault.noteCount});await loadWriteFlow();setActiveProposalId(result.proposal.id);setApprovalToken(result.approvalToken)}catch(cause){setWriteError(cause instanceof Error?cause.message:"Diff-Vorschau konnte nicht erzeugt werden")}finally{setWriteBusy(false)}};
+  const approveVaultPreview=async()=>{if(!activeProposal||confirmation!==activeProposal.approvalPhrase)return;setWriteBusy(true);setWriteError("");try{const result=await writeProposalRequest("PATCH",{action:"approve_preview",proposalId:activeProposal.id,approvalToken,confirmation});await loadWriteFlow();setActiveProposalId(result.proposal.id)}catch(cause){setApprovalToken("");setConfirmation("");setWriteError(cause instanceof Error?cause.message:"Vorschau-Freigabe fehlgeschlagen")}finally{setWriteBusy(false)}};
+  const proposalInputValid=connected&&writeFlow.state==="online"&&(writeMode==="new_system_note"?String(writeDraft.title||"").trim().length>=2&&String(writeDraft.body||"").trim().length>=2:Boolean(writeDraft.relativePath));
   return (
     <>
       <Intro eyebrow="WISSEN & SHARED MEMORY" title="Dein zweites Gedächtnis.">
@@ -1999,11 +2003,13 @@ function Brain() {
           {writeMode==="new_system_note"?<div className="vaultProposalForm"><label>Titel<input maxLength={100} value={writeDraft.title||""} onChange={event=>setWriteDraft({...writeDraft,title:event.target.value})} placeholder="Titel der neuen Systemnotiz"/></label><label>Zielbereich<select value={writeDraft.noteType||"inbox"} onChange={event=>setWriteDraft({...writeDraft,noteType:event.target.value})}><option value="inbox">00 Agentic OS/Inbox</option><option value="system">00 Agentic OS/System</option></select></label><label className="wide">Inhalt<textarea maxLength={10000} value={writeDraft.body||""} onChange={event=>setWriteDraft({...writeDraft,body:event.target.value})} placeholder="Bewusst gewählter Markdown-Inhalt …"/></label><label>Datenschutz<select value={writeDraft.privacy||"private"} onChange={event=>setWriteDraft({...writeDraft,privacy:event.target.value})}><option value="private">Privat</option><option value="sensitive">Sensibel</option><option value="system">System</option></select></label></div>:<div className="vaultProposalForm"><label className="wide">Notiz aus aktuellem Index<select value={writeDraft.relativePath||""} onChange={event=>setWriteDraft({...writeDraft,relativePath:event.target.value})}><option value="">Notiz wählen</option>{(vault.notes||[]).map((note:any)=><option key={note.relativePath} value={note.relativePath}>{note.title} · {note.relativePath}</option>)}</select></label><label>Typ<select value={writeDraft.noteType||"research"} onChange={event=>setWriteDraft({...writeDraft,noteType:event.target.value})}>{["system","inbox","project","journal","person","research","reflection"].map(type=><option key={type} value={type}>{type}</option>)}</select></label><label>Lebensbereich<select value={writeDraft.lifeArea||""} onChange={event=>setWriteDraft({...writeDraft,lifeArea:event.target.value})}><option value="">Keiner</option><option value="faith">Glaube</option><option value="career">Karriere</option><option value="health">Gesundheit</option><option value="finance">Finanzen</option><option value="relations">Beziehungen</option><option value="projects">Projekte</option></select></label><label>Datenschutz<select value={writeDraft.privacy||"private"} onChange={event=>setWriteDraft({...writeDraft,privacy:event.target.value})}><option value="private">Privat</option><option value="sensitive">Sensibel</option><option value="system">System</option></select></label></div>}
           <div className="workflowGate"><I.DatabaseBackup/><span><b>Vor jedem späteren Apply</b>Zielpfad, SHA-256, Konfliktfreiheit, Backupmanifest und Restore-Plan werden erneut geprüft.</span></div>
           <Btn onClick={!writeBusy&&proposalInputValid?generateVaultProposal:undefined}>{writeBusy?"Prüft lokal …":"Exakte Diff-Vorschau erzeugen"}<I.FileDiff/></Btn>
-          {writeError&&<p className="plannerError" role="alert"><I.TriangleAlert/>{writeError}</p>}
+          {writeFlow.state==="loading"&&<p role="status">Private Vorschauhistorie wird geladen …</p>}
+          {writeFlow.state==="error"?<RetryNotice message={writeError||"Vault-Vorschauen sind nicht erreichbar."} onRetry={loadWriteFlow} label="Vorschauen neu laden"/>:writeError&&<p className="plannerError" role="alert"><I.TriangleAlert/>{writeError}</p>}
         </Card>
         <Card className="vaultProposalReview">
           <div className="row"><div><Tag>DIFF · KONFLIKT · RESTORE</Tag><h3>{activeProposal?activeProposal.targetPath:"Noch keine Vorschau"}</h3></div>{activeProposal&&<em className={`runStatus ${activeProposal.status}`}>{activeProposal.status}</em>}</div>
-          {!activeProposal&&<div className="honestEmpty"><I.FileSearch/><span><b>Keine schreibende Aktion vorbereitet</b>Erzeuge bei Bedarf eine Vorschau. Der Vault bleibt unverändert.</span></div>}
+          {writeFlow.state==="loading"&&<p role="status">Diff-Stand wird geprüft …</p>}
+          {!activeProposal&&writeFlow.state==="online"&&<div className="honestEmpty"><I.FileSearch/><span><b>Keine schreibende Aktion vorbereitet</b>Erzeuge bei Bedarf eine Vorschau. Der Vault bleibt unverändert.</span></div>}
           {activeProposal&&<><div className="vaultProposalFacts"><span><b>{activeProposal.conflict?"Konflikt":"Konfliktfrei"}</b>Zielzustand geprüft</span><span><b>{activeProposal.indexedNoteCount}</b>Notizen beim Vorschauzeitpunkt</span><span><b>0</b>Vault-Writes</span><span><b>{activeProposal.unchangedBodyGuaranteed?"Ja":"Neue Datei"}</b>Bestehender Body unverändert</span></div>{activeProposal.conflict&&<p className="plannerError"><I.TriangleAlert/>{activeProposal.conflictReason}</p>}<pre className="vaultExactDiff" aria-label="Exakte Markdown-Diff-Vorschau">{activeProposal.exactDiff}</pre><div className="vaultPlans"><span><I.DatabaseBackup/><b>Backupplan</b><small>{activeProposal.backupPlan.strategy}</small><small>{activeProposal.backupPlan.destination}</small></span><span><I.RotateCcw/><b>Restore-Plan</b><small>{activeProposal.restorePlan.strategy}</small><small>Nie automatisch</small></span></div><div className="approvalBoundary"><I.ShieldAlert/><span><b>Vorschau-Freigabe ist nicht Apply</b>Der echte Schreibpfad existiert noch nicht. Der kurzlebige Token bleibt nur in dieser Sitzung.</span></div>{activeProposal.status==="review_required"&&approvalToken?<><label>Exakte Phrase<input autoComplete="off" value={confirmation} onChange={event=>setConfirmation(event.target.value)} placeholder={activeProposal.approvalPhrase}/></label><Btn onClick={!writeBusy&&confirmation===activeProposal.approvalPhrase?approveVaultPreview:undefined}>Nur Diff zur Apply-Grenze freigeben</Btn></>:activeProposal.status==="review_required"?<p className="statusNote"><I.Clock/>Token nicht mehr in dieser Sitzung verfügbar · identische Vorschau neu erzeugen.</p>:null}<button disabled title="Vault-Schreiben benötigt später eine neue ausdrückliche Aktionsfreigabe">Apply in Obsidian · gesperrt</button></>}
           {writeFlow.proposals.length>0&&<div className="vaultProposalHistory"><b>Vorschauverlauf</b>{writeFlow.proposals.map((proposal:any)=><button className={proposal.id===activeProposalId?"active":""} key={proposal.id} onClick={()=>{setActiveProposalId(proposal.id);setApprovalToken("");setConfirmation("")}}><span>{proposal.proposalType==="new_system_note"?"Neue Systemnotiz":"Normalisierung"}<small>v{proposal.version} · {proposal.status}</small></span><I.ChevronRight/></button>)}</div>}
         </Card>
@@ -2026,7 +2032,7 @@ function Brain() {
           {audit.status === "loading" && <p role="status">Audit wird geladen …</p>}
           {audit.status === "error" && <RetryNotice message="Audit ist gerade nicht erreichbar. Es werden keine Ersatzaktivitäten angezeigt." onRetry={loadAudit}/>}
           {audit.status === "online" && audit.entries.length === 0 && <p>Noch keine gemeinsamen Aktionen protokolliert.</p>}
-          {audit.entries.map((entry: any, index: number) => (
+          {audit.status === "online" && audit.entries.map((entry: any, index: number) => (
             <div className="audit" key={`${entry.createdAt}-${index}`}>
               <I.History />
               <span>
