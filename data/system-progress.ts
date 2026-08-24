@@ -9,7 +9,7 @@ export type ProgressItem = {
 };
 
 export const systemProgress = {
-  currentPhase: "Bedienkern physisch abgenommen · Datenmigration gesperrt",
+  currentPhase: "Echte Lebensbereiche bereit · Datenmigration gesperrt",
   lastVerifiedAt: "24.08.2026 · Europe/Berlin",
   items: [
     {
@@ -115,6 +115,13 @@ export const systemProgress = {
       label: "Aktualisierte Oberfläche auf dem iPhone bestätigen",
       evidence: "Von Emre nach vollständigem Expo-Neustart physisch bestätigt",
       href: "#home",
+      status: "complete",
+    },
+    {
+      id: "shared-life-areas",
+      label: "Echte gemeinsame Lebensbereiche",
+      evidence: "Glaube, Gesundheit, Finanzen, Beziehungen und Karriere · private Felder verschlüsselt",
+      href: "#areas",
       status: "complete",
     },
     {

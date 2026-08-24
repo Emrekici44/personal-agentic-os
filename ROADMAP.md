@@ -13,6 +13,7 @@
 - Global native-button audit enforced by AST test; private Tailscale/Expo hydration guard physically accepted on iPhone.
 - Unified daily workspace with shared tasks, persistent habits and encrypted journal completion.
 - Real content-free shared-store audit in Knowledge; static activity claims removed.
+- Real shared life-area records for faith, health, finance, relationships and split career; encrypted private fields, honest empty states and reversible archive.
 
 ## Complete – Bedienwahrheit and responsive refinement
 

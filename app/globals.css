@@ -3055,6 +3055,219 @@ textarea::placeholder {
   width: 17px;
 }
 
+.sourceLine,
+.privacyBoundary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: -7px 0 17px;
+  color: #91adbd;
+  font-size: 10px;
+}
+
+.sourceLine svg,
+.privacyBoundary svg {
+  width: 15px;
+  flex: 0 0 auto;
+  color: var(--domain-accent, var(--cyan));
+}
+
+.areaCount {
+  margin-top: auto;
+  color: color-mix(in srgb, var(--c, var(--cyan)) 76%, white);
+  font: 9px ui-monospace, "Cascadia Code", monospace;
+}
+
+.areaRecordEditor {
+  margin-bottom: 16px;
+  border-color: color-mix(in srgb, var(--domain-accent, var(--cyan)) 28%, transparent);
+}
+
+.areaRecordEditor > .row > button,
+.backButton {
+  border: 0;
+  background: transparent;
+  color: #9fc2d1;
+}
+
+.areaRecordEditor > .row > button svg {
+  width: 18px;
+}
+
+.areaFormGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 15px 0 10px;
+}
+
+.areaFormGrid label,
+.areaRecordEditor > label {
+  display: grid;
+  gap: 6px;
+  color: #8fa9ba;
+}
+
+.areaFormGrid input,
+.areaFormGrid select,
+.areaRecordEditor textarea {
+  min-width: 0;
+  border: 1px solid rgba(76, 176, 214, 0.18);
+  border-radius: 7px;
+  background: rgba(3, 13, 23, 0.72);
+  color: #dceff7;
+  padding: 10px 11px;
+}
+
+.areaRecordEditor textarea {
+  width: 100%;
+  min-height: 112px;
+}
+
+.editorActions {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  margin-top: 13px;
+}
+
+.editorActions > button:not(.btn) {
+  min-height: 38px;
+  border: 1px solid rgba(76, 176, 214, 0.18);
+  border-radius: 7px;
+  background: transparent;
+  color: #9fc2d1;
+  padding: 8px 12px;
+}
+
+.editorActions > button.dangerQuiet {
+  border-color: rgba(255, 117, 158, 0.22);
+  color: #ff9bb8;
+}
+
+.trueEmpty {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.trueEmpty > svg {
+  width: 32px;
+  color: var(--domain-accent, var(--cyan));
+}
+
+.trueEmpty > div {
+  flex: 1;
+}
+
+.trueEmpty h3,
+.trueEmpty p {
+  margin: 5px 0 0;
+}
+
+.areaRecordGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.areaRecordCard {
+  display: grid;
+  min-height: 132px;
+  align-content: start;
+  gap: 13px;
+  border: 1px solid rgba(73, 177, 218, 0.16);
+  border-radius: 8px;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--domain-accent, var(--cyan)) 6%, #0b1c2b), rgba(6, 17, 29, 0.96));
+  color: #e7f8fe;
+  padding: 15px;
+  text-align: left;
+}
+
+.areaRecordCard:hover,
+.areaRecordCard:focus-visible {
+  border-color: color-mix(in srgb, var(--domain-accent, var(--cyan)) 55%, transparent);
+  box-shadow: 0 0 22px color-mix(in srgb, var(--domain-accent, var(--cyan)) 11%, transparent);
+}
+
+.areaRecordCard > span {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.areaRecordCard > span > i {
+  color: #8098a8;
+  font: normal 8px ui-monospace, monospace;
+  text-transform: uppercase;
+}
+
+.areaRecordCard > b {
+  font-size: 14px;
+}
+
+.areaRecordCard > small {
+  color: #7791a2;
+}
+
+.areaRecordDetail {
+  max-width: 780px;
+}
+
+.areaRecordDetail h2 {
+  margin: 18px 0;
+}
+
+.recordDetails {
+  min-height: 72px;
+  border-left: 2px solid var(--domain-accent, var(--cyan));
+  padding: 10px 14px;
+  white-space: pre-wrap;
+}
+
+.careerRecordsSplit {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  overflow: hidden;
+  border: 1px solid rgba(73, 177, 218, 0.16);
+  border-radius: 8px;
+  background: rgba(7, 19, 32, 0.88);
+}
+
+.careerRecordsSplit > section {
+  min-width: 0;
+  padding: 20px;
+}
+
+.careerRecordsSplit > section + section {
+  border-left: 1px solid rgba(255, 174, 82, 0.16);
+  background: linear-gradient(135deg, rgba(255, 174, 82, 0.045), rgba(7, 19, 32, 0.9));
+}
+
+.careerRecordsSplit .areaRecordGrid {
+  grid-template-columns: 1fr;
+  margin-top: 14px;
+}
+
+.careerRecordsSplit .pathTitle > button {
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgba(255, 174, 82, 0.2);
+  border-radius: 7px;
+  background: rgba(255, 174, 82, 0.06);
+  color: #ffc17c;
+}
+
+.careerRecordsSplit .pathTitle > button svg {
+  width: 16px;
+}
+
+.columnEmpty {
+  margin: 20px 0 0;
+  color: #7891a1;
+  font-size: 10px;
+}
+
 .skilltable {
   border-color: rgba(67, 181, 224, 0.17);
   border-radius: 8px;
@@ -3809,6 +4022,17 @@ textarea::placeholder {
 .os[data-theme="light"] .mobileNav button.active{color:#0879ac;background:rgba(25,160,211,.08)}
 .os[data-theme="light"] .dailyTabs{background:rgba(232,245,249,.8);border-color:rgba(31,125,162,.16)}
 .os[data-theme="light"] .dailyTabs button.active{background:#fff;color:#0879ac;border-color:rgba(31,125,162,.25)}
+.os[data-theme="light"] .sourceLine,
+.os[data-theme="light"] .privacyBoundary{color:#5e7788}
+.os[data-theme="light"] .areaRecordEditor input,
+.os[data-theme="light"] .areaRecordEditor select,
+.os[data-theme="light"] .areaRecordEditor textarea{background:#fff;color:#16394d;border-color:rgba(31,125,162,.2)}
+.os[data-theme="light"] .areaRecordCard{background:#fff;color:#16394d;border-color:rgba(31,125,162,.16);box-shadow:0 8px 22px rgba(32,77,101,.06)}
+.os[data-theme="light"] .careerRecordsSplit{background:#fff;border-color:rgba(31,125,162,.16)}
+.os[data-theme="light"] .careerRecordsSplit>section+section{background:#fffaf4}
+.os[data-theme="light"] .editorActions>button:not(.btn),
+.os[data-theme="light"] .areaRecordEditor>.row>button,
+.os[data-theme="light"] .backButton{color:#3e687d;border-color:rgba(31,125,162,.18)}
 .os[data-theme="light"] .toast{background:#ffffff;color:#16394d;border-color:rgba(20,146,191,.25)}
 
 @media (max-width:720px){
@@ -3816,5 +4040,15 @@ textarea::placeholder {
   .themeChoices{display:grid;grid-template-columns:1fr 1fr}
   .themeChoices button{justify-content:center;min-height:48px}
   .dailyTabs{display:grid;width:100%}
+  .areaFormGrid{grid-template-columns:1fr}
+  .areaRecordGrid{grid-template-columns:1fr}
+  .careerRecordsSplit{grid-template-columns:1fr}
+  .careerRecordsSplit>section+section{border-top:1px solid rgba(255,174,82,.16);border-left:0}
+  .trueEmpty{align-items:flex-start;flex-direction:column}
+  .trueEmpty .btn{width:100%;justify-content:center}
+  .editorActions{align-items:stretch;flex-direction:column}
+  .editorActions .btn,
+  .editorActions>button:not(.btn){width:100%;justify-content:center;min-height:46px}
+  .areaRecordCard{min-height:112px}
 }
 button:disabled{cursor:not-allowed;opacity:.48}

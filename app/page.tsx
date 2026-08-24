@@ -21,33 +21,33 @@ type View =
   | "brain"
   | "settings";
 const areas = [
-  ["faith", "Glaube", "#a887d4", "Übersichtsvorlage", I.MoonStar],
+  ["faith", "Glaube", "#a887d4", "Private gemeinsame Einträge", I.MoonStar],
   [
     "career",
     "Karriere",
     "#df9a52",
-    "Zwei berufliche Wege",
+    "Angestellt und Selbstständigkeit",
     I.BriefcaseBusiness,
   ],
   [
     "health",
     "Gesundheit",
     "#5fae8d",
-    "Noch keine Datenquelle",
+    "Training, Erholung und Messwerte",
     I.HeartPulse,
   ],
   [
     "finance",
     "Finanzen",
     "#6098c8",
-    "Noch kein Konto verbunden",
+    "Manuell, privat und ohne Transaktionen",
     I.WalletCards,
   ],
   [
     "relations",
     "Beziehungen",
     "#dc7f91",
-    "Private Beispielansicht",
+    "Menschen und Kontaktpflege",
     I.UsersRound,
   ],
   ["projects", "Projekte", "#d1a33c", "Gemeinsame Daten öffnen", I.LayoutGrid],
@@ -97,7 +97,8 @@ function useSharedRecords(kind:string){
   useEffect(()=>{load()},[load]);
   const create=async(data:any)=>{const response=await fetch(`/api/state/records/${kind}`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(data)});const result=await response.json();if(!response.ok)throw new Error(result.error||'Speichern fehlgeschlagen');await load();return result};
   const update=async(data:any)=>{const response=await fetch(`/api/state/records/${kind}`,{method:'PATCH',headers:{'content-type':'application/json'},body:JSON.stringify(data)});const result=await response.json();if(!response.ok)throw new Error(result.error||'Aktualisieren fehlgeschlagen');await load();return result};
-  return{records,state,create,update,reload:load};
+  const archive=async(id:string)=>{const response=await fetch(`/api/state/records/${kind}?id=${encodeURIComponent(id)}`,{method:'DELETE'});const result=await response.json();if(!response.ok)throw new Error(result.error||'Archivieren fehlgeschlagen');await load();return result};
+  return{records,state,create,update,archive,reload:load};
 }
 export default function App() {
   const [v, setV] = useState<View>("home"),
@@ -314,11 +315,11 @@ export default function App() {
           tabIndex={-1}
         >
           {v === "home" && <Home go={navigate} vaultOnline={vaultOnline} />}{" "}
-          {v === "areas" && <Areas go={navigate} />} {v === "faith" && <Faith />}
-          {v === "career" && <Career />}
-          {v === "finance" && <Finance />}
-          {v === "health" && <Health />}
-          {v === "relations" && <Relations />}
+          {v === "areas" && <Areas go={navigate} />} {v === "faith" && <Faith note={note} />}
+          {v === "career" && <Career note={note} />}
+          {v === "finance" && <Finance note={note} />}
+          {v === "health" && <Health note={note} />}
+          {v === "relations" && <Relations note={note} />}
           {v === "projects" && <Projects note={note} />}
           {(v === "habits" || v === "journal") && (
             <DailyArea
@@ -397,9 +398,6 @@ function Intro({ eyebrow, title, children, action }: any) {
     </div>
   );
 }
-const DemoBanner = ({ children = "Diese Kennzahlen sind Gestaltungsbeispiele – keine echten persönlichen Daten." }: any) => (
-  <div className="demoBanner" role="note"><I.Info />{children}</div>
-);
 function Home({ go, vaultOnline }: any) {
   const { records: tasks, state: taskState } = useSharedRecords("tasks");
   const [calendarState, setCalendarState] = useState("loading");
@@ -417,7 +415,7 @@ function Home({ go, vaultOnline }: any) {
       <Intro eyebrow="DEIN SYSTEM AUF EINEN BLICK" title="Guten Abend, Emre.">
         <p>Was braucht heute wirklich deine Aufmerksamkeit?</p>
       </Intro>
-      <DemoBanner>Nur die Kennzahlen auf den Lebensbereichskarten sind noch Gestaltungsbeispiele. Fokus, Aufgaben und Verbindungsstatus stammen aus echten Quellen.</DemoBanner>
+      <p className="sourceLine"><I.Database /> Fokus, Aufgaben, Bereichszähler und Verbindungsstatus stammen aus gemeinsamen oder verifizierten Quellen.</p>
       <div className="focusrow">
         <Card className="now">
           <div className="row">
@@ -580,6 +578,7 @@ function SystemProgress({ go }: any) {
   );
 }
 function Areas({ go }: any) {
+  const { records, state } = useSharedRecords("area_records");
   return (
     <>
       <Intro
@@ -591,9 +590,13 @@ function Areas({ go }: any) {
           verbunden durch ein System.
         </p>
       </Intro>
-      <DemoBanner>Bereichskarten und Kennzahlen sind Layoutbeispiele. Echte Daten erscheinen erst nach bewusster Erfassung oder Verbindung.</DemoBanner>
+      <p className="sourceLine" role="status">
+        <I.Database /> {state === "online" ? "Gemeinsamer privater Datenkern" : state === "loading" ? "Bereichsdaten werden geladen …" : "Bereichsdaten derzeit nicht erreichbar"}
+      </p>
       <div className="area-grid">
-        {areas.map(([id, n, c, s, Icon], i) => (
+        {areas.map(([id, n, c, s, Icon], i) => {
+          const count = id === "projects" ? null : records.filter((record: any) => record.area === id).length;
+          return (
           <Card className="areaHero" key={id}>
             <div style={{ "--c": c } as any} className="areaIcon">
               <Icon />
@@ -612,425 +615,176 @@ function Areas({ go }: any) {
             </Tag>
             <h3>{n}</h3>
             <p>{s}</p>
-            <div className="metric">
-              <b>{[82, 72, 78, 68, 75, 64][i]}%</b>
-              <span>stabil</span>
-            </div>
+            <p className="areaCount">{count === null ? "Eigenständiger Projektbereich" : `${count} gemeinsame Einträge`}</p>
             <button onClick={() => go(id as View)}>
               Dashboard öffnen <I.ArrowRight />
             </button>
           </Card>
-        ))}
+          );
+        })}
       </div>
     </>
   );
 }
-function Faith() {
-  return (
-    <div className="domain faithDomain">
-      <Intro
-        eyebrow="GLAUBE · PERSÖNLICHE PRAXIS"
-        title="Im Rhythmus des Tages."
-      >
-        <p>
-          Eine respektvolle private Übersicht. Zeiten sind konfigurierbar und
-          keine religiöse Autorität.
-        </p>
-      </Intro>
-      <DemoBanner>Gebetszeiten, Fortschritt und Duʿās sind respektvoll gekennzeichnete Beispielwerte. Es wurden keine persönlichen Glaubensdaten geladen.</DemoBanner>
-      <div className="prayers">
-        {["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"].map((p, i) => (
-          <div className={i < 3 ? "complete" : ""} key={p}>
-            <i>{i < 3 ? <I.Check /> : <I.Moon />}</i>
-            <b>{p}</b>
-            <time>{["04:47", "13:22", "17:10", "20:31", "22:06"][i]}</time>
-          </div>
-        ))}
-      </div>
-      <div className="domainGrid">
-        <Card className="quran">
-          <Tag>QURʾĀN</Tag>
-          <h3>Seite 184</h3>
-          <p>Al-Anfāl · persönliches Lesetempo</p>
-          <div className="bookProgress">
-            <i style={{ width: "31%" }} />
-          </div>
-          <div className="row">
-            <span>
-              <b>31%</b>
-              <small>Gesamtfortschritt</small>
-            </span>
-            <span>
-              <b>4 Seiten</b>
-              <small>Wochenziel</small>
-            </span>
-          </div>
-        </Card>
-        <Card>
-          <Tag>PERSÖNLICHE DUʿĀS</Tag>
-          {[
-            "Dankbarkeit bewahren",
-            "Klarheit für den beruflichen Weg",
-            "Gesundheit für die Familie",
-          ].map((x) => (
-            <div className="dua" key={x}>
-              <I.Heart />
-              {x}
-            </div>
-          ))}
-          <button className="link" disabled title="Erfassung wird mit dem sicheren Wissens-Write-Flow verbunden">
-            <I.Plus />
-            Duʿā-Erfassung noch nicht verfügbar
-          </button>
-        </Card>
-        <Card>
-          <Tag>REFLEXION</Tag>
-          <blockquote>
-            „Wo habe ich heute Ruhe, Geduld und Aufrichtigkeit erlebt?“
-          </blockquote>
-          <textarea placeholder="Privater Gedanke …" />
-        </Card>
-      </div>
-    </div>
+type AreaRecordConfig = {
+  area: "faith" | "career" | "health" | "finance" | "relations";
+  className: string;
+  eyebrow: string;
+  title: string;
+  description: string;
+  privacy: string;
+  types: Array<[string, string]>;
+  tracks?: Array<[string, string]>;
+};
+const areaRecordConfigs: Record<AreaRecordConfig["area"], AreaRecordConfig> = {
+  faith: {
+    area: "faith",
+    className: "faithDomain",
+    eyebrow: "GLAUBE · PERSÖNLICHE PRAXIS",
+    title: "Im Rhythmus des Tages.",
+    description: "Gebete, Qurʾān, Duʿās und Reflexionen selbstbestimmt festhalten.",
+    privacy: "Privat und organisatorisch. Keine religiöse Autorität und keine automatische Standortabfrage.",
+    types: [["practice", "Praxis / Gebet"], ["quran", "Qurʾān"], ["dua", "Duʿā"], ["reflection", "Reflexion"]],
+  },
+  health: {
+    area: "health",
+    className: "healthDomain",
+    eyebrow: "GESUNDHEIT · ORGANISATORISCH",
+    title: "Stärker werden. Gut regenerieren.",
+    description: "Eigene Trainings-, Ernährungs- und Erholungsdaten ohne Druck ordnen.",
+    privacy: "Private Organisationshilfe, keine medizinische Diagnose oder Beratung. Keine Health-Verbindung aktiv.",
+    types: [["training", "Training"], ["nutrition", "Ernährung"], ["recovery", "Erholung"], ["measurement", "Messwert"]],
+  },
+  finance: {
+    area: "finance",
+    className: "financeDomain",
+    eyebrow: "FINANZEN · PRIVATE DATEN",
+    title: "Klarheit ohne Aktionismus.",
+    description: "Kontenrahmen, Budgets, Ziele und wiederkehrende Posten manuell ordnen.",
+    privacy: "Lokal verschlüsselte Inhaltsfelder. Keine Bank verbunden und niemals Finanztransaktionen.",
+    types: [["account", "Konto / Container"], ["income", "Einnahme"], ["expense", "Ausgabe"], ["budget", "Budget"], ["goal", "Sparziel"], ["recurring", "Wiederkehrend"]],
+  },
+  relations: {
+    area: "relations",
+    className: "relationDomain",
+    eyebrow: "BEZIEHUNGEN · PRIVAT",
+    title: "Menschen, die dein Leben tragen.",
+    description: "Menschen, Kontaktpflege und wichtige Daten bewusst festhalten.",
+    privacy: "Private Details werden erst in der gewählten Detailansicht gezeigt und nicht in Logs geschrieben.",
+    types: [["person", "Person"], ["contact", "Kontakt"], ["birthday", "Geburtstag"], ["follow_up", "Nächster Impuls"], ["note", "Notiz"]],
+  },
+  career: {
+    area: "career",
+    className: "careerDomain",
+    eyebrow: "KARRIERE",
+    title: "Stabilität heute. Freiheit morgen.",
+    description: "Angestelltenweg und Selbstständigkeit getrennt planen, gemeinsam überblicken.",
+    privacy: "Eigene Karriereplanung im gemeinsamen privaten Datenkern; keine externe Bewerbung oder Nachricht wird versendet.",
+    types: [["goal", "Ziel"], ["task", "Aufgabe"], ["learning", "Lernen"], ["opportunity", "Chance"], ["milestone", "Meilenstein"], ["document", "Dokumenthinweis"]],
+    tracks: [["employee", "Angestellt"], ["business", "Selbstständigkeit"]],
+  },
+};
+
+function AreaRecordWorkspace({ config, note }: { config: AreaRecordConfig; note: (message: string) => void }) {
+  const { records: allRecords, state, create, update, archive } = useSharedRecords("area_records");
+  const records = allRecords.filter((record: any) => record.area === config.area);
+  const emptyForm = () => ({ title: "", recordType: config.types[0][0], status: "active", details: "", date: "", amount: "", currency: "EUR", track: config.tracks?.[0][0] || "" });
+  const [form, setForm] = useState<any>(emptyForm);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [selected, setSelected] = useState<any>(null);
+  const [editorOpen, setEditorOpen] = useState(false);
+  const typeLabel = (value: string) => config.types.find(([id]) => id === value)?.[1] || value;
+  const trackLabel = (value: string) => config.tracks?.find(([id]) => id === value)?.[1] || value;
+  const openCreate = (track?: string) => {
+    setEditingId(null);
+    setForm({ ...emptyForm(), track: track || config.tracks?.[0][0] || "" });
+    setEditorOpen(true);
+  };
+  const openEdit = (record: any) => {
+    setEditingId(record.id);
+    setForm({ ...emptyForm(), ...record });
+    setEditorOpen(true);
+  };
+  const save = async () => {
+    try {
+      const payload = { ...form, area: config.area };
+      if (editingId) await update({ ...payload, id: editingId });
+      else await create(payload);
+      setEditorOpen(false);
+      setEditingId(null);
+      setSelected(null);
+      note(editingId ? "Eintrag aktualisiert" : "Eintrag gemeinsam gespeichert");
+    } catch (error) {
+      note(error instanceof Error ? error.message : "Eintrag konnte nicht gespeichert werden");
+    }
+  };
+  const archiveSelected = async () => {
+    if (!selected || !window.confirm(`„${selected.title}“ archivieren?`)) return;
+    try {
+      await archive(selected.id);
+      setSelected(null);
+      note("Eintrag archiviert");
+    } catch {
+      note("Eintrag konnte nicht archiviert werden");
+    }
+  };
+  const renderRecord = (record: any) => (
+    <button className="areaRecordCard" key={record.id} onClick={() => setSelected(record)} type="button">
+      <span><Tag>{typeLabel(record.recordType)}</Tag><i>{record.status}</i></span>
+      <b>{record.title}</b>
+      <small>{record.date || "Kein Datum"}</small>
+    </button>
   );
-}
-function Career() {
   return (
-    <div className="domain careerDomain">
-      <Intro eyebrow="KARRIERE" title="Stabilität heute. Freiheit morgen.">
-        <p>Zwei Wege, bewusst koordiniert statt gegeneinander ausgespielt.</p>
+    <div className={`domain ${config.className}`}>
+      <Intro eyebrow={config.eyebrow} title={config.title} action={<Btn onClick={() => openCreate()}><I.Plus /> Eintrag</Btn>}>
+        <p>{config.description}</p>
       </Intro>
-      <DemoBanner>Ziele und Fortschrittswerte sind Beispiele. Projekte und gemeinsame Aufgaben sind die aktuell echten Datenquellen.</DemoBanner>
-      <div className="careerSplit">
-        <section>
-          <div className="pathTitle">
-            <span>
-              <I.Building2 />
-            </span>
-            <div>
-              <Tag>ANGESTELLT</Tag>
-              <h3>Current role</h3>
-            </div>
-            <b>Stabil</b>
+      <p className="privacyBoundary"><I.ShieldCheck /> {config.privacy}</p>
+      {editorOpen && (
+        <Card className="areaRecordEditor">
+          <div className="row"><Tag>{editingId ? "EINTRAG BEARBEITEN" : "NEUER EINTRAG"}</Tag><button aria-label="Editor schließen" onClick={() => setEditorOpen(false)} type="button"><I.X /></button></div>
+          <div className="areaFormGrid">
+            <label>Titel<input autoFocus maxLength={120} onChange={(event) => setForm({ ...form, title: event.target.value })} value={form.title} /></label>
+            <label>Typ<select onChange={(event) => setForm({ ...form, recordType: event.target.value })} value={form.recordType}>{config.types.map(([id, label]) => <option key={id} value={id}>{label}</option>)}</select></label>
+            {config.tracks && <label>Karrierepfad<select onChange={(event) => setForm({ ...form, track: event.target.value })} value={form.track}>{config.tracks.map(([id, label]) => <option key={id} value={id}>{label}</option>)}</select></label>}
+            <label>Status<select onChange={(event) => setForm({ ...form, status: event.target.value })} value={form.status}><option value="active">Aktiv</option><option value="planned">Geplant</option><option value="paused">Pausiert</option></select></label>
+            <label>Datum (optional)<input onChange={(event) => setForm({ ...form, date: event.target.value })} type="date" value={form.date} /></label>
+            {config.area === "finance" && <><label>Betrag (optional)<input inputMode="decimal" onChange={(event) => setForm({ ...form, amount: event.target.value })} placeholder="0,00" value={form.amount} /></label><label>Währung<select onChange={(event) => setForm({ ...form, currency: event.target.value })} value={form.currency}><option value="EUR">EUR</option><option value="USD">USD</option></select></label></>}
           </div>
-          <Goal n="01" t="Im Job zuverlässig und gesund leisten" p="82%" />
-          <h4>Diese Woche</h4>
-          {[
-            "Projektübergabe vorbereiten",
-            "Feedback-Gespräch notieren",
-            "Lernzeit: 45 Minuten",
-          ].map((x, i) => (
-            <Checkline key={x} t={x} done={i === 0} />
-          ))}
-        </section>
-        <section>
-          <div className="pathTitle">
-            <span>
-              <I.Rocket />
-            </span>
-            <div>
-              <Tag>SELBSTSTÄNDIG</Tag>
-              <h3>Future business</h3>
-            </div>
-            <b className="amber">Aufbau</b>
-          </div>
-          <Goal
-            n="02"
-            t="Angebot validieren und ersten Kunden gewinnen"
-            p="58%"
-          />
-          <h4>Nächste Meilensteine</h4>
-          {[
-            "Angebot auf einer Seite",
-            "5 Zielkunden sprechen",
-            "Pilotprojekt definieren",
-          ].map((x, i) => (
-            <Checkline key={x} t={x} done={i === 0} />
-          ))}
-        </section>
-      </div>
-      <Card className="bridge">
-        <I.GitMerge />
-        <div>
-          <Tag>DIE BRÜCKE</Tag>
-          <h3>
-            5 Stunden pro Woche investieren – ohne Energie aus dem Hauptjob zu
-            leihen.
-          </h3>
+          <label>Details (privat verschlüsselt)<textarea maxLength={4000} onChange={(event) => setForm({ ...form, details: event.target.value })} placeholder="Nur das festhalten, was dir wirklich hilft …" value={form.details} /></label>
+          <div className="editorActions"><Btn onClick={save}>Speichern</Btn><button onClick={() => setEditorOpen(false)} type="button">Abbrechen</button></div>
+        </Card>
+      )}
+      {state === "loading" && <p role="status">Gemeinsame Bereichsdaten werden geladen …</p>}
+      {state === "error" && <Card><Tag>OFFLINE</Tag><h3>Gemeinsamer Datenkern nicht erreichbar</h3><p>Es werden keine Ersatz- oder Beispieldaten angezeigt.</p></Card>}
+      {state === "online" && records.length === 0 && <Card className="trueEmpty"><I.Database /><div><Tag>ECHTE DATENQUELLE · LEER</Tag><h3>Noch keine Einträge</h3><p>Lege nur an, was für diesen Bereich tatsächlich nützlich ist.</p></div><Btn onClick={() => openCreate()}><I.Plus /> Ersten Eintrag anlegen</Btn></Card>}
+      {selected && (
+        <Card className="areaRecordDetail">
+          <button className="backButton" onClick={() => setSelected(null)} type="button">← Übersicht</button>
+          <div className="row"><Tag>{typeLabel(selected.recordType)}</Tag><i className="badge unconfigured">{selected.status}</i></div>
+          <h2>{selected.title}</h2>
+          {selected.track && <p><b>Pfad:</b> {trackLabel(selected.track)}</p>}
+          {selected.date && <p><b>Datum:</b> {selected.date}</p>}
+          {selected.amount && <p><b>Betrag:</b> {selected.amount} {selected.currency}</p>}
+          <p className="recordDetails">{selected.details || "Keine privaten Details hinterlegt."}</p>
+          <small>Gemeinsamer privater Datensatz · Version {selected.version}</small>
+          <div className="editorActions"><Btn onClick={() => openEdit(selected)}>Bearbeiten</Btn><button className="dangerQuiet" onClick={archiveSelected} type="button">Archivieren</button></div>
+        </Card>
+      )}
+      {!selected && config.tracks ? (
+        <div className="careerRecordsSplit">
+          {config.tracks.map(([track, label]) => <section key={track}><div className="pathTitle"><span>{track === "employee" ? <I.Building2 /> : <I.Rocket />}</span><div><Tag>{label.toUpperCase()}</Tag><h3>{records.filter((record: any) => record.track === track).length} Einträge</h3></div><button onClick={() => openCreate(track)} type="button"><I.Plus /></button></div><div className="areaRecordGrid">{records.filter((record: any) => record.track === track).map(renderRecord)}</div>{records.every((record: any) => record.track !== track) && <p className="columnEmpty">Noch keine Einträge für diesen Pfad.</p>}</section>)}
         </div>
-        <span>2 / 5 Std.</span>
-      </Card>
+      ) : !selected && records.length > 0 ? <div className="areaRecordGrid">{records.map(renderRecord)}</div> : null}
     </div>
   );
 }
-function Health() {
-  return (
-    <div className="domain healthDomain">
-      <Intro
-        eyebrow="GESUNDHEIT · ORGANISATORISCH"
-        title="Stärker werden. Gut regenerieren."
-      >
-        <p>
-          Training, Ernährung und Erholung in einem ehrlichen Überblick – keine
-          medizinische Beratung.
-        </p>
-      </Intro>
-      <DemoBanner>Fitness-, Ernährungs- und Erholungswerte sind Beispiele; keine Health-Verbindung ist aktiv.</DemoBanner>
-      <div className="healthTop">
-        {[
-          ["Trainingswoche", "3 / 4", "Einheiten"],
-          ["Schlaf", "7 h 28", "Ø 7 Tage"],
-          ["Erholung", "Gut", "subjektiv"],
-          ["Protein", "128 g", "Tageswert · Mock"],
-        ].map((x) => (
-          <Card key={x[0]}>
-            <Tag>{x[0]}</Tag>
-            <h3>{x[1]}</h3>
-            <small>{x[2]}</small>
-          </Card>
-        ))}
-      </div>
-      <div className="healthGrid">
-        <Card className="chart">
-          <div className="row">
-            <div>
-              <Tag>TRAININGSVOLUMEN</Tag>
-              <h3>Letzte 8 Wochen</h3>
-            </div>
-            <b>+12%</b>
-          </div>
-          <div
-            className="fitnessBars"
-            role="img"
-            aria-label="Trainingsvolumen steigt über acht Wochen moderat an"
-          >
-            {[42, 48, 45, 57, 61, 66, 71, 76].map((h, i) => (
-              <i style={{ height: h + "%" }} key={i}>
-                <span>W{i + 1}</span>
-              </i>
-            ))}
-          </div>
-        </Card>
-        <Card>
-          <Tag>NÄCHSTE EINHEIT</Tag>
-          <h3>Push · moderat</h3>
-          <p>
-            Montag, 17:30 · 60 Minuten. Danach bleibt der Abend frei von Deep
-            Work.
-          </p>
-          {[
-            ["Bankdrücken", "3 × 8"],
-            ["Schulterdrücken", "3 × 10"],
-            ["Trizeps", "2 × 12"],
-          ].map((x) => (
-            <div className="exercise" key={x[0]}>
-              <b>{x[0]}</b>
-              <span>{x[1]}</span>
-            </div>
-          ))}
-        </Card>
-        <Card>
-          <Tag>REGENERATION</Tag>
-          {[
-            ["Schlafqualität", 78],
-            ["Muskelgefühl", 66],
-            ["Stress", 42],
-            ["Energie", 72],
-          ].map((x) => (
-            <div className="recovery" key={x[0] as string}>
-              <div>
-                <b>{x[0]}</b>
-                <span>{x[1]}%</span>
-              </div>
-              <i>
-                <em style={{ width: x[1] + "%" }} />
-              </i>
-            </div>
-          ))}
-        </Card>
-        <Card>
-          <Tag>ERNÄHRUNG</Tag>
-          <div className="nutrition">
-            <div>
-              <b>2.180</b>
-              <span>kcal · Mock</span>
-            </div>
-            <div>
-              <b>128 g</b>
-              <span>Protein</span>
-            </div>
-            <div>
-              <b>2,1 l</b>
-              <span>Wasser</span>
-            </div>
-          </div>
-          <p>
-            Datenquelle unverbunden. Werte dienen nur der visuellen Planung.
-          </p>
-        </Card>
-      </div>
-    </div>
-  );
-}
-function Finance() {
-  return (
-    <div className="domain financeDomain">
-      <Intro
-        eyebrow="FINANZEN · PRIVATE DATEN"
-        title="Klarheit ohne Aktionismus."
-      >
-        <p>Beispieldaten · keine Bank verbunden · niemals Transaktionen.</p>
-      </Intro>
-      <DemoBanner>Alle Beträge sind Beispieldaten. Es ist kein Konto verbunden und Agentic OS führt niemals Transaktionen aus.</DemoBanner>
-      <div className="moneytop">
-        {[
-          ["Nettovermögen", "€ 42.860", "+3,2%"],
-          ["Monatlicher Cashflow", "+ € 1.240", "August"],
-          ["Sparquote", "28%", "Ziel 30%"],
-          ["Freies Budget", "€ 684", "bis Monatsende"],
-        ].map((x) => (
-          <Card key={x[0]}>
-            <Tag>{x[0]}</Tag>
-            <h3>{x[1]}</h3>
-            <small>{x[2]}</small>
-          </Card>
-        ))}
-      </div>
-      <div className="financegrid">
-        <Card className="chart">
-          <div className="row">
-            <div>
-              <Tag>NETTOWERT-TREND</Tag>
-              <h3>12 Monate</h3>
-            </div>
-            <b>+ € 6.420</b>
-          </div>
-          <div className="bars">
-            {[42, 47, 45, 52, 55, 60, 58, 66, 70, 74, 79, 86].map((h, i) => (
-              <i style={{ height: h + "%" }} key={i} />
-            ))}
-          </div>
-        </Card>
-        <Card>
-          <Tag>BUDGETS</Tag>
-          {[
-            ["Wohnen", 900, 900],
-            ["Lebensmittel", 310, 420],
-            ["Mobilität", 180, 260],
-            ["Freizeit", 145, 240],
-          ].map((x) => (
-            <div className="budget" key={x[0]}>
-              <div>
-                <b>{x[0]}</b>
-                <span>
-                  € {x[1]} / {x[2]}
-                </span>
-              </div>
-              <i>
-                <em style={{ width: (+x[1] / +x[2]) * 100 + "%" }} />
-              </i>
-            </div>
-          ))}
-        </Card>
-        <Card>
-          <Tag>SPARZIELE</Tag>
-          <Goal n="01" t="Notgroschen · € 8.400 / 12.000" p="70%" />
-          <Goal n="02" t="Business-Start · € 3.200 / 10.000" p="32%" />
-        </Card>
-        <Card>
-          <Tag>WIEDERKEHREND</Tag>
-          {[
-            ["Miete", "– € 900", "01. Sep"],
-            ["Versicherungen", "– € 146", "03. Sep"],
-            ["Gehalt", "+ € 2.940", "30. Aug"],
-          ].map((x) => (
-            <div className="transaction" key={x[0]}>
-              <I.Repeat2 />
-              <b>{x[0]}</b>
-              <span>
-                {x[1]}
-                <small>{x[2]}</small>
-              </span>
-            </div>
-          ))}
-        </Card>
-      </div>
-    </div>
-  );
-}
-function Relations() {
-  const [selected, setSelected] = useState("Mama");
-  return (
-    <div className="domain relationDomain">
-      <Intro
-        eyebrow="BEZIEHUNGEN · PRIVAT"
-        title="Menschen, die dein Leben tragen."
-      >
-        <p>Notizen bleiben verborgen, bis du eine Person bewusst öffnest.</p>
-      </Intro>
-      <DemoBanner>Personen, Termine und Kontaktimpulse sind Platzhalter. Es wurden keine privaten Beziehungsdaten geladen.</DemoBanner>
-      <div className="relationgrid">
-        <Card className="constellation">
-          <Tag>DEINE KONSTELLATION</Tag>
-          <div className="people">
-            {[
-              ["M", "Mama", "family"],
-              ["A", "Partnerin", "love"],
-              ["Y", "Yusuf", "friend"],
-              ["S", "Sarah", "friend"],
-              ["B", "Bruder", "family"],
-            ].map((x, i) => (
-              <button
-                aria-pressed={selected === x[1]}
-                className={"person p" + i + (selected === x[1] ? " active" : "")}
-                key={x[1]}
-                onClick={() => setSelected(x[1])}
-              >
-                <i>{x[0]}</i>
-                <span>{x[1]}</span>
-              </button>
-            ))}
-          </div>
-          <p aria-live="polite" className="selectionNote">
-            {selected} ausgewählt · private Details bleiben geschlossen.
-          </p>
-        </Card>
-        <Card>
-          <Tag>NÄCHSTE IMPULSE</Tag>
-          {[
-            ["Mama", "Heute anrufen", "vor 6 Tagen"],
-            ["Yusuf", "Kaffee vereinbaren", "vor 3 Wochen"],
-            ["Sarah", "Geburtstag am 29. Aug", "in 6 Tagen"],
-          ].map((x) => (
-            <div className="contact" key={x[0]}>
-              <i>{x[0][0]}</i>
-              <span>
-                <b>{x[0]}</b>
-                <small>{x[1]}</small>
-              </span>
-              <em>{x[2]}</em>
-            </div>
-          ))}
-        </Card>
-        <Card>
-          <Tag>WICHTIGE DATEN</Tag>
-          <div className="birthday">
-            <b>29</b>
-            <span>
-              AUG<small>Sarah · Geburtstag</small>
-            </span>
-          </div>
-          <div className="birthday">
-            <b>12</b>
-            <span>
-              SEP<small>Jahrestag</small>
-            </span>
-          </div>
-        </Card>
-      </div>
-    </div>
-  );
-}
+function Faith({ note }: any) { return <AreaRecordWorkspace config={areaRecordConfigs.faith} note={note} />; }
+function Career({ note }: any) { return <AreaRecordWorkspace config={areaRecordConfigs.career} note={note} />; }
+function Health({ note }: any) { return <AreaRecordWorkspace config={areaRecordConfigs.health} note={note} />; }
+function Finance({ note }: any) { return <AreaRecordWorkspace config={areaRecordConfigs.finance} note={note} />; }
+function Relations({ note }: any) { return <AreaRecordWorkspace config={areaRecordConfigs.relations} note={note} />; }
 function Projects({ note }: any) {
   const [view, setView] = useState("Board"),[showCreate,setShowCreate]=useState(false),[title,setTitle]=useState(''),[selected,setSelected]=useState<any>(null);
   const{records:p,state,create}=useSharedRecords('projects');
@@ -2049,31 +1803,6 @@ function Settings({ brand, save, theme, changeTheme }: any) {
         </Card>
       </div>
     </>
-  );
-}
-function Goal({ n, t, p }: any) {
-  return (
-    <div className="goal">
-      <i>{n}</i>
-      <span>
-        <b>{t}</b>
-        <em>
-          <small style={{ width: p }} />
-        </em>
-      </span>
-      <strong>{p}</strong>
-    </div>
-  );
-}
-function Checkline({ t, done = false, meta }: any) {
-  return (
-    <div className="checkline">
-      <i className={done ? "done" : ""}>{done && <I.Check />}</i>
-      <span className={done ? "strike" : ""}>
-        {t}
-        {meta && <small>{meta}</small>}
-      </span>
-    </div>
   );
 }
 function MobileNav({ v, go }: any) {

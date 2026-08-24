@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';import{readFile}from'node:fs/promises';import test from'node:test';
 const store=await readFile('lib/shared-store.ts','utf8'),vault=await readFile('lib/obsidian-vault.ts','utf8'),route=await readFile('app/api/obsidian/migration-preview/route.ts','utf8');
-test('shared store uses built-in SQLite with versioned WAL migrations and private APIs',()=>{assert.match(store,/from 'node:sqlite'/);assert.match(store,/schema_migrations/);assert.match(store,/journal_mode=WAL/);for(const table of ['projects','tasks','habits','journal_metadata','inbox_items','agents','skills','approvals','progress_items','audit_log'])assert.match(store,new RegExp(`CREATE TABLE IF NOT EXISTS ${table}`));assert.match(store,/AES-256-GCM/);assert.match(store,/VACUUM INTO/);assert.match(store,/review_required/)});
+test('shared store uses built-in SQLite with versioned WAL migrations and private APIs',()=>{assert.match(store,/from 'node:sqlite'/);assert.match(store,/schema_migrations/);assert.match(store,/journal_mode=WAL/);for(const table of ['projects','tasks','habits','journal_metadata','inbox_items','agents','skills','area_records','approvals','progress_items','audit_log'])assert.match(store,new RegExp(`CREATE TABLE IF NOT EXISTS ${table}`));assert.match(store,/AES-256-GCM/);assert.match(store,/VACUUM INTO/);assert.match(store,/review_required/)});
 
 test('shared operational records expose authenticated CRUD and keep skills metadata-only',async()=>{
   const route=await readFile(new URL('../app/api/state/records/[kind]/route.ts',import.meta.url),'utf8');
@@ -9,6 +9,16 @@ test('shared operational records expose authenticated CRUD and keep skills metad
   assert.match(store,/crudKinds=.*projects.*tasks.*habits.*journal_metadata.*inbox_items.*agents.*skills/s);
   assert.match(store,/kind==='skills'.*status:'metadata_only'/s);
   assert.match(store,/INSERT INTO audit_log/);
+});
+test('life-area CRUD encrypts private content and archives instead of deleting',()=>{
+  assert.match(store,/version:3.*CREATE TABLE IF NOT EXISTS area_records/s);
+  assert.match(store,/sensitive_enc TEXT NOT NULL/);
+  assert.match(store,/areaRecordPayload.*encryptSensitive/s);
+  assert.match(store,/kind==='area_records'.*decryptSensitive/s);
+  for(const area of ['faith','health','finance','relations','career'])assert.match(store,new RegExp(`${area}:\\[`));
+  assert.match(store,/area==='career'.*employee.*business/s);
+  assert.match(store,/UPDATE \$\{kind\} SET status='archived'/);
+  assert.doesNotMatch(store,/DELETE FROM area_records/);
 });
 test('vault normalization is preview-only and preserves existing notes',()=>{assert.match(vault,/previewVaultNormalization/);assert.match(vault,/existingNotesModified:0/);assert.match(vault,/proposedMoves:0/);assert.match(vault,/proposedRenames:0/);assert.match(vault,/sensitiveWritesRequireApproval:true/);assert.match(route,/no-store, private/);assert.match(route,/writesPerformed:false/)});
 

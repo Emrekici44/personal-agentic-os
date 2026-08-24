@@ -88,11 +88,16 @@ test("shares an accessible light and dark preference across desktop and mobile w
   assert.match(mobileConfig, /"userInterfaceStyle": "automatic"/);
 });
 
-test("marks remaining illustrative domain data instead of presenting it as real", async () => {
+test("uses real shared life-area records and honest external connection boundaries", async () => {
   const page = await readFile(pagePath, "utf8");
-  assert.match(page, /DemoBanner/);
-  for (const boundary of ["keine echten persönlichen Daten", "keine Health-Verbindung", "kein Konto verbunden", "keine privaten Beziehungsdaten"]) {
+  assert.match(page, /function AreaRecordWorkspace/);
+  assert.match(page, /useSharedRecords\("area_records"\)/);
+  assert.match(page, /ECHTE DATENQUELLE · LEER/);
+  for (const boundary of ["Keine Health-Verbindung aktiv", "Keine Bank verbunden und niemals Finanztransaktionen", "keine automatische Standortabfrage", "keine externe Bewerbung oder Nachricht"]) {
     assert.match(page, new RegExp(boundary, "i"));
+  }
+  for (const inventedValue of ["Seite 184", "€ 42.860", "7 h 28", "Mama", "Future business"]) {
+    assert.doesNotMatch(page, new RegExp(inventedValue, "i"));
   }
 });
 

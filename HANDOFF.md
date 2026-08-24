@@ -16,13 +16,13 @@ Project root: `outputs/agentic-os`. Private source remote: `https://github.com/E
 - PostgreSQL PoC is files-only and deliberately inactive. Docker/Podman/psql were not installed.
 - Graphify is not installed.
 - Physical iPhone navigation acceptance passed after the private-origin/hydration repair. No new QR was required.
+- Life-area examples were replaced by the authenticated shared `area_records` store. Private details are encrypted; existing data was not imported or rewritten.
 
 ## Immediate continuation
 
-1. Finish root/Electron/Expo checks and the tracked-content/secret audit for the shared daily workspace and real knowledge audit.
-2. Commit and push that coherent verified milestone to private `main`.
-3. Continue only with ungated local documentation/audit work.
-4. Ask Emre before any PostgreSQL target/account, real migration, Vault mutation, Graphify installation or new external connector activation.
+1. Keep the verified life-area CRUD and daily workspace usable in Electron/Expo.
+2. Continue only with ungated local documentation, schema mapping or control-audit work.
+3. Ask Emre before any PostgreSQL target/account, real migration, Vault mutation, Graphify installation or new external connector activation.
 
 ## Non-negotiable boundaries
 
