@@ -11,6 +11,9 @@ const files = [
   "state/records/[kind]",
   "calendar/write-proposal",
   "calendar/write",
+  "calendar/today-summary",
+  "projects/[id]/workspace",
+  "agents/workflows",
 ];
 
 test("mutable and sensitive shared API responses are signed and explicitly non-cacheable", async () => {
@@ -47,4 +50,12 @@ test("local session issuance is private and cache-free on success and denial", a
   assert.match(source, /httpOnly:true/);
   assert.match(source, /sameSite:'strict'/);
   assert.match(source, /response\.headers\.set\('Cache-Control','no-store, private'\)/);
+});
+
+test("project, workflow and daily calendar responses use private helpers on every path", async () => {
+  for (const file of ["projects/[id]/workspace", "agents/workflows", "calendar/today-summary"]) {
+    const source = await readFile(new URL(`../app/api/${file}/route.ts`, import.meta.url), "utf8");
+    assert.match(source, /const respond = .*NextResponse\.json\(body, \{ \.\.\.init, headers \}\)/);
+    assert.doesNotMatch(source, /return NextResponse\.json/);
+  }
 });
