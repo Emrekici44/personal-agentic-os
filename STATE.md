@@ -26,15 +26,18 @@ Last verified: 24.08.2026, Europe/Berlin.
 - Der Sonntags-Wochenplaner ist als geführter Shared-Store-Workflow aktiv: private Quellenprüfung, Auswahl echter Google-Kalender, begrenzter 8-Tage-Read in `Europe/Berlin`, höchstens drei Outcomes, 35% Puffer, belegungs- und trainingstagssichere Vorschläge sowie synchronisierter Review. Erst danach kann ein einzelner Block in den bestehenden exakten 15-Minuten-Approval-Guard übergeben werden; es gibt keine Batch- oder Hintergrundwrites.
 - Der erste reale Vorschau-Lauf wertete 8 ausgewählte Kalender und 49 Ereignisse aus. Da derzeit keine offenen Shared-Store-Aufgaben, Inbox-Einträge oder Projekte vorhanden waren, blieb der Plan ehrlich bei 0 Outcomes und 0 Fokusblöcken; `writesPerformed=false` wurde verifiziert.
 - Abgelaufene Google-Access-Tokens werden jetzt serverseitig über den lokal verschlüsselt gespeicherten Refresh-Token erneuert. Der Status ist erst Online, wenn diese Erneuerung gelingt; Secrets und Tokens bleiben außerhalb UI, Logs und Git.
+- Der Projektbereich ist jetzt ein echter gemeinsamer Arbeitsraum: professionelle Karten-/Listenübersicht, editierbares Ziel, Beschreibung, Status, Zieldatum und nächste Aktion, projektgebundene Aufgaben, direkte sowie nachträgliche Inbox-Zuordnung, Wochenplanbezug und ein inhaltsarmer Audit-Verlauf. Veraltete Fake-Avatare, Demo-Ziele und die funktionslose Timeline wurden entfernt.
+- Projekt-, Aufgaben- und Inbox-Updates halten ihre strukturierten SQLite-Spalten und JSON-Nutzdaten konsistent. Projektverknüpfungen werden serverseitig gegen echte, nicht archivierte Projekte validiert; die neue Workspace-API ist signiert, privat, cachefrei und gibt keine persönlichen Inhalte im Audit aus.
 
 ## Verification
 
-- Root tests: 40/40 passed after the weekly-planner contracts, including Berlin DST, empty sources, foreign IDs, duplicates, review selection validation and unsafe block rejection.
+- Root tests: 43/43 passed after the project workspace contracts and weekly-planner safeguards.
 - Root lint and optimized Next build: passed after the final UI/documentation refresh.
 - Electron security checks: 2/2 passed. Expo TypeScript, lint and static web export passed.
 - Browser: the private Tailscale URL passed desktop 1280-wide and mobile 390×844 checks without horizontal overflow or console errors. The life-area overview, faith empty state/editor, finance fields and split career columns rendered from the shared source.
 - Electron: the current window opened the real faith area and its editor; cancel closed it without creating a record. Obsidian and Calendar still reported Online from verified sources.
 - Production build, Electron checks and Expo TypeScript/lint/web export passed. Desktop and 390×844 browser checks rendered the real planner with no horizontal overflow or captured runtime error; mobile drawer opened and closed correctly.
+- Projektbrowser-Abnahme: echter leerer Shared-Store-Zustand, vollständiger Erfassungseditor mit deaktiviertem Leer-Speichern und Abbruch ohne Mutation; mobile 390×844 mit 0 horizontalem Überlauf.
 - Git: life-area milestone `688e3c7` is on private `main`; the weekly-planner milestone is ready for its audited incremental commit.
 
 ## User boundaries

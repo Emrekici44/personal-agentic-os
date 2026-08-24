@@ -796,76 +796,65 @@ function Health({ note }: any) { return <AreaRecordWorkspace config={areaRecordC
 function Finance({ note }: any) { return <AreaRecordWorkspace config={areaRecordConfigs.finance} note={note} />; }
 function Relations({ note }: any) { return <AreaRecordWorkspace config={areaRecordConfigs.relations} note={note} />; }
 function Projects({ note }: any) {
-  const [view, setView] = useState("Board"),[showCreate,setShowCreate]=useState(false),[title,setTitle]=useState(''),[selected,setSelected]=useState<any>(null);
-  const{records:p,state,create}=useSharedRecords('projects');
-  const add=async()=>{try{await create({title,status:'active',goal:'Noch kein Ziel definiert'});setTitle('');setShowCreate(false)}catch(error){note(error instanceof Error?error.message:'Projekt konnte nicht gespeichert werden')}};
+  const [view, setView] = useState<"grid" | "list">("grid"), [showCreate, setShowCreate] = useState(false), [selectedId, setSelectedId] = useState(""), [tab, setTab] = useState<"overview" | "tasks" | "inbox" | "history">("overview"), [workspace, setWorkspace] = useState<any>(null), [workspaceState, setWorkspaceState] = useState<"idle" | "loading" | "online" | "error">("idle"), [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState<any>({ title: "", goal: "", description: "", nextAction: "", dueDate: "", status: "planned" }), [taskDraft, setTaskDraft] = useState({ title: "", dueAt: "", priority: "medium" }), [inboxDraft, setInboxDraft] = useState("");
+  const { records: projects, state, create: createProject, update: updateProject } = useSharedRecords("projects");
+  const { records: tasks, state: taskState, create: createTask, update: updateTask } = useSharedRecords("tasks");
+  const { records: inbox, state: inboxState, create: createInbox, update: updateInbox } = useSharedRecords("inbox_items");
+  const selected = projects.find((project: any) => project.id === selectedId);
+  const projectTasks = tasks.filter((task: any) => task.projectId === selectedId);
+  const projectInbox = inbox.filter((item: any) => item.projectId === selectedId);
+  const unassignedInbox = inbox.filter((item: any) => !item.projectId && item.status !== "archived");
+  const statusLabel: Record<string, string> = { active: "Aktiv", planned: "Geplant", paused: "Pausiert", completed: "Abgeschlossen" };
+  const loadWorkspace = useCallback(async () => {
+    if (!selectedId) return setWorkspace(null);
+    setWorkspaceState("loading");
+    try {
+      const response = await fetch(`/api/projects/${encodeURIComponent(selectedId)}/workspace`, { cache: "no-store" });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error);
+      setWorkspace(result); setWorkspaceState("online");
+    } catch { setWorkspaceState("error"); }
+  }, [selectedId]);
+  useEffect(() => { loadWorkspace(); }, [loadWorkspace]);
+  useEffect(() => { if (selected) setDraft({ title: selected.title || "", goal: selected.goal || "", description: selected.description || "", nextAction: selected.nextAction || "", dueDate: selected.dueDate || "", status: selected.status || "planned" }); }, [selected]);
+  const addProject = async () => { try { const created = await createProject({ ...draft, status: draft.status || "planned" }); setShowCreate(false); setSelectedId(created.id); setTab("overview"); note("Projekt im gemeinsamen Arbeitsraum angelegt"); } catch (error) { note(error instanceof Error ? error.message : "Projekt konnte nicht gespeichert werden"); } };
+  const saveProject = async () => { if (!selected) return; try { await updateProject({ ...selected, ...draft }); setEditing(false); await loadWorkspace(); note("Projekt gemeinsam aktualisiert"); } catch (error) { note(error instanceof Error ? error.message : "Projekt konnte nicht aktualisiert werden"); } };
+  const addTask = async () => { if (!selectedId || taskDraft.title.trim().length < 2) return note("Aufgabe benötigt mindestens zwei Zeichen"); try { await createTask({ title: taskDraft.title.trim(), dueAt: taskDraft.dueAt || undefined, priority: taskDraft.priority, projectId: selectedId, area: "Projekte", status: "active", done: false }); setTaskDraft({ title: "", dueAt: "", priority: "medium" }); await loadWorkspace(); note("Projektaufgabe gemeinsam gespeichert"); } catch (error) { note(error instanceof Error ? error.message : "Aufgabe konnte nicht gespeichert werden"); } };
+  const addInbox = async () => { if (!selectedId || inboxDraft.trim().length < 2) return note("Inbox-Eintrag benötigt mindestens zwei Zeichen"); try { await createInbox({ title: inboxDraft.trim(), itemType: "note", projectId: selectedId, area: "Projekte", status: "active" }); setInboxDraft(""); await loadWorkspace(); note("Inbox-Eintrag dem Projekt zugeordnet"); } catch (error) { note(error instanceof Error ? error.message : "Inbox-Eintrag konnte nicht gespeichert werden"); } };
+  const toggleTask = async (task: any) => { await updateTask({ ...task, done: !task.done, status: !task.done ? "completed" : "active" }); await loadWorkspace(); };
+  const linkInbox = async (item: any, projectId: string) => { await updateInbox({ ...item, projectId, area: projectId ? "Projekte" : "Inbox" }); await loadWorkspace(); note(projectId ? "Inbox-Eintrag zugeordnet" : "Zuordnung gelöst"); };
+  const openProject = (id: string) => { setSelectedId(id); setTab("overview"); setEditing(false); };
   return (
     <>
       <Intro
-        eyebrow="FLEXIBLER PROJEKTRAUM"
-        title="Vorhaben, die sich mit dir entwickeln."
+        eyebrow="GEMEINSAMER PROJEKTARBEITSRAUM"
+        title={selected ? selected.title : "Projekte mit klarem nächsten Schritt."}
         action={
-          <Btn onClick={() => setShowCreate(true)}>
-            <I.Plus />
-            Projekt
-          </Btn>
+          selected ? <Btn soft onClick={() => { setSelectedId(""); setWorkspace(null); }}>← Übersicht</Btn> : <Btn onClick={() => { setDraft({ title: "", goal: "", description: "", nextAction: "", dueDate: "", status: "planned" }); setShowCreate(true); }}><I.Plus /> Projekt</Btn>
         }
-      />
-      {showCreate&&<Card className="inlineEditor"><label>Projektname<input value={title} onChange={event=>setTitle(event.target.value)} placeholder="Neues Projekt"/></label><Btn onClick={add}>Projekt speichern</Btn><button onClick={()=>setShowCreate(false)}>Abbrechen</button></Card>}
-      <div className="projectTools">
-        {["Board", "Liste", "Timeline"].map((item) => (
-          <button
-            aria-pressed={view === item}
-            className={view === item ? "active" : ""}
-            key={item}
-            onClick={() => setView(item)}
-          >
-            {item}
-          </button>
-        ))}
-        <span />
-        <button disabled title="Filter folgt nach gemeinsamem Datenimport">
-          <I.Filter />
-          Filter
-        </button>
-      </div>
+      ><p>{selected ? "Ziel, nächste Aktionen, Aufgaben, Inbox und Verlauf aus einer gemeinsamen Quelle." : "Keine Demo-Boards: nur echte Vorhaben, verknüpfte Arbeit und ehrliche Leerzustände."}</p></Intro>
+      {showCreate && <ProjectEditor draft={draft} setDraft={setDraft} onSave={addProject} onCancel={() => setShowCreate(false)} title="Neues Projekt" />}
       {state==='loading'&&<p role="status">Gemeinsame Projekte werden geladen …</p>}
-      {state==='online'&&p.length===0&&<Card><Tag>ECHTE DATENQUELLE · LEER</Tag><h3>Noch keine gemeinsamen Projekte</h3><p>Lege das erste Projekt an. Frühere Demo-Karten wurden entfernt.</p></Card>}
-      {selected&&<Card className="projectDetail"><button onClick={()=>setSelected(null)}>← Zurück</button><Tag>{selected.status}</Tag><h2>{selected.title}</h2><p>{selected.goal||'Noch kein Ziel definiert'}</p><dl><dt>Datenquelle</dt><dd>Laptop Shared Store</dd><dt>Version</dt><dd>{selected.version}</dd><dt>Nächster Schritt</dt><dd>{selected.nextAction||'Noch nicht festgelegt'}</dd></dl></Card>}
-      {!selected&&<div className="projects">
-        {p.map((x:any, i:number) => (
-          <button className="projectOpen" key={x.id} onClick={()=>setSelected(x)}><Card>
-            <div className="row">
-              <span className={"projectSymbol s" + i}>
-                <I.FolderKanban />
-              </span>
-              <em>{x.status}</em>
-            </div>
-            <h3>{x.title}</h3>
-            <p>{x.goal||'Noch kein Ziel definiert'}</p>
-            <div className="projectmeta">
-              <span>
-                <I.CheckSquare />
-                Nächste Aktion
-              </span>
-              <span>
-                <I.MessagesSquare />
-                Gemeinsamer Datensatz
-              </span>
-            </div>
-            <div className="avatars">
-              <i>WP</i>
-              <i>PC</i>
-              <span aria-label="Zuordnungen noch nicht konfiguriert">
-                <I.Plus />
-              </span>
-            </div>
-          </Card></button>
-        ))}
-      </div>}
+      {state==='error'&&<p role="alert">Der gemeinsame Projektbestand ist gerade nicht erreichbar.</p>}
+      {state==='online'&&!selected&&projects.length===0&&<Card className="honestEmpty"><I.FolderKanban/><span><b>Noch keine gemeinsamen Projekte</b>Lege ein echtes Projekt mit Ziel oder nächster Aktion an. Agentic OS erzeugt keine Beispielkarten.</span></Card>}
+      {!selected && projects.length > 0 && <><div className="projectToolbar"><span><b>{projects.length}</b> echte Projekte · Laptop Shared Store</span><div role="group" aria-label="Projektansicht"><button aria-pressed={view==="grid"} onClick={()=>setView("grid")}><I.LayoutGrid/>Karten</button><button aria-pressed={view==="list"} onClick={()=>setView("list")}><I.List/>Liste</button></div></div><div className={`projectWorkspaceGrid ${view}`}>
+        {projects.map((project:any, index:number) => { const linkedTasks=tasks.filter((task:any)=>task.projectId===project.id), open=linkedTasks.filter((task:any)=>!task.done).length, linkedInbox=inbox.filter((item:any)=>item.projectId===project.id).length; return <button className="projectOpen" key={project.id} onClick={()=>openProject(project.id)}><Card><div className="row"><span className={"projectSymbol s"+index}><I.FolderKanban/></span><em>{statusLabel[project.status]||project.status}</em></div><h3>{project.title}</h3><p>{project.goal||"Ziel noch nicht festgelegt"}</p><div className="projectFacts"><span><b>{open}</b> offene Aufgaben</span><span><b>{linkedInbox}</b> Inbox-Verknüpfungen</span></div><div className="nextAction"><small>NÄCHSTE AKTION</small><b>{project.nextAction||"Noch nicht festgelegt"}</b></div></Card></button>; })}
+      </div></>}
+      {selected && <section className="projectWorkspace" aria-label={`Projekt ${selected.title}`}>
+        <div className="projectHero card"><div><Tag>{statusLabel[selected.status]||selected.status}</Tag><h2>{selected.title}</h2><p>{selected.goal||"Für dieses Projekt wurde noch kein Ziel formuliert."}</p></div><div className="projectHeroActions"><button onClick={()=>setEditing(true)}><I.Pencil/>Projekt bearbeiten</button>{selected.dueDate&&<span><I.CalendarDays/>{new Intl.DateTimeFormat("de-DE",{day:"2-digit",month:"long",year:"numeric",timeZone:"Europe/Berlin"}).format(new Date(`${selected.dueDate}T12:00:00Z`))}</span>}</div></div>
+        {editing&&<ProjectEditor draft={draft} setDraft={setDraft} onSave={saveProject} onCancel={()=>setEditing(false)} title="Projekt bearbeiten"/>}
+        <div className="projectTabs" role="tablist" aria-label="Projektarbeitsraum">{[["overview","Überblick",I.Gauge],["tasks","Aufgaben",I.ListChecks],["inbox","Inbox",I.Inbox],["history","Verlauf",I.History]].map(([id,label,Icon]:any)=><button aria-selected={tab===id} className={tab===id?"active":""} key={id} onClick={()=>setTab(id)} role="tab"><Icon/>{label}{id==="tasks"&&<small>{projectTasks.length}</small>}{id==="inbox"&&<small>{projectInbox.length}</small>}</button>)}</div>
+        {workspaceState==="error"&&<p role="alert">Verlauf und Wochenplanbezug sind gerade nicht erreichbar; Projektdaten bleiben verfügbar.</p>}
+        {tab==="overview"&&<div className="projectDetailGrid"><Card><Tag>ZIEL & AUSRICHTUNG</Tag><h3>{selected.goal||"Ziel noch offen"}</h3><p>{selected.description||"Noch keine zusätzliche Projektbeschreibung."}</p></Card><Card className="projectNext"><Tag>NÄCHSTE AKTION</Tag><h3>{selected.nextAction||"Noch nicht festgelegt"}</h3><p>{selected.nextAction?"Diese Aktion kann beim nächsten Wochenplan als Projektquelle priorisiert werden.":"Bearbeite das Projekt und formuliere einen konkreten nächsten Schritt."}</p><Btn soft onClick={()=>setEditing(true)}>Nächste Aktion festlegen</Btn></Card><Card><Tag>ARBEITSSTAND · ECHT</Tag><div className="projectMetric"><span><b>{projectTasks.filter((task:any)=>!task.done).length}</b>offene Aufgaben</span><span><b>{projectTasks.filter((task:any)=>task.done).length}</b>erledigt</span><span><b>{projectInbox.length}</b>Inbox</span><span><b>{workspace?.counts?.weeklyLinks||0}</b>Wochenpläne</span></div></Card><Card><Tag>WOCHENPLANBEZUG</Tag>{workspaceState==="loading"&&<p role="status">Wochenplanbezug wird geladen …</p>}{workspace?.weekly?.length?<div className="projectWeekly">{workspace.weekly.map((entry:any)=><span key={entry.planId}><I.CalendarRange/><b>{entry.weekStart}–{entry.windowEnd}</b><small>{entry.selected?"Als Outcome gewählt":entry.blockProposed?"Block vorgeschlagen":"Als Quelle erkannt"}</small></span>)}</div>:workspaceState==="online"&&<p>Noch keine Verknüpfung zu einem erzeugten Wochenplan.</p>}</Card></div>}
+        {tab==="tasks"&&<div className="projectWorkList"><Card className="projectAdd"><Tag>NEUE PROJEKTAUFGABE</Tag><div className="projectTaskForm"><input aria-label="Aufgabentitel" value={taskDraft.title} onChange={event=>setTaskDraft({...taskDraft,title:event.target.value})} placeholder="Konkrete nächste Aufgabe …"/><input aria-label="Fällig am" type="date" value={taskDraft.dueAt} onChange={event=>setTaskDraft({...taskDraft,dueAt:event.target.value})}/><select aria-label="Priorität" value={taskDraft.priority} onChange={event=>setTaskDraft({...taskDraft,priority:event.target.value})}><option value="low">Niedrig</option><option value="medium">Mittel</option><option value="high">Hoch</option></select><Btn onClick={addTask}>Aufgabe anlegen</Btn></div></Card>{taskState==="online"&&projectTasks.length===0&&<Card className="honestEmpty"><I.ListChecks/><span><b>Noch keine Projektaufgaben</b>Lege nur konkrete Arbeit an; es werden keine Schritte erfunden.</span></Card>}{projectTasks.map((task:any)=><Card className="projectTask" key={task.id}><button aria-label={task.done?"Aufgabe wieder öffnen":"Aufgabe erledigen"} aria-pressed={Boolean(task.done)} onClick={()=>toggleTask(task)}><i>{task.done&&<I.Check/>}</i></button><span><b>{task.title}</b><small>{task.priority?`Priorität ${task.priority}`:"Keine Priorität"}{task.dueAt?` · fällig ${task.dueAt}`:""}</small></span><em>{task.done?"Erledigt":"Offen"}</em></Card>)}</div>}
+        {tab==="inbox"&&<div className="projectInboxGrid"><Card><Tag>PROJEKT-INBOX</Tag><div className="projectInboxCapture"><textarea aria-label="Neuer Projekt-Inbox-Eintrag" value={inboxDraft} onChange={event=>setInboxDraft(event.target.value)} placeholder="Idee, Link oder Notiz diesem Projekt zuordnen …"/><Btn onClick={addInbox}>Zuordnen</Btn></div>{inboxState==="online"&&projectInbox.length===0&&<p>Noch keine Inbox-Einträge verknüpft.</p>}{projectInbox.map((item:any)=><div className="linkedInbox" key={item.id}><I.Inbox/><span><b>{item.title}</b><small>{item.itemType||"Notiz"} · {item.status}</small></span><button onClick={()=>linkInbox(item,"")}>Zuordnung lösen</button></div>)}</Card><Card><Tag>UNZUGEORDNETE INBOX</Tag>{unassignedInbox.length===0?<p>Keine unzugeordneten Einträge vorhanden.</p>:unassignedInbox.slice(0,6).map((item:any)=><div className="linkedInbox" key={item.id}><I.PlusCircle/><span><b>{item.title}</b><small>{item.itemType||"Notiz"}</small></span><button onClick={()=>linkInbox(item,selectedId)}>Diesem Projekt zuordnen</button></div>)}</Card></div>}
+        {tab==="history"&&<Card><Tag>VERLAUF · INHALTSARMER AUDIT</Tag><p className="sourceLine"><I.ShieldCheck/>Nur Aktionstyp und Zeitpunkt; keine privaten Inhalte im Audit.</p>{workspaceState==="loading"&&<p role="status">Projektverlauf wird geladen …</p>}{workspace?.audit?.length?<div className="projectAudit">{workspace.audit.map((entry:any,index:number)=><div key={`${entry.createdAt}-${index}`}><I.History/><span><b>{entry.action==="create"?"Erstellt":entry.action==="update"?"Aktualisiert":entry.action}</b><small>{entry.entityType} · {new Intl.DateTimeFormat("de-DE",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit",timeZone:"Europe/Berlin"}).format(new Date(entry.createdAt))}</small></span></div>)}</div>:workspaceState==="online"&&<p>Noch kein Projektverlauf vorhanden.</p>}</Card>}
+      </section>}
     </>
   );
 }
+function ProjectEditor({ draft, setDraft, onSave, onCancel, title }: any) { return <Card className="projectEditor"><div className="row"><div><Tag>GEMEINSAMER DATENSATZ</Tag><h3>{title}</h3></div><button aria-label="Editor schließen" onClick={onCancel}><I.X/></button></div><div className="projectEditorFields"><label>Projektname<input value={draft.title} onChange={event=>setDraft({...draft,title:event.target.value})} placeholder="Klarer Projektname"/></label><label>Status<select value={draft.status} onChange={event=>setDraft({...draft,status:event.target.value})}><option value="planned">Geplant</option><option value="active">Aktiv</option><option value="paused">Pausiert</option><option value="completed">Abgeschlossen</option></select></label><label className="wide">Ziel<textarea value={draft.goal} onChange={event=>setDraft({...draft,goal:event.target.value})} placeholder="Woran erkennst du, dass dieses Projekt gelungen ist?"/></label><label className="wide">Nächste Aktion<input value={draft.nextAction} onChange={event=>setDraft({...draft,nextAction:event.target.value})} placeholder="Der kleinste konkrete nächste Schritt"/></label><label>Zieldatum (optional)<input type="date" value={draft.dueDate} onChange={event=>setDraft({...draft,dueDate:event.target.value})}/></label><label className="wide">Beschreibung (optional)<textarea value={draft.description} onChange={event=>setDraft({...draft,description:event.target.value})} placeholder="Kontext, Grenzen oder gewünschtes Ergebnis"/></label></div><div className="editorActions"><Btn onClick={draft.title.trim().length>=2?onSave:undefined}>Speichern</Btn><button onClick={onCancel}>Abbrechen</button></div></Card>; }
 function DailyArea({ initialTab, text, setText, mood, setMood, note }: any) {
   const [tab, setTab] = useState<"tasks" | "journal">(initialTab);
   useEffect(() => setTab(initialTab), [initialTab]);

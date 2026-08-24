@@ -9,7 +9,7 @@ export type ProgressItem = {
 };
 
 export const systemProgress = {
-  currentPhase: "Echter Wochenplaner bereit · Kalenderwrites einzeln gesperrt",
+  currentPhase: "Professioneller Projektarbeitsraum bereit · echte Datenquellen",
   lastVerifiedAt: "24.08.2026 · Europe/Berlin",
   items: [
     {
@@ -129,6 +129,13 @@ export const systemProgress = {
       label: "Sonntags-Wochenplaner mit echten Quellen",
       evidence: "8 Tage · Europe/Berlin · max. 3 Ziele · 35% Puffer · Review synchronisiert · 0 Hintergrundwrites",
       href: "#weekly",
+      status: "complete",
+    },
+    {
+      id: "project-workspace",
+      label: "Gemeinsamer professioneller Projektarbeitsraum",
+      evidence: "Ziel, Status, nächste Aktion, Aufgaben, Inbox, Wochenplanbezug und inhaltsarmer Verlauf",
+      href: "#projects",
       status: "complete",
     },
     {
