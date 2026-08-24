@@ -88,6 +88,21 @@ test("shares an accessible light and dark preference across desktop and mobile w
   assert.match(mobileConfig, /"userInterfaceStyle": "automatic"/);
 });
 
+test("journal links only real shared counts and a content-minimal daily calendar read", async () => {
+  const route = await readFile(new URL("../app/api/calendar/today-summary/route.ts", import.meta.url), "utf8");
+  assert.doesNotMatch(await readFile(pagePath, "utf8"), /VERKNÜPFUNGSVORSCHAU · BEISPIEL|3 Termine|6 Habits|3 Aufgaben/);
+  assert.match(await readFile(pagePath, "utf8"), /api\/calendar\/today-summary/);
+  assert.match(await readFile(pagePath, "utf8"), /journalHistory/);
+  assert.match(route, /verifyLocalSession/);
+  assert.match(route, /berlinLocalIso/);
+  assert.match(route, /maxResults: "2500"/);
+  assert.match(route, /fields: "items\(id,start,end\),nextPageToken"/);
+  assert.match(route, /titlesExposed: false/);
+  assert.match(route, /boundedDays: 1/);
+  assert.match(route, /writesPerformed: false/);
+  assert.doesNotMatch(route, /summary|description|location|attendees/);
+});
+
 test("uses real shared life-area records and honest external connection boundaries", async () => {
   const page = await readFile(pagePath, "utf8");
   assert.match(page, /function AreaRecordWorkspace/);

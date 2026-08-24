@@ -48,6 +48,14 @@ test('local backups are integrity checked and restoration remains preview-only',
   assert.doesNotMatch(route,/renameSync|copyFileSync|unlinkSync|rmSync/);
 });
 
+test('journal text is encrypted and excluded from public JSON for new writes',()=>{
+  assert.match(store,/delete publicData\.text/);
+  assert.match(store,/kind==='journal_metadata'.*encryptSensitive\(\{text:data\.text\}\)/s);
+  assert.match(store,/kind==='journal_metadata'\)delete visible\.text/);
+  assert.match(store,/kind==='area_records'\|\|kind==='journal_metadata'/);
+  assert.match(store,/legacyJournalPlaintextRows/);
+});
+
 test('audit feed exposes only action metadata behind the private session',async()=>{
   const [store,route]=await Promise.all([
     readFile(new URL('../lib/shared-store.ts',import.meta.url),'utf8'),

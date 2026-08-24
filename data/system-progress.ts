@@ -181,6 +181,13 @@ export const systemProgress = {
       status: "complete",
     },
     {
+      id: "journal-source-truth",
+      label: "Journal mit echten Tagesquellen und privater Historie",
+      evidence: "Heutige Calendar-Anzahl ohne Titel · echte Tasks/Habits · verschlüsselter Text · 0 Writes",
+      href: "#journal",
+      status: "complete",
+    },
+    {
       id: "master-gap-audit",
       label: "Restlücken gegen den vollständigen Masterauftrag prüfen",
       evidence: "Controls, Statuswahrheit, responsive Clients, Doku und sichere nächste Schritte",

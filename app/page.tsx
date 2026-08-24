@@ -1116,7 +1116,22 @@ function Habits({ embedded = false }: { embedded?: boolean }) {
 }
 function Journal({ text, setText, mood, setMood, note, embedded = false }: any) {
   const { records: entries, create } = useSharedRecords("journal_metadata");
+  const { records: tasks, state: taskState } = useSharedRecords("tasks");
+  const { records: habits, state: habitState } = useSharedRecords("habits");
   const [energy, setEnergy] = useState(3);
+  const [selectedEntryId, setSelectedEntryId] = useState("");
+  const [calendarSummary, setCalendarSummary] = useState<any>({ state: "loading" });
+  const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Berlin" }).format(new Date());
+  const selectedEntry = entries.find((entry: any) => entry.id === selectedEntryId);
+  const openTasks = tasks.filter((task: any) => !task.done).length;
+  const completedHabits = habits.filter((habit: any) => Array.isArray(habit.completedOn) && habit.completedOn.includes(today)).length;
+  useEffect(() => {
+    fetch("/api/state/session", { method: "POST" })
+      .then(() => fetch("/api/calendar/today-summary", { cache: "no-store" }))
+      .then((response) => response.json().then((result) => ({ ok: response.ok, result })))
+      .then(({ ok, result }) => setCalendarSummary(ok ? { state: result.connected ? "online" : "unconfigured", ...result } : { state: "error" }))
+      .catch(() => setCalendarSummary({ state: "error" }));
+  }, []);
   const insertPrompt = (prompt: string) => {
     const separator = text.trim() ? "\n\n" : "";
     setText(`${text}${separator}${prompt}\n`);
@@ -1145,7 +1160,7 @@ function Journal({ text, setText, mood, setMood, note, embedded = false }: any) 
             <button onClick={() => insertPrompt("Was darf ich loslassen?")}>Was darf ich loslassen?</button>
             <button onClick={() => insertPrompt("Was nehme ich mit?")}>Was nehme ich mit?</button>
           </div>
-          <Btn onClick={async () => {await create({title:`Journal ${new Date().toISOString().slice(0,10)}`,entryDate:new Date().toISOString().slice(0,10),mood,energy,text,status:'active'});setText('');note("Journal-Metadaten gemeinsam gespeichert · Textfeld verschlüsselt")}}>
+          <Btn onClick={async () => {await create({title:`Journal ${today}`,entryDate:today,mood,energy,text,status:'active'});setText('');note("Journal gemeinsam gespeichert · Textfeld nur verschlüsselt")}}>
             Eintrag abschließen
           </Btn>
         </Card>
@@ -1172,22 +1187,26 @@ function Journal({ text, setText, mood, setMood, note, embedded = false }: any) 
             Energie · {energy}/5 <input type="range" min="1" max="5" value={energy} onChange={(event) => setEnergy(Number(event.target.value))} />
           </label>
           <div className="linked">
-            <Tag>VERKNÜPFUNGSVORSCHAU · BEISPIEL</Tag>
+            <Tag>HEUTE · ECHTE QUELLEN</Tag>
             <span>
-              <I.Calendar />3 Termine
+              <I.Calendar />{calendarSummary.state === "online" ? `${calendarSummary.eventCount} Termine` : calendarSummary.state === "loading" ? "Kalender lädt" : calendarSummary.state === "unconfigured" ? "Kalender nicht verbunden" : "Kalender nicht erreichbar"}
             </span>
             <span>
-              <I.ListChecks />6 Habits
+              <I.ListChecks />{habitState === "online" ? `${completedHabits}/${habits.length} Habits` : "Habits nicht erreichbar"}
             </span>
             <span>
-              <I.CheckSquare />3 Aufgaben
+              <I.CheckSquare />{taskState === "online" ? `${openTasks} Aufgaben offen` : "Aufgaben nicht erreichbar"}
             </span>
           </div>
+          <small className="connectionNote">Kalender: nur heutige Anzahl aus maximal 12 ausgewählten Kalendern, keine Titel und 0 Writes.</small>
         </Card>
         <Card>
           <Tag>VERLAUF</Tag>
           {entries.length===0&&<p>Noch keine gemeinsamen Journaleinträge.</p>}
-          {entries.map((x:any)=><div className="history" key={x.id}><span>{x.entryDate} · {x.mood||'ohne Stimmung'}</span><small>Text verschlüsselt · Detailansicht folgt</small></div>)}
+          <div className="journalHistory">
+            {entries.map((x:any)=><button aria-pressed={selectedEntryId===x.id} className={selectedEntryId===x.id?"active":""} key={x.id} onClick={()=>setSelectedEntryId(current=>current===x.id?"":x.id)}><span>{x.entryDate} · {x.mood||'ohne Stimmung'}</span><small>Energie {x.energy||"—"}/5 · verschlüsselt gespeichert</small></button>)}
+          </div>
+          {selectedEntry&&<div className="journalDetail"><b>{selectedEntry.title}</b><p>{selectedEntry.text||"Dieser Eintrag enthält nur Stimmung und Energie."}</p><small>Private Detailansicht aus dem gemeinsamen Store</small></div>}
         </Card>
       </div>
     </>
