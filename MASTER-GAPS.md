@@ -24,9 +24,8 @@ Stand: 24.08.2026, Europe/Berlin. Diese Liste verwendet nur diskrete Zustände. 
 | --- | --- | --- | --- |
 | 1 | Private API-Oberfläche vollständig vereinheitlichen | Alle wissens-/providerbezogenen Status- und Preview-Routen hinter die signierte lokale Sitzung legen | 401 ohne Sitzung, `no-store, private`, bestehende UI grün |
 | 2 | Projektdateien und Dokumentverweise | Zunächst nur validierte Referenz-Metadaten/Links, kein stilles Kopieren oder Öffnen | Ehrlicher Dateiverweis; keine Vault-/Dateisystemmutation |
-| 3 | Chat-Organisation | Lokale Unterhaltungs-/Zusammenfassungsmetadaten mit manueller ChatGPT-Companion-Übergabe | Kein Scraping, kein behaupteter ChatGPT-Verlauf, keine API-Kosten |
-| 4 | Offline-/Konfliktverhalten | Lesbarer Offlinezustand und explizite Konfliktvorschau für späteres Serverziel | Kein Silent Merge und keine Datenmigration |
-| 5 | Vollständiger Bedienaudit | Prominente Controls erneut auf Desktop/390×844 und im nächsten physischen Expo-Stand prüfen | Echte Aktion oder sichtbar gesperrt; keine irreführenden Toasts |
+| 3 | Offline-/Konfliktverhalten | Lesbarer Offlinezustand und explizite Konfliktvorschau für späteres Serverziel | Kein Silent Merge und keine Datenmigration |
+| 4 | Vollständiger Bedienaudit | Prominente Controls erneut auf Desktop/390×844 und im nächsten physischen Expo-Stand prüfen | Echte Aktion oder sichtbar gesperrt; keine irreführenden Toasts |
 
 ## Nutzerentscheidung oder externe Grenze
 

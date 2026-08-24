@@ -62,6 +62,10 @@ Last verified: 24.08.2026, Europe/Berlin.
 - Die Inbox besitzt jetzt gemeinsame Review-Ansichten für offen, zugeordnet, abgeschlossen und alle sowie eine titelbasierte lokale Suche. Einträge lassen sich direkt abschließen/wieder öffnen; die bestehende Triage unterstützt zusätzlich eine zweistufige reversible Archivierung. Keine Filteraktion startet einen Agenten oder externen Write.
 - Inbox-Browser-Abnahme: alle vier Filter, aktiver Status, Nullzähler und Titelsuche wurden im echten leeren Store auf Desktop/390×844 geprüft; 0 horizontaler Überlauf und keine Testdatensätze.
 - Nach der Inbox-Review-Erweiterung bleiben Root 75/75, TypeScript, ESLint, Electron 2/2, Expo TypeScript/Lint/Web-Export und Next-Produktionsbuild grün.
+- ChatGPT Companion ist jetzt eine echte lokale Organisationsfläche: Emre gibt Titel, bewusst ausgewählte Zusammenfassung, Lebensbereich und optional ein reales Projekt selbst ein. Der verschlüsselte Inbox-Datensatz speichert explizit `manual-companion-import`, `providerMode=chatgpt-subscription-companion` und `modelAccess=none`; vorhandene Einträge können gesucht, privat gelesen und neu zugeordnet werden.
+- Die Providerkarte trennt sichtbar drei Wahrheiten: manueller Companion-Modus aktiv, OpenAI API unkonfiguriert/nutzungsbasiert mit Kill Switch und lokales Modell nicht verifiziert. Es gibt weder ChatGPT-Verlaufs-/Limit-/Modellzugriff noch eine API-Anfrage.
+- Companion-Browser-Abnahme: vollständige Erfassungsfelder, ehrliche leere Bibliothek, drei Providerzustände und deaktiviertes Leer-Speichern rendern auf Desktop/390×844 ohne Überlauf; keine Zusammenfassung wurde erzeugt.
+- Nach der Companion-Erweiterung sind Root 76/76, TypeScript, ESLint, Electron 2/2, Expo TypeScript/Lint/Web-Export und Next-Produktionsbuild grün.
 
 ## Verification
 

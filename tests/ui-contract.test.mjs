@@ -115,6 +115,18 @@ test("universal inbox provides real encrypted triage instead of fake file captur
   assert.doesNotMatch(page, /\["Idee", "Aufgabe", "Notiz", "ChatGPT-Notiz", "Link", "Datei"\]/);
 });
 
+test("ChatGPT Companion organizes only deliberate local summaries and tells provider truth", async () => {
+  const page = await readFile(pagePath, "utf8");
+  for (const truth of ["CHATGPT COMPANION MODE · STANDARD", "Kein Scraping", "LOKALE COMPANION-BIBLIOTHEK", "kein direkter Modellzugriff", "Kill Switch aktiv", "Lokales Modell", "Nicht verifiziert", "Providerzugriff: keiner"]) assert.match(page, new RegExp(truth, "i"));
+  assert.match(page, /manual-companion-import/);
+  assert.match(page, /chatgpt-subscription-companion/);
+  assert.match(page, /modelAccess: "none"/);
+  assert.match(page, /useSharedRecords\("inbox_items"\)/);
+  assert.match(page, /useSharedRecords\("projects"\)/);
+  assert.match(page, /saveOrganization/);
+  assert.doesNotMatch(page, /fetch\([^\n]+chatgpt\.com[^\n]+history/i);
+});
+
 test("knowledge search stays inside the signed metadata-only vault preview", async () => {
   const [page, route] = await Promise.all([
     readFile(pagePath, "utf8"),

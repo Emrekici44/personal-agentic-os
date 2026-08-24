@@ -1281,15 +1281,20 @@ function Skills({ note }: any) {
   </>;
 }
 function Chats({ note }: any) {
-  const [summary, setSummary] = useState("");
-  const { records: captures, state, create } = useSharedRecords("inbox_items");
+  const [summary, setSummary] = useState(""), [captureTitle, setCaptureTitle] = useState(""), [area, setArea] = useState("Inbox"), [projectId, setProjectId] = useState(""), [query, setQuery] = useState(""), [selectedId, setSelectedId] = useState(""), [organizeDraft, setOrganizeDraft] = useState<any>(null);
+  const { records: inboxRecords, state, create, update } = useSharedRecords("inbox_items");
+  const { records: projects } = useSharedRecords("projects");
+  const captures = inboxRecords.filter((item: any) => item.itemType === "ChatGPT-Zusammenfassung");
+  const visibleCaptures = captures.filter((item: any) => !query.trim() || String(item.title || "").toLocaleLowerCase("de-DE").includes(query.trim().toLocaleLowerCase("de-DE")));
+  const selectedCapture = captures.find((item: any) => item.id === selectedId);
   const saveSummary = async () => {
-    const value = summary.trim();
-    if (value.length < 2) return note("Bitte zuerst eine ausgewählte Zusammenfassung einfügen");
-    await create({ title: value.slice(0, 120), content: value, itemType: "ChatGPT-Zusammenfassung", status: "active", source: "manual-companion-import" });
-    setSummary("");
-    note("Ausgewählte Zusammenfassung im gemeinsamen Eingang gespeichert");
+    const value = summary.trim(), title = captureTitle.trim();
+    if (title.length < 2 || value.length < 2) return note("Titel und ausgewählte Zusammenfassung werden benötigt");
+    try { const created = await create({ title, content: value, itemType: "ChatGPT-Zusammenfassung", status: "active", area, projectId: projectId || "", source: "manual-companion-import", providerMode: "chatgpt-subscription-companion", modelAccess: "none" }); setSummary(""); setCaptureTitle(""); setArea("Inbox"); setProjectId(""); setSelectedId(created.id); note("Ausgewählte Zusammenfassung im gemeinsamen Eingang gespeichert"); } catch (error) { note(error instanceof Error ? error.message : "Zusammenfassung konnte nicht gespeichert werden"); }
   };
+  const openCapture = (capture: any) => { setSelectedId(capture.id); setOrganizeDraft({ title: capture.title, area: capture.area || "Inbox", projectId: capture.projectId || "", status: capture.status || "active" }); };
+  const saveOrganization = async () => { if (!selectedCapture || !organizeDraft) return; try { await update({ ...selectedCapture, ...organizeDraft }); note("Companion-Zusammenfassung gemeinsam organisiert"); setOrganizeDraft(null); } catch (error) { note(error instanceof Error ? error.message : "Organisation konnte nicht gespeichert werden"); } };
+  const areaOptions = [["Inbox","Noch offen"],["faith","Glaube"],["career","Karriere"],["health","Gesundheit"],["finance","Finanzen"],["relations","Beziehungen"],["projects","Projekte"]];
   return (
     <>
       <Intro
@@ -1319,31 +1324,19 @@ function Chats({ note }: any) {
           ChatGPT öffnen <I.ExternalLink />
         </a>
       </Card>
-      <div className="chatlayout companionLayout">
+      <div className="companionWorkspace">
         <Card className="chatbox companionCapture">
           <Tag>BEWUSSTE ÜBERNAHME · KEIN SCRAPING</Tag>
           <h3>Eine ausgewählte ChatGPT-Zusammenfassung erfassen</h3>
           <p>Füge nur den Inhalt ein, den Agentic OS dauerhaft strukturieren darf. Es gibt keinen automatischen Zugriff auf deinen Chatverlauf.</p>
-          <textarea value={summary} onChange={(event) => setSummary(event.target.value)} placeholder="Zusammenfassung oder nächste Schritte aus ChatGPT …" />
-          <Btn onClick={saveSummary}>In gemeinsamen Eingang übernehmen</Btn>
+          <div className="companionCaptureFields"><label>Titel<input maxLength={120} value={captureTitle} onChange={(event) => setCaptureTitle(event.target.value)} placeholder="Worum ging es in diesem Gespräch?" /></label><label>Lebensbereich<select value={area} onChange={(event) => setArea(event.target.value)}>{areaOptions.map(([id,label]) => <option key={id} value={id}>{label}</option>)}</select></label><label>Projekt (optional)<select value={projectId} onChange={(event) => setProjectId(event.target.value)}><option value="">Kein Projekt</option>{projects.map((project: any) => <option key={project.id} value={project.id}>{project.title}</option>)}</select></label><label className="wide">Ausgewählte Zusammenfassung<textarea maxLength={8000} value={summary} onChange={(event) => setSummary(event.target.value)} placeholder="Zusammenfassung oder nächste Schritte aus ChatGPT …" /></label></div>
+          <Btn onClick={captureTitle.trim().length >= 2 && summary.trim().length >= 2 ? saveSummary : undefined}>In gemeinsamen Eingang übernehmen</Btn>
           <small className="mockline"><I.Shield />Manueller Import · lokal gespeichert · {state === "online" ? `${captures.filter((item: any) => item.itemType === "ChatGPT-Zusammenfassung").length} erfasst` : "Store nicht erreichbar"}</small>
         </Card>
-        <Card className="modelcard">
-          <Tag>OPENAI API · OPTIONAL · NUTZUNGSBASIERT</Tag>
-          <div className="provider">
-            <i className="unconfigured" />
-            <span>
-              <b>OpenAI API</b>
-              <small>Deaktiviert · Kill switch aktiv</small>
-            </span>
-          </div>
-          <p>
-            ChatGPT Pro gewährt keinen API-Zugriff. Die serverseitige Grenze
-            bleibt ohne Schlüssel und ausdrückliche Kostenfreigabe gesperrt.
-          </p>
-          <span className="connectionNote">Aktivierung bleibt gesperrt, bis Kostenlimit und ausdrückliche Freigabe vorliegen.</span>
-        </Card>
+        <Card className="providerTruth"><Tag>PROVIDER-MODI · EHRLICHER STATUS</Tag><div><span className="provider online"><i/><b>ChatGPT Companion</b><small>Aktiver manueller Modus · im vorhandenen Abo · kein direkter Modellzugriff</small></span><span className="provider unconfigured"><i/><b>OpenAI API</b><small>Deaktiviert · nutzungsbasiert · Kill Switch aktiv · separate Kostenfreigabe</small></span><span className="provider unconfigured"><i/><b>Lokales Modell</b><small>Nicht verifiziert · kein Runtime-/Modell-Installationsstand behauptet</small></span></div><p>Eine Zusammenfassung speichert nur den von dir ausgewählten Text. Agentic OS liest weder Verlauf noch Modellnamen oder Subscription-Limits automatisch.</p></Card>
       </div>
+      <Card className="companionLibrary"><div className="row"><div><Tag>LOKALE COMPANION-BIBLIOTHEK</Tag><h3>{captures.length} bewusst übernommene Zusammenfassungen</h3></div><label><span className="srOnly">Companion-Zusammenfassungen durchsuchen</span><input onChange={(event) => setQuery(event.target.value)} placeholder="Titel filtern …" type="search" value={query}/></label></div>{state === "error" && <p role="alert">Gemeinsame Zusammenfassungen sind gerade nicht erreichbar.</p>}{state === "online" && captures.length === 0 && <div className="honestEmpty"><I.MessagesSquare/><span><b>Noch keine ausgewählte Zusammenfassung</b>Es werden keine Chatverläufe oder Beispielgespräche importiert.</span></div>}{captures.length > 0 && visibleCaptures.length === 0 && <p>Kein Titel passt zur lokalen Suche.</p>}<div className="companionCaptureList">{visibleCaptures.map((capture: any) => <button aria-pressed={selectedId === capture.id} className={selectedId === capture.id ? "active" : ""} key={capture.id} onClick={() => openCapture(capture)} type="button"><I.MessageSquareText/><span><b>{capture.title}</b><small>{areaOptions.find(([id]) => id === (capture.area || "Inbox"))?.[1]} · {capture.projectId ? projects.find((project: any) => project.id === capture.projectId)?.title || "Projekt nicht verfügbar" : "Kein Projekt"} · {capture.status === "completed" ? "Abgeschlossen" : "Offen"}</small></span><I.ChevronRight/></button>)}</div></Card>
+      {selectedCapture && <Card className="companionDetail"><div className="row"><div><Tag>MANUELLER IMPORT · PRIVAT</Tag><h3>{selectedCapture.title}</h3></div><button aria-label="Companion-Detail schließen" onClick={() => { setSelectedId(""); setOrganizeDraft(null); }}><I.X/></button></div><p>{selectedCapture.content}</p><small>Quelle: manuelle Auswahl · Providerzugriff: keiner · Modell: nicht verifiziert</small>{organizeDraft ? <div className="companionOrganize"><label>Titel<input maxLength={120} value={organizeDraft.title} onChange={(event) => setOrganizeDraft({ ...organizeDraft, title: event.target.value })}/></label><label>Lebensbereich<select value={organizeDraft.area} onChange={(event) => setOrganizeDraft({ ...organizeDraft, area: event.target.value })}>{areaOptions.map(([id,label]) => <option key={id} value={id}>{label}</option>)}</select></label><label>Projekt<select value={organizeDraft.projectId} onChange={(event) => setOrganizeDraft({ ...organizeDraft, projectId: event.target.value })}><option value="">Kein Projekt</option>{projects.map((project: any) => <option key={project.id} value={project.id}>{project.title}</option>)}</select></label><label>Status<select value={organizeDraft.status} onChange={(event) => setOrganizeDraft({ ...organizeDraft, status: event.target.value })}><option value="active">Offen</option><option value="planned">Eingeplant</option><option value="completed">Abgeschlossen</option></select></label><div className="editorActions"><Btn onClick={organizeDraft.title.trim().length >= 2 ? saveOrganization : undefined}>Organisation speichern</Btn><button onClick={() => setOrganizeDraft(null)}>Abbrechen</button></div></div> : <Btn soft onClick={() => openCapture(selectedCapture)}>Zuordnung bearbeiten</Btn>}</Card>}
     </>
   );
 }

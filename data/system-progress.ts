@@ -9,7 +9,7 @@ export type ProgressItem = {
 };
 
 export const systemProgress = {
-  currentPhase: "Inbox-Review und Filter bereit · lokale Companion-Organisation wird vertieft",
+  currentPhase: "Lokale Companion-Organisation bereit · Offline-/Konflikt- und Bedienaudit aktiv",
   lastVerifiedAt: "24.08.2026 · Europe/Berlin",
   items: [
     {
@@ -232,8 +232,15 @@ export const systemProgress = {
     {
       id: "companion-organization",
       label: "Lokale ChatGPT-Companion-Organisation",
-      evidence: "Ausgewählte Zusammenfassungen ordnen · kein Scraping, kein API-/Verlaufszugriff",
+      evidence: "Titel/Summary/Bereich/Projekt · verschlüsselte Bibliothek · drei ehrliche Providerzustände · kein Scraping/API-Zugriff",
       href: "#chat",
+      status: "complete",
+    },
+    {
+      id: "offline-conflict-audit",
+      label: "Offline-/Konflikt- und abschließender Bedienaudit",
+      evidence: "Lesbare Fehlerzustände · kein Silent Merge · Desktop/390×844 Controls",
+      href: "#settings",
       status: "active",
     },
     {
