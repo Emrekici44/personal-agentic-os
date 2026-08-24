@@ -103,6 +103,7 @@ function useSharedRecords(kind:string){
   const[records,setRecords]=useState<any[]>([]),[state,setState]=useState<'loading'|'online'|'error'>('loading');
   const load=useCallback(async()=>{setState('loading');try{await privateApiFetch('/api/state/session',{method:'POST'});const response=await privateApiFetch(`/api/state/records/${kind}`,{cache:'no-store'});if(!response.ok)throw new Error();const data=await response.json();setRecords(data.records||[]);setState('online')}catch{setRecords([]);setState('error')}},[kind]);
   useEffect(()=>{void load();const recover=()=>void load();window.addEventListener('agentic-os:runtime-online',recover);return()=>window.removeEventListener('agentic-os:runtime-online',recover)},[load]);
+  useEffect(()=>{if(state!=="error")return;const recover=()=>void load();window.addEventListener("focus",recover);window.addEventListener("online",recover);return()=>{window.removeEventListener("focus",recover);window.removeEventListener("online",recover)}},[load,state]);
   const request=async(url:string,init:RequestInit,fallback:string)=>{if(state!=='online')throw new Error('Gemeinsamer Datenkern ist nicht schreibbereit');let response:Response;try{response=await privateApiFetch(url,init)}catch{setRecords([]);setState('error');throw new Error('Gemeinsamer Datenkern nicht erreichbar')}let result:any;try{result=await response.json()}catch{setRecords([]);setState('error');throw new Error('Ungültige Antwort des gemeinsamen Datenkerns')}if(!response.ok){if(response.status===409)await load();throw new Error(result.error||fallback)}await load();return result};
   const create=async(data:any)=>request(`/api/state/records/${kind}`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(data)},'Speichern fehlgeschlagen');
   const update=async(data:any)=>request(`/api/state/records/${kind}`,{method:'PATCH',headers:{'content-type':'application/json'},body:JSON.stringify(data)},'Aktualisieren fehlgeschlagen');
@@ -492,7 +493,7 @@ function RetryNotice({ message, onRetry, label = "Erneut laden" }: { message: st
   return <div className="inlineRecovery" role="alert"><I.WifiOff/><span>{message}</span><button onClick={onRetry} type="button"><I.RefreshCw/>{label}</button></div>;
 }
 function Home({ go }: any) {
-  const { records: tasks, state: taskState } = useSharedRecords("tasks");
+  const { records: tasks, state: taskState, reload: reloadTasks } = useSharedRecords("tasks");
   const [calendarState, setCalendarState] = useState("loading");
   const [plannerState, setPlannerState] = useState<any>({ state: "loading", plan: null });
   const [vaultState, setVaultState] = useState("loading");
@@ -541,6 +542,7 @@ function Home({ go }: any) {
         <p>Was braucht heute wirklich deine Aufmerksamkeit?</p>
       </Intro>
       <p className="sourceLine"><I.Database /> Fokus, Aufgaben, Bereichszähler und Verbindungsstatus stammen aus gemeinsamen oder verifizierten Quellen.</p>
+      {taskState==="error"&&<RetryNotice message="Die gemeinsame Aufgabenquelle ist gerade nicht erreichbar; es wird keine leere Prioritätenliste behauptet." onRetry={reloadTasks} label="Aufgaben neu laden"/>}
       <div className="focusrow">
         <Card className="now">
           <div className="row">
@@ -704,7 +706,7 @@ function SystemProgress({ go }: any) {
   );
 }
 function Areas({ go }: any) {
-  const { records, state } = useSharedRecords("area_records");
+  const { records, state, reload } = useSharedRecords("area_records");
   return (
     <>
       <Intro
@@ -719,6 +721,7 @@ function Areas({ go }: any) {
       <p className="sourceLine" role="status">
         <I.Database /> {state === "online" ? "Gemeinsamer privater Datenkern" : state === "loading" ? "Bereichsdaten werden geladen …" : "Bereichsdaten derzeit nicht erreichbar"}
       </p>
+      {state==="error"&&<RetryNotice message="Die gemeinsamen Bereichsdaten sind gerade nicht erreichbar; alle Zähler bleiben unverifiziert." onRetry={reload} label="Bereiche neu laden"/>}
       <div className="area-grid">
         {areas.map(([id, n, c, s, Icon], i) => {
           const count = id === "projects" ? null : records.filter((record: any) => record.area === id).length;
@@ -833,7 +836,7 @@ function DomainInsights({area,records,openCreate}:{area:AreaRecordConfig["area"]
 }
 
 function AreaRecordWorkspace({ config, note }: { config: AreaRecordConfig; note: (message: string) => void }) {
-  const { records: allRecords, state, create, update, archive } = useSharedRecords("area_records");
+  const { records: allRecords, state, create, update, archive, reload } = useSharedRecords("area_records");
   const records = allRecords.filter((record: any) => record.area === config.area);
   const emptyForm = () => ({ title: "", recordType: config.types[0][0], status: "active", details: "", date: "", amount: "", targetAmount:"", currency: "EUR", track: config.tracks?.[0][0] || "",prayerName:"fajr",completed:false,quranPage:"",pagesRead:"",durationMinutes:"",intensity:"moderate",recoveryScore:"",sleepHours:"",mealType:"",metricValue:"",unit:"",category:"",frequency:"monthly",birthday:"",lastContact:"",nextFollowUp:"",relationshipCategory:"family",constellationSlot:"1" });
   const [form, setForm] = useState<any>(emptyForm);
@@ -912,7 +915,7 @@ function AreaRecordWorkspace({ config, note }: { config: AreaRecordConfig; note:
         </Card>
       )}
       {state === "loading" && <p role="status">Gemeinsame Bereichsdaten werden geladen …</p>}
-      {state === "error" && <Card><Tag>OFFLINE</Tag><h3>Gemeinsamer Datenkern nicht erreichbar</h3><p>Es werden keine Ersatz- oder Beispieldaten angezeigt.</p></Card>}
+      {state === "error" && <RetryNotice message="Gemeinsamer Datenkern nicht erreichbar. Es werden keine Ersatz- oder Beispieldaten angezeigt." onRetry={reload} label="Bereich neu laden"/>}
       {state === "online" && records.length === 0 && <Card className="trueEmpty"><I.Database /><div><Tag>ECHTE DATENQUELLE · LEER</Tag><h3>Noch keine Einträge</h3><p>Lege nur an, was für diesen Bereich tatsächlich nützlich ist.</p></div><Btn onClick={() => openCreate()}><I.Plus /> Ersten Eintrag anlegen</Btn></Card>}
       {state==="online" && selected && (
         <Card className="areaRecordDetail">
@@ -955,7 +958,7 @@ function Relations({ note }: any) { return <AreaRecordWorkspace config={areaReco
 function Projects({ note }: any) {
   const [view, setView] = useState<"grid" | "list">("grid"), [showCreate, setShowCreate] = useState(false), [selectedId, setSelectedId] = useState(""), [tab, setTab] = useState<"overview" | "tasks" | "inbox" | "resources" | "history">("overview"), [workspace, setWorkspace] = useState<any>(null), [workspaceState, setWorkspaceState] = useState<"idle" | "loading" | "online" | "error">("idle"), [editing, setEditing] = useState(false),[projectArchiveArmed,setProjectArchiveArmed]=useState(false);
   const [draft, setDraft] = useState<any>({ title: "", goal: "", description: "", nextAction: "", dueDate: "", status: "planned" }), [taskDraft, setTaskDraft] = useState({ title: "", dueAt: "", priority: "medium" }), [inboxDraft, setInboxDraft] = useState(""), [resourceDraft,setResourceDraft]=useState({title:"",kind:"link",reference:""}),[revealedResourceId,setRevealedResourceId]=useState("");
-  const { records: projects, state, create: createProject, update: updateProject, archive: archiveProject } = useSharedRecords("projects");
+  const { records: projects, state, create: createProject, update: updateProject, archive: archiveProject, reload: reloadProjects } = useSharedRecords("projects");
   const { records: tasks, state: taskState, create: createTask, update: updateTask, reload: reloadTasks } = useSharedRecords("tasks");
   const { records: inbox, state: inboxState, create: createInbox, update: updateInbox, reload: reloadInbox } = useSharedRecords("inbox_items");
   const selected = projects.find((project: any) => project.id === selectedId);
@@ -998,7 +1001,7 @@ function Projects({ note }: any) {
       ><p>{selected ? "Ziel, nächste Aktionen, Aufgaben, Inbox, Ressourcen und Verlauf aus einer gemeinsamen Quelle." : "Keine Demo-Boards: nur echte Vorhaben, verknüpfte Arbeit und ehrliche Leerzustände."}</p></Intro>
       {state === "online" && showCreate && <ProjectEditor draft={draft} setDraft={setDraft} onSave={addProject} onCancel={() => setShowCreate(false)} title="Neues Projekt" />}
       {state==='loading'&&<p role="status">Gemeinsame Projekte werden geladen …</p>}
-      {state==='error'&&<p role="alert">Der gemeinsame Projektbestand ist gerade nicht erreichbar.</p>}
+      {state==='error'&&<RetryNotice message="Der gemeinsame Projektbestand ist gerade nicht erreichbar; es werden keine Projektkarten ersetzt oder erfunden." onRetry={reloadProjects} label="Projekte neu laden"/>}
       {state==='online'&&!selected&&projects.length===0&&<Card className="honestEmpty"><I.FolderKanban/><span><b>Noch keine gemeinsamen Projekte</b>Lege ein echtes Projekt mit Ziel oder nächster Aktion an. Agentic OS erzeugt keine Beispielkarten.</span></Card>}
       {!selected && projects.length > 0 && <><div className="projectToolbar"><span><b>{projects.length}</b> echte Projekte · Laptop Shared Store</span><div role="group" aria-label="Projektansicht"><button aria-pressed={view==="grid"} onClick={()=>setView("grid")}><I.LayoutGrid/>Karten</button><button aria-pressed={view==="list"} onClick={()=>setView("list")}><I.List/>Liste</button></div></div><div className={`projectWorkspaceGrid ${view}`}>
         {projects.map((project:any, index:number) => { const linkedTasks=tasks.filter((task:any)=>task.projectId===project.id), open=linkedTasks.filter((task:any)=>!task.done).length, linkedInbox=inbox.filter((item:any)=>item.projectId===project.id).length; return <button className="projectOpen" key={project.id} onClick={()=>openProject(project.id)}><Card><div className="row"><span className={"projectSymbol s"+index}><I.FolderKanban/></span><em>{statusLabel[project.status]||project.status}</em></div><h3>{project.title}</h3><p>{project.goal||"Ziel noch nicht festgelegt"}</p><div className="projectFacts"><span><b>{taskState==="online"?open:"—"}</b>{taskState==="online"?" offene Aufgaben":taskState==="loading"?" Aufgaben werden geladen":" Aufgaben nicht erreichbar"}</span><span><b>{inboxState==="online"?linkedInbox:"—"}</b>{inboxState==="online"?" Inbox-Verknüpfungen":inboxState==="loading"?" Inbox wird geladen":" Inbox nicht erreichbar"}</span></div><div className="nextAction"><small>NÄCHSTE AKTION</small><b>{project.nextAction||"Noch nicht festgelegt"}</b></div></Card></button>; })}
@@ -1086,6 +1089,7 @@ function Habits({ embedded = false }: { embedded?: boolean }) {
     create: createTask,
     update: updateTask,
     archive: archiveTask,
+    reload: reloadTasks,
   } = useSharedRecords("tasks");
   const {
     records: habits,
@@ -1093,8 +1097,9 @@ function Habits({ embedded = false }: { embedded?: boolean }) {
     create: createHabit,
     update: updateHabit,
     archive: archiveHabit,
+    reload: reloadHabits,
   } = useSharedRecords("habits");
-  const { records: projects, state: projectState } = useSharedRecords("projects");
+  const { records: projects, state: projectState, reload: reloadProjects } = useSharedRecords("projects");
   const today = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Europe/Berlin",
   }).format(new Date());
@@ -1176,7 +1181,7 @@ function Habits({ embedded = false }: { embedded?: boolean }) {
           <button className="taskCreate" disabled={habitState !== "online"} onClick={() => { setHabitDraft(emptyHabit); setEditingHabitId(""); setHabitEditorOpen(true); }} type="button"><I.Plus /> Habit anlegen</button>
           {habitState === "online" && habitEditorOpen && <div className="dailyRecordEditor"><label>Habit<input aria-label="Habit-Name" value={habitDraft.title || ""} onChange={(event) => setHabitDraft({ ...habitDraft, title: event.target.value })} placeholder="Eine freiwillige Routine …" /></label><label>Rhythmus<select value={habitDraft.cadence || "daily"} onChange={(event) => setHabitDraft({ ...habitDraft, cadence: event.target.value })}><option value="daily">Täglich</option><option value="weekly">Wöchentlich</option></select></label><div><Btn onClick={String(habitDraft.title || "").trim().length >= 2 ? saveHabit : undefined}>{editingHabitId ? "Änderung speichern" : "Habit speichern"}</Btn><button onClick={() => { setHabitEditorOpen(false); setEditingHabitId(""); }}>Abbrechen</button>{editingHabitId && <button className="dangerQuiet" onClick={async () => { await archiveHabit(editingHabitId); setHabitEditorOpen(false); setEditingHabitId(""); }}>Archivieren</button>}</div></div>}
           {habitState === "loading" && <p role="status">Habits werden geladen …</p>}
-          {habitState === "error" && <p role="alert">Gemeinsame Habits sind gerade nicht erreichbar.</p>}
+          {habitState === "error" && <RetryNotice message="Gemeinsame Habits sind gerade nicht erreichbar." onRetry={reloadHabits} label="Habits neu laden"/>}
           {habitState === "online" && habits.length === 0 && (
             <p>Noch keine Habits erfasst. Es werden keine Routinen vorgegeben.</p>
           )}
@@ -1189,7 +1194,7 @@ function Habits({ embedded = false }: { embedded?: boolean }) {
           <button className="taskCreate" disabled={taskState !== "online"} onClick={() => { setTaskDraft(emptyTask); setChecklistText(""); setEditingTaskId(""); setTaskEditorOpen(true); }} type="button"><I.Plus /> Aufgabe anlegen</button>
           {taskState === "online" && taskEditorOpen && <div className="dailyRecordEditor taskFields"><label className="wide">Aufgabe<input aria-label="Aufgabentitel im Tagesbereich" value={taskDraft.title || ""} onChange={(event) => setTaskDraft({ ...taskDraft, title: event.target.value })} placeholder="Konkreter nächster Schritt …" /></label><label>Priorität<select value={taskDraft.priority || "medium"} onChange={(event) => setTaskDraft({ ...taskDraft, priority: event.target.value })}><option value="low">Niedrig</option><option value="medium">Mittel</option><option value="high">Hoch</option></select></label><label>Fällig<input type="date" value={taskDraft.dueAt || ""} onChange={(event) => setTaskDraft({ ...taskDraft, dueAt: event.target.value })} /></label><label>Lebensbereich<select value={taskDraft.area || "Inbox"} onChange={(event) => setTaskDraft({ ...taskDraft, area: event.target.value })}>{["Inbox","Glaube","Karriere","Gesundheit","Finanzen","Beziehungen","Projekte"].map(area => <option key={area} value={area}>{area}</option>)}</select></label><label>Projekt (optional)<select disabled={projectState !== "online"} value={taskDraft.projectId || ""} onChange={(event) => setTaskDraft({ ...taskDraft, projectId: event.target.value })}><option value="">{projectState === "online" ? "Kein Projekt" : projectState === "loading" ? "Projektquelle wird geladen" : "Projektquelle nicht erreichbar"}</option>{projects.map((project: any) => <option key={project.id} value={project.id}>{project.title}</option>)}</select></label><div className="checklistEditor wide"><b>Checkliste (optional · maximal 20)</b>{(taskDraft.checklist || []).map((item: any) => <div key={item.id}><input aria-label={`${item.label} als erledigt markieren`} checked={Boolean(item.done)} onChange={(event) => updateChecklistItem(item.id, { done: event.target.checked })} type="checkbox"/><input aria-label="Checklistenpunkt bearbeiten" maxLength={160} value={item.label} onChange={(event) => updateChecklistItem(item.id, { label: event.target.value })}/><button aria-label={`${item.label} entfernen`} onClick={() => removeChecklistItem(item.id)} type="button"><I.X /></button></div>)}<div><input aria-label="Neuer Checklistenpunkt" maxLength={160} onChange={(event) => setChecklistText(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); addChecklistItem(); } }} placeholder="Unterpunkt hinzufügen …" value={checklistText}/><button aria-label="Checklistenpunkt hinzufügen" disabled={!checklistText.trim() || (taskDraft.checklist || []).length >= 20} onClick={addChecklistItem} type="button"><I.Plus /></button></div></div><div className="wide"><Btn onClick={String(taskDraft.title || "").trim().length >= 2 && (!taskDraft.projectId || projectState === "online") && (taskDraft.checklist || []).every((item: any) => String(item.label || "").trim()) ? saveTask : undefined}>{editingTaskId ? "Änderung speichern" : "Aufgabe speichern"}</Btn><button onClick={() => { setTaskEditorOpen(false); setEditingTaskId(""); setChecklistText(""); }}>Abbrechen</button>{editingTaskId && <button className="dangerQuiet" onClick={async () => { await archiveTask(editingTaskId); setTaskEditorOpen(false); setEditingTaskId(""); }}>Archivieren</button>}</div></div>}
           {taskState === "loading" && <p role="status">Aufgaben werden geladen …</p>}
-          {taskState === "error" && <p role="alert">Gemeinsame Aufgaben sind gerade nicht erreichbar.</p>}
+          {taskState === "error" && <RetryNotice message="Gemeinsame Aufgaben sind gerade nicht erreichbar." onRetry={reloadTasks} label="Aufgaben neu laden"/>}
           {taskState === "online" && tasks.length === 0 && <p>Noch keine gemeinsamen Aufgaben.</p>}
           {tasks.map((t: any) => (
             <div className="taskWithChecklist" key={t.id}><div className="dailyRecord"><button aria-label={`${t.title} ${t.done ? "wieder öffnen" : "erledigen"}`} aria-pressed={Boolean(t.done)} className="taskrow" onClick={() => toggleTask(t)} type="button"><i className={t.done ? "done" : ""}>{t.done && <I.Check />}</i><span className={t.done ? "strike" : ""}>{t.title}<small>{t.area || "Inbox"} · Priorität {t.priority === "high" ? "hoch" : t.priority === "low" ? "niedrig" : "mittel"}{t.dueAt ? ` · fällig ${t.dueAt}` : ""}{t.projectId ? " · Projekt" : ""}{t.checklist?.length ? ` · ${t.checklist.filter((item: any) => item.done).length}/${t.checklist.length} Unterpunkte` : ""}</small></span></button><button aria-label={`${t.title} bearbeiten`} className="recordEdit" onClick={() => editTask(t)} type="button"><I.Pencil /></button></div>{t.checklist?.length > 0 && <div className="taskChecklist" aria-label={`Checkliste für ${t.title}`}>{t.checklist.map((item: any) => <button aria-pressed={Boolean(item.done)} key={item.id} onClick={() => toggleChecklistItem(t, item.id)} type="button"><i className={item.done ? "done" : ""}>{item.done && <I.Check />}</i><span className={item.done ? "strike" : ""}>{item.label}</span></button>)}</div>}</div>
@@ -1200,6 +1205,7 @@ function Habits({ embedded = false }: { embedded?: boolean }) {
           <h3>{dailyState === "online" ? `${openTasks} offene Aufgaben` : dailyState === "loading" ? "Tagesdaten werden geladen" : "Tagesdaten nicht vollständig erreichbar"}</h3>
           <p>{dailyState === "online" ? `${dueTasks} heute fällig oder überfällig · ${completedHabits} von ${habits.length} Habits im jeweiligen Rhythmus markiert.` : "Es werden keine Nullstände aus einer fehlenden Quelle abgeleitet."}</p>
           <p>Kein verlorener Streak und keine erfundete Serie. Morgen ist ein neuer Tag.</p>
+          {projectState==="error"&&<RetryNotice message="Projektzuordnungen sind gerade nicht verifizierbar." onRetry={reloadProjects} label="Projekte neu laden"/>}
           {error && <p role="alert">{error}</p>}
         </Card>
       </div>
@@ -1207,9 +1213,9 @@ function Habits({ embedded = false }: { embedded?: boolean }) {
   );
 }
 function Journal({ text, setText, mood, setMood, note, embedded = false }: any) {
-  const { records: entries, state: journalState, create, archive } = useSharedRecords("journal_metadata");
-  const { records: tasks, state: taskState } = useSharedRecords("tasks");
-  const { records: habits, state: habitState } = useSharedRecords("habits");
+  const { records: entries, state: journalState, create, archive, reload: reloadJournal } = useSharedRecords("journal_metadata");
+  const { records: tasks, state: taskState, reload: reloadTasks } = useSharedRecords("tasks");
+  const { records: habits, state: habitState, reload: reloadHabits } = useSharedRecords("habits");
   const [energy, setEnergy] = useState(3);
   const [selectedEntryId, setSelectedEntryId] = useState("");
   const [journalArchiveArmed, setJournalArchiveArmed] = useState(false);
@@ -1290,7 +1296,7 @@ function Journal({ text, setText, mood, setMood, note, embedded = false }: any) 
             Eintrag abschließen
           </Btn>
           {journalState === "loading" && <p role="status">Journalquelle wird geladen …</p>}
-          {journalState === "error" && <p role="alert">Der Entwurf bleibt auf diesem Gerät; der gemeinsame Abschluss ist bis zur Wiederverbindung gesperrt.</p>}
+          {journalState === "error" && <RetryNotice message="Der Entwurf bleibt auf diesem Gerät; der gemeinsame Abschluss ist bis zur Wiederverbindung gesperrt." onRetry={reloadJournal} label="Journal neu laden"/>}
         </Card>
         <Card>
           <Tag>STIMMUNG & ENERGIE</Tag>
@@ -1328,11 +1334,13 @@ function Journal({ text, setText, mood, setMood, note, embedded = false }: any) 
           </div>
           <small className="connectionNote">Kalender: nur heutige Anzahl aus maximal 12 ausgewählten Kalendern, keine Titel und 0 Writes.</small>
           {calendarSummary.state === "error" && <RetryNotice message="Die inhaltsarme Kalender-Tageszahl ist gerade nicht erreichbar." onRetry={loadCalendarSummary} label="Tageszahl neu laden" />}
+          {habitState === "error" && <RetryNotice message="Die Habit-Anzahl ist gerade nicht verifiziert." onRetry={reloadHabits} label="Habits neu laden"/>}
+          {taskState === "error" && <RetryNotice message="Die Aufgabenanzahl ist gerade nicht verifiziert." onRetry={reloadTasks} label="Aufgaben neu laden"/>}
         </Card>
         <Card>
           <Tag>VERLAUF</Tag>
           {journalState === "loading" && <p role="status">Journalverlauf wird geladen …</p>}
-          {journalState === "error" && <p role="alert">Gemeinsamer Journalverlauf nicht erreichbar.</p>}
+          {journalState === "error" && <p role="alert">Gemeinsamer Journalverlauf nicht erreichbar; über „Journal neu laden“ wird die private Quelle erneut geprüft.</p>}
           {journalState === "online" && entries.length===0&&<p>Noch keine gemeinsamen Journaleinträge.</p>}
           <div className="journalHistory">
             {entries.map((x:any)=><button aria-pressed={selectedEntryId===x.id} className={selectedEntryId===x.id?"active":""} key={x.id} onClick={()=>{setSelectedEntryId(current=>current===x.id?"":x.id);setJournalArchiveArmed(false)}}><span>{x.entryDate} · {x.mood||'ohne Stimmung'}</span><small>Energie {x.energy||"—"}/5 · verschlüsselt gespeichert</small></button>)}
@@ -1426,8 +1434,8 @@ function Skills({ note }: any) {
 }
 function Chats({ note }: any) {
   const [summary, setSummary] = useState(""), [captureTitle, setCaptureTitle] = useState(""), [area, setArea] = useState("Inbox"), [projectId, setProjectId] = useState(""), [query, setQuery] = useState(""), [selectedId, setSelectedId] = useState(""), [organizeDraft, setOrganizeDraft] = useState<any>(null);
-  const { records: inboxRecords, state, create, update } = useSharedRecords("inbox_items");
-  const { records: projects, state: projectState } = useSharedRecords("projects");
+  const { records: inboxRecords, state, create, update, reload: reloadCaptures } = useSharedRecords("inbox_items");
+  const { records: projects, state: projectState, reload: reloadProjects } = useSharedRecords("projects");
   const captures = inboxRecords.filter((item: any) => item.itemType === "ChatGPT-Zusammenfassung");
   const visibleCaptures = captures.filter((item: any) => !query.trim() || String(item.title || "").toLocaleLowerCase("de-DE").includes(query.trim().toLocaleLowerCase("de-DE")));
   const selectedCapture = captures.find((item: any) => item.id === selectedId);
@@ -1479,7 +1487,7 @@ function Chats({ note }: any) {
         </Card>
         <Card className="providerTruth"><Tag>PROVIDER-MODI · EHRLICHER STATUS</Tag><div><span className="provider online"><i/><b>ChatGPT Companion</b><small>Aktiver manueller Modus · im vorhandenen Abo · kein direkter Modellzugriff</small></span><span className="provider unconfigured"><i/><b>OpenAI API</b><small>Deaktiviert · nutzungsbasiert · Kill Switch aktiv · separate Kostenfreigabe</small></span><span className="provider unconfigured"><i/><b>Lokales Modell</b><small>Nicht verifiziert · kein Runtime-/Modell-Installationsstand behauptet</small></span></div><p>Eine Zusammenfassung speichert nur den von dir ausgewählten Text. Agentic OS liest weder Verlauf noch Modellnamen oder Subscription-Limits automatisch.</p></Card>
       </div>
-      <Card className="companionLibrary"><div className="row"><div><Tag>LOKALE COMPANION-BIBLIOTHEK</Tag><h3>{state === "online" ? `${captures.length} bewusst übernommene Zusammenfassungen` : state === "loading" ? "Zusammenfassungen werden geladen" : "Zusammenfassungen offline"}</h3></div><label><span className="srOnly">Companion-Zusammenfassungen durchsuchen</span><input disabled={state !== "online"} onChange={(event) => setQuery(event.target.value)} placeholder="Titel filtern …" type="search" value={query}/></label></div>{state === "error" && <p role="alert">Gemeinsame Zusammenfassungen sind gerade nicht erreichbar.</p>}{state === "online" && captures.length === 0 && <div className="honestEmpty"><I.MessagesSquare/><span><b>Noch keine ausgewählte Zusammenfassung</b>Es werden keine Chatverläufe oder Beispielgespräche importiert.</span></div>}{state === "online" && captures.length > 0 && visibleCaptures.length === 0 && <p>Kein Titel passt zur lokalen Suche.</p>}<div className="companionCaptureList">{state === "online" && visibleCaptures.map((capture: any) => <button aria-pressed={selectedId === capture.id} className={selectedId === capture.id ? "active" : ""} key={capture.id} onClick={() => openCapture(capture)} type="button"><I.MessageSquareText/><span><b>{capture.title}</b><small>{areaOptions.find(([id]) => id === (capture.area || "Inbox"))?.[1]} · {capture.projectId ? projects.find((project: any) => project.id === capture.projectId)?.title || "Projekt nicht verfügbar" : "Kein Projekt"} · {capture.status === "completed" ? "Abgeschlossen" : "Offen"}</small></span><I.ChevronRight/></button>)}</div></Card>
+      <Card className="companionLibrary"><div className="row"><div><Tag>LOKALE COMPANION-BIBLIOTHEK</Tag><h3>{state === "online" ? `${captures.length} bewusst übernommene Zusammenfassungen` : state === "loading" ? "Zusammenfassungen werden geladen" : "Zusammenfassungen offline"}</h3></div><label><span className="srOnly">Companion-Zusammenfassungen durchsuchen</span><input disabled={state !== "online"} onChange={(event) => setQuery(event.target.value)} placeholder="Titel filtern …" type="search" value={query}/></label></div>{state === "error" && <RetryNotice message="Gemeinsame Zusammenfassungen sind gerade nicht erreichbar; es werden keine Ersatzgespräche angezeigt." onRetry={reloadCaptures} label="Bibliothek neu laden"/>}{projectState === "error" && <RetryNotice message="Projektzuordnungen für Companion-Einträge sind gerade nicht verifizierbar." onRetry={reloadProjects} label="Projekte neu laden"/>}{state === "online" && captures.length === 0 && <div className="honestEmpty"><I.MessagesSquare/><span><b>Noch keine ausgewählte Zusammenfassung</b>Es werden keine Chatverläufe oder Beispielgespräche importiert.</span></div>}{state === "online" && captures.length > 0 && visibleCaptures.length === 0 && <p>Kein Titel passt zur lokalen Suche.</p>}<div className="companionCaptureList">{state === "online" && visibleCaptures.map((capture: any) => <button aria-pressed={selectedId === capture.id} className={selectedId === capture.id ? "active" : ""} key={capture.id} onClick={() => openCapture(capture)} type="button"><I.MessageSquareText/><span><b>{capture.title}</b><small>{areaOptions.find(([id]) => id === (capture.area || "Inbox"))?.[1]} · {capture.projectId ? projects.find((project: any) => project.id === capture.projectId)?.title || "Projekt nicht verfügbar" : "Kein Projekt"} · {capture.status === "completed" ? "Abgeschlossen" : "Offen"}</small></span><I.ChevronRight/></button>)}</div></Card>
       {state === "online" && selectedCapture && <Card className="companionDetail"><div className="row"><div><Tag>MANUELLER IMPORT · PRIVAT</Tag><h3>{selectedCapture.title}</h3></div><button aria-label="Companion-Detail schließen" onClick={() => { setSelectedId(""); setOrganizeDraft(null); }}><I.X/></button></div><p>{selectedCapture.content}</p><small>Quelle: manuelle Auswahl · Providerzugriff: keiner · Modell: nicht verifiziert</small>{organizeDraft ? <div className="companionOrganize"><label>Titel<input maxLength={120} value={organizeDraft.title} onChange={(event) => setOrganizeDraft({ ...organizeDraft, title: event.target.value })}/></label><label>Lebensbereich<select value={organizeDraft.area} onChange={(event) => setOrganizeDraft({ ...organizeDraft, area: event.target.value })}>{areaOptions.map(([id,label]) => <option key={id} value={id}>{label}</option>)}</select></label><label>Projekt<select disabled={projectState !== "online"} value={organizeDraft.projectId} onChange={(event) => setOrganizeDraft({ ...organizeDraft, projectId: event.target.value })}><option value="">{projectState === "online" ? "Kein Projekt" : projectState === "loading" ? "Projektquelle wird geladen" : "Projektquelle nicht erreichbar"}</option>{projects.map((project: any) => <option key={project.id} value={project.id}>{project.title}</option>)}</select></label><label>Status<select value={organizeDraft.status} onChange={(event) => setOrganizeDraft({ ...organizeDraft, status: event.target.value })}><option value="active">Offen</option><option value="planned">Eingeplant</option><option value="completed">Abgeschlossen</option></select></label><div className="editorActions"><Btn onClick={organizeDraft.title.trim().length >= 2 && (!organizeDraft.projectId || projectState === "online") ? saveOrganization : undefined}>Organisation speichern</Btn><button onClick={() => setOrganizeDraft(null)}>Abbrechen</button></div></div> : <Btn soft onClick={() => openCapture(selectedCapture)}>Zuordnung bearbeiten</Btn>}</Card>}
     </>
   );
@@ -1492,9 +1500,9 @@ function Inbox({ note }: any) {
     [filter, setFilter] = useState<"open" | "assigned" | "completed" | "all">("open"),
     [query, setQuery] = useState(""),
     [archiveArmed, setArchiveArmed] = useState(false);
-  const { records: entries, state, create, update, archive } = useSharedRecords("inbox_items");
-  const { records: projects, state: projectState } = useSharedRecords("projects");
-  const { records: agents, state: agentState } = useSharedRecords("agents");
+  const { records: entries, state, create, update, archive, reload: reloadEntries } = useSharedRecords("inbox_items");
+  const { records: projects, state: projectState, reload: reloadProjects } = useSharedRecords("projects");
+  const { records: agents, state: agentState, reload: reloadAgents } = useSharedRecords("agents");
   const types = ["Idee", "Aufgabe", "Notiz", "ChatGPT-Notiz", "Link", "Dateiverweis"];
   const areaOptions = [["Inbox", "Noch offen"], ["faith", "Glaube"], ["career", "Karriere"], ["health", "Gesundheit"], ["finance", "Finanzen"], ["relations", "Beziehungen"], ["projects", "Projekte"]];
   const selectedEntry = entries.find((entry: any) => entry.id === triageId);
@@ -1582,7 +1590,9 @@ function Inbox({ note }: any) {
       {state === "online" && entries.length === 0 && (
         <Card><Tag>ECHTE DATENQUELLE · LEER</Tag><h3>Dein Eingang ist leer</h3><p>Neue Einträge erscheinen in Desktop und iPhone.</p></Card>
       )}
-      {state === "error" && <Card><Tag>OFFLINE</Tag><h3>Gemeinsamer Eingang nicht erreichbar</h3><p>Es werden keine lokalen Ersatz- oder Beispieldaten angezeigt.</p></Card>}
+      {state === "error" && <RetryNotice message="Gemeinsamer Eingang nicht erreichbar. Es werden keine lokalen Ersatz- oder Beispieldaten angezeigt." onRetry={reloadEntries} label="Inbox neu laden"/>}
+      {projectState === "error" && <RetryNotice message="Projektzuordnungen sind gerade nicht verifizierbar." onRetry={reloadProjects} label="Projekte neu laden"/>}
+      {agentState === "error" && <RetryNotice message="Agentenreferenzen sind gerade nicht verifizierbar." onRetry={reloadAgents} label="Agenten neu laden"/>}
       {state === "online" && <Card className="inboxReviewBar"><div><Tag>GEMEINSAME REVIEW-ANSICHT</Tag><b>{categorized.open.length} offen · {categorized.assigned.length} zugeordnet · {categorized.completed.length} abgeschlossen</b></div><div className="inboxFilters" role="group" aria-label="Inbox filtern">{[["open","Offen"],["assigned","Zugeordnet"],["completed","Abgeschlossen"],["all","Alle"]].map(([id,label]) => <button aria-pressed={filter === id} className={filter === id ? "active" : ""} key={id} onClick={() => setFilter(id as any)} type="button">{label}</button>)}</div><label><span className="srOnly">Inbox-Titel durchsuchen</span><input onChange={(event) => setQuery(event.target.value)} placeholder="Titel filtern …" type="search" value={query}/></label></Card>}
       <div className="inboxlist">
         {state === "online" && entries.length > 0 && filteredEntries.length === 0 && <Card className="honestEmpty"><I.Search/><span><b>Keine Einträge in dieser Ansicht</b>Filter oder Titelsuche ändern; es werden keine Ersatzdaten gezeigt.</span></Card>}

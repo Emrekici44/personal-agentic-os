@@ -106,3 +106,5 @@
 The full evidence-based status, locally executable vertical slices and bundled decision boundaries are maintained in `MASTER-GAPS.md` and `PENDING-DECISIONS.md`.
 
 All private browser requests in the main and Usage surfaces now use the shared relative `/api/`-only eight-second boundary. This completes the local hanging-request recovery slice without changing external integrations, user data or approval policy.
+
+Core Shared Store screens now expose scoped read-only retries and error-only focus/online recovery. Healthy screens do not poll or reset drafts, and failed sources never masquerade as verified empty data.

@@ -426,6 +426,13 @@ export const systemProgress = {
       status: "complete",
     },
     {
+      id: "shared-source-scoped-retry",
+      label: "Shared-Store-Ansichten gezielt wiederaufnehmen",
+      evidence: "Heute/Inbox/Projekte/Bereiche/Journal/Companion · sichtbarer Retry · Fokus/Online nur nach Fehler · keine Ersatzdaten",
+      href: "#home",
+      status: "complete",
+    },
+    {
       id: "ongoing-local-gap-audit",
       label: "Nächste lokale Bedien-/Recovery-Lücke prüfen",
       evidence: "Nur reversible lokale Änderungen · keine externen Writes, Migrationen, Installationen oder Kosten",
