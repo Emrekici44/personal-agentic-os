@@ -33,7 +33,12 @@ if (Test-Path -LiteralPath $envPath) {
 
 if (-not $values.Contains("AUTH_SECRET")) {
   $bytes = New-Object byte[] 48
-  [System.Security.Cryptography.RandomNumberGenerator]::Fill($bytes)
+  $random = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+  try {
+    $random.GetBytes($bytes)
+  } finally {
+    $random.Dispose()
+  }
   $values["AUTH_SECRET"] = [Convert]::ToBase64String($bytes)
 }
 $values["APP_URL"] = "http://localhost:3000"
