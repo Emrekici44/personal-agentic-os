@@ -53,6 +53,9 @@ Last verified: 24.08.2026, Europe/Berlin.
 - Eigene Agent-Konfigurationen erfassen jetzt echten Zweck, zugeordnete Lebensbereiche, Arbeitsmodus, Modellgrenze und Status. Zulässig sind nur `Kein Provider` oder eine manuelle ChatGPT-Companion-Übergabe; OpenAI API bleibt sichtbar gesperrt. Der Server lehnt nicht verifizierte Modelle, Provider und ausführbare Status ab. Karten zeigen Bereiche, Modell und reale Aktivität `Keine Ausführung` statt Online-Behauptungen.
 - Die Wissensansicht besitzt jetzt eine echte private Metadatensuche über den vorhandenen Emre-Vault-Index. Sie filtert ausschließlich Titel, relative Pfade und Frontmatter-Schlüsselnamen; Notiztexte und Frontmatter-Werte werden weder durchsucht noch an den Client geliefert. Der Statusendpunkt verlangt die signierte lokale Sitzung und ist `no-store, private`.
 - Der Tagesbereich verwaltet Aufgaben jetzt mit validierter Priorität, Fälligkeit, Lebensbereich und optionaler Verknüpfung zu einem echten Projekt. Aufgaben können bearbeitet, abgeschlossen/wieder geöffnet und reversibel archiviert werden. Habits unterstützen tägliche oder wöchentliche Rhythmen, Bearbeitung, periodenbezogene Erledigung und Archivierung ohne Streak-Druck.
+- `MASTER-GAPS.md` trennt den vollständigen verifizierten Funktionsbestand, lokal ausführbare vertikale Restpunkte und echte Nutzer-/Extern-Grenzen. `PENDING-DECISIONS.md` bündelt nun zusätzlich Windows-Dauerbetrieb/Installer und persönliche Projektdateien, statt den übrigen Arbeitslauf daran anzuhalten.
+- Providerstatus und Vault-Normalisierungsvorschau sind jetzt ebenfalls nur hinter der signierten lokalen Sitzung erreichbar und antworten privat/cachefrei. Sie liefern weder Schlüssel noch Vault-Inhalte.
+- Nach Restlückenaudit/API-Härtung sind Root 75/75, TypeScript, ESLint, Electron 2/2, Expo TypeScript/Lint/Web-Export und Next-Produktionsbuild grün. Die reale Usage-Seite lud mit signierter Sitzung; Inhalts- und Secretaudit sind sauber.
 
 ## Verification
 

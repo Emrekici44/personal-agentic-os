@@ -38,12 +38,11 @@ Project root: `outputs/agentic-os`. Private source remote: `https://github.com/E
 
 ## Immediate continuation
 
-1. Keep the verified project workspace, weekly planner, life-area CRUD and daily workspace usable in Electron/Expo.
-2. Add real shared projects/tasks/inbox items through the normal UI, then regenerate and review a useful week.
-3. Any selected focus block must still enter the exact single-event approval screen; never test the final write without Emre's action-time confirmation.
-4. Ask Emre before any PostgreSQL target/account, real migration, Vault mutation, Graphify installation or new external connector activation.
-5. If an agent suggestion should ever become an external or consequential action, add a separate exact approval proposal first; the current workflow surface cannot execute such actions.
-6. Continue the global master-gap audit. Do not add a restore executor unless Emre explicitly approves the exact recovery action after inspecting its conflict preview.
+1. Use `MASTER-GAPS.md` as the evidence-based remaining-work inventory and `PENDING-DECISIONS.md` for every external/user boundary.
+2. Continue the next local vertical slice: private route hardening, flexible task checklists, or richer local Inbox/Chat organization.
+3. Seed real shared projects/tasks/inbox only through Emre's normal UI; never create personal examples for testing.
+4. Any selected focus block must still enter the exact single-event approval screen; never test the final write without Emre's action-time confirmation.
+5. Do not add a restore/Vault-Apply executor, PostgreSQL target, Graphify runtime, provider, connector, file copy or autostart unless its exact pending decision is approved.
 
 ## Non-negotiable boundaries
 

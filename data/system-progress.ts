@@ -9,7 +9,7 @@ export type ProgressItem = {
 };
 
 export const systemProgress = {
-  currentPhase: "Echte Aufgaben- und Habitplanung bereit · vollständiger Restlückenaudit aktiv",
+  currentPhase: "Vollständiger Restlückenaudit dokumentiert · private API-Oberfläche wird vereinheitlicht",
   lastVerifiedAt: "24.08.2026 · Europe/Berlin",
   items: [
     {
@@ -218,8 +218,15 @@ export const systemProgress = {
     {
       id: "master-gap-audit",
       label: "Restlücken gegen den vollständigen Masterauftrag prüfen",
-      evidence: "Controls, Statuswahrheit, responsive Clients, Doku und sichere nächste Schritte",
+      evidence: "MASTER-GAPS + PENDING-DECISIONS · geprüft/nächster lokaler Schritt/Nutzergrenze getrennt",
       href: "#home",
+      status: "complete",
+    },
+    {
+      id: "private-api-surface",
+      label: "Private Status- und Preview-API vereinheitlichen",
+      evidence: "Vault-Normalisierung + Providerstatus signiert und cachefrei · weitere Routen werden auditiert",
+      href: "#integrations",
       status: "active",
     },
     {

@@ -29,7 +29,7 @@ test('life-area CRUD encrypts private content and archives instead of deleting',
   assert.match(store,/UPDATE \$\{kind\} SET status='archived'/);
   assert.doesNotMatch(store,/DELETE FROM area_records/);
 });
-test('vault normalization is preview-only and preserves existing notes',()=>{assert.match(vault,/previewVaultNormalization/);assert.match(vault,/existingNotesModified:0/);assert.match(vault,/proposedMoves:0/);assert.match(vault,/proposedRenames:0/);assert.match(vault,/sensitiveWritesRequireApproval:true/);assert.match(route,/no-store, private/);assert.match(route,/writesPerformed:false/)});
+test('vault normalization is private, preview-only and preserves existing notes',()=>{assert.match(vault,/previewVaultNormalization/);assert.match(vault,/existingNotesModified:0/);assert.match(vault,/proposedMoves:0/);assert.match(vault,/proposedRenames:0/);assert.match(vault,/sensitiveWritesRequireApproval:true/);assert.match(route,/verifyLocalSession/);assert.match(route,/Lokale Sitzung erforderlich/);assert.match(route,/no-store, private/);assert.match(route,/writesPerformed: false/)});
 
 test('shared theme and branding preferences are authenticated, validated and audited',async()=>{
   const preferences=await readFile(new URL('../app/api/state/preferences/[id]/route.ts',import.meta.url),'utf8');

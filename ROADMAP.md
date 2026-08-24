@@ -49,3 +49,5 @@
 4. Evaluate each new connector independently; no implicit OAuth scope expansion or paid activation.
 5. Seed real shared tasks/projects/inbox items through the normal UI so the planner can propose the first useful three-outcome week; each eventual Calendar event still requires its own action-time approval.
 6. Review the exact local restore preview only if a recovery is needed; implementing and invoking restore both require a separate exact approval.
+
+The full evidence-based status, locally executable vertical slices and bundled decision boundaries are maintained in `MASTER-GAPS.md` and `PENDING-DECISIONS.md`.

@@ -24,6 +24,14 @@ test("usage center derives live integration, provider and storage evidence", () 
   assert.doesNotMatch(usage, /Browser lokal|Google Calendar[\s\S]{0,120}Mock/);
 });
 
+test("provider status remains signed, private and never exposes a key", async () => {
+  const route = await readFile(new URL("../app/api/openai/status/route.ts", import.meta.url), "utf8");
+  assert.match(route, /verifyLocalSession/);
+  assert.match(route, /no-store, private/);
+  assert.match(route, /keyExposed: false/);
+  assert.match(route, /usageSource: 'unavailable'/);
+});
+
 test("settings expose local backup and restore preview without an apply action", () => {
   assert.match(page, /Lokales Backup jetzt erstellen/);
   assert.match(page, /Integrität & Konflikte prüfen/);

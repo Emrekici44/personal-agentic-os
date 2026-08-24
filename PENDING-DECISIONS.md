@@ -49,3 +49,19 @@ Stand: 24.08.2026, Europe/Berlin. Diese Punkte blockieren nicht die übrige loka
 - Auswirkung: Erst ein späterer separater Apply-Executor dürfte nach einem zusätzlichen Vorher-Backup genau die ausgewählte Datei atomar einspielen. Der aktuelle Stand bietet ausschließlich eine Vorschau; Restore ist technisch gesperrt.
 - Kosten/Datenschutz: Keine Kosten und kein Upload. Das lokale Backup enthält verschlüsselte private Felder, aber bewusst nicht den lokalen Schlüssel; es gehört nicht in Git, Logs oder Screenshots.
 - Sicherer nächster Schritt: In Einstellungen ein lokales Backup wählen, Integrität und Konfliktzähler prüfen und erst danach eine exakte Restore-Aktion separat genehmigen.
+
+## Windows-Dauerbetrieb und Installer
+
+- Benötigte Entscheidung: Run Unattended, optionalen Benutzer-Autostart und gegebenenfalls einen späteren signierten Windows-Installer getrennt genehmigen; Schlaf-/Energieverhalten selbst wählen.
+- Grund: Privater iPhone-Zugriff funktioniert nur, wenn Laptop, Agentic-OS-Dienst und Tailscale verfügbar bleiben. Autostart und Energieeinstellungen verändern das Systemverhalten.
+- Auswirkung: Nach Freigabe könnte der private Dienst nach Anmeldung zuverlässiger starten; ein Installer wäre weiterhin ein eigener geprüfter Buildschritt.
+- Kosten/Datenschutz: Keine geplanten Softwarekosten; längerer Betrieb benötigt Strom. Run Unattended erhöht die Verfügbarkeitsfläche des privaten Geräts, bleibt aber tailnet-only.
+- Sicherer nächster Schritt: Zuerst nur den reversiblen Benutzer-Autostart und Tailscale Run Unattended einzeln prüfen; keine Energieeinstellung automatisch ändern.
+
+## Persönliche Dateien als echte Projektanhänge
+
+- Benötigte Entscheidung: Für einen konkreten Dateityp und Quellordner festlegen, ob Agentic OS nur einen Verweis speichern oder eine verwaltete lokale Kopie anlegen darf.
+- Grund: Dateiübernahme ist eine persönliche Dateisystemmutation und kann sensible Inhalte, Duplikate oder veraltete Kopien erzeugen.
+- Auswirkung: Projekt- und Inbox-Einträge könnten später echte Dokumentreferenzen erhalten. Der aktuelle `Dateiverweis` bleibt absichtlich nur Text.
+- Kosten/Datenschutz: Keine Kosten; hohe lokale Datenschutzrelevanz. Persönliche Dateien, Pfade und Vorschauen dürfen nicht in Git, Logs oder Screenshots gelangen.
+- Sicherer nächster Schritt: Erst eine inhaltsfreie Inventar-/Konfliktvorschau für einen ausdrücklich gewählten Ordner erstellen, dann Referenz oder Kopie separat freigeben.

@@ -17,6 +17,7 @@
 - Run dependency audits before deployment; do not apply breaking automatic fixes without review.
 - Local/free operation is the default. Potentially billable providers must disclose cost class and obtain explicit activation approval.
 - OpenAI keys are server-only. ChatGPT Pro is never treated as API authorization. API requests are blocked locally until positive daily/monthly ceilings and kill-switch state permit them.
+- OpenAI provider status and Obsidian normalization preview require the signed local session and return `no-store, private`; neither route returns a provider key, Vault body, absolute Vault path or frontmatter value.
 - ChatGPT Companion Mode has no conversation-history integration. Only text the user deliberately pastes into the Inbox becomes Agentic OS data.
 - The Electron renderer is sandboxed with context isolation and web security enabled, Node integration disabled, permissions denied, and navigation restricted to its loopback Agentic OS origin. No installer or updater is active.
 - The Expo companion receives only a non-secret LAN URL through `EXPO_PUBLIC_AGENTIC_OS_URL`. It contains no API key, OAuth credential, fixed machine IP, tunnel, hosted endpoint, or EAS account configuration.
