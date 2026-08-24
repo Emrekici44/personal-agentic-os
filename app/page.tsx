@@ -1563,16 +1563,20 @@ function WeeklyPlanner({ note }: any) {
   const [confirmation, setConfirmation] = useState("");
 
   const load = useCallback(async () => {
+    setStatus({ state: "loading", connected: false });
+    setCalendars([]); setPlan(null); setSelectedOutcomes([]); setSelectedBlocks([]); setHistory([]); setApproval(null); setConfirmation("");
     setError("");
     try {
-      await fetch("/api/state/session", { method: "POST" });
+      const session = await fetch("/api/state/session", { method: "POST" });
+      if (!session.ok) throw new Error();
       const [calendarResponse, catalogResponse, planResponse] = await Promise.all([
         fetch("/api/calendar/status", { cache: "no-store" }),
         fetch("/api/calendar/calendars", { cache: "no-store" }),
         fetch("/api/planner", { cache: "no-store" }),
       ]);
       const [calendarStatus, catalog, latest] = await Promise.all([calendarResponse.json(), catalogResponse.json(), planResponse.json()]);
-      setStatus({ state: calendarResponse.ok ? "ready" : "error", ...calendarStatus });
+      if (!calendarResponse.ok || !catalogResponse.ok || !planResponse.ok) throw new Error();
+      setStatus({ state: "ready", ...calendarStatus });
       const available = catalog.calendars || [];
       setCalendars(available);
       setSelectedCalendars((current) => current.length ? current : available.filter((item: any) => item.selected).slice(0, 12).map((item: any) => item.id));
@@ -1584,11 +1588,14 @@ function WeeklyPlanner({ note }: any) {
       setHistory(planResponse.ok ? latest.history || [] : []);
     } catch {
       setStatus({ state: "error", connected: false });
+      setCalendars([]); setPlan(null); setSelectedOutcomes([]); setSelectedBlocks([]); setHistory([]); setApproval(null); setConfirmation("");
       setError("Private Planner-Quelle ist gerade nicht erreichbar.");
     }
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  const plannerRequest=async(url:string,init:RequestInit,externalWrite=false)=>{if(status.state!=="ready")throw new Error("Private Planner-Quelle ist nicht schreibbereit");let response:Response;try{response=await fetch(url,init)}catch{setStatus({state:"error",connected:false});setCalendars([]);setPlan(null);setSelectedOutcomes([]);setSelectedBlocks([]);setHistory([]);setApproval(null);setConfirmation("");throw new Error(externalWrite?"Write-Ergebnis ist nicht bestätigt. Kalender vor einem neuen Versuch prüfen.":"Private Planner-Quelle nicht erreichbar")}let result:any;try{result=await response.json()}catch{setStatus({state:"error",connected:false});setCalendars([]);setPlan(null);setSelectedOutcomes([]);setSelectedBlocks([]);setHistory([]);setApproval(null);setConfirmation("");throw new Error(externalWrite?"Write-Ergebnis ist nicht bestätigt. Kalender vor einem neuen Versuch prüfen.":"Ungültige Antwort der Planner-Quelle")}if(!response.ok)throw new Error(result.error||"Planner-Anfrage abgelehnt");return result};
 
   const toggleLimited = (id: string, setter: (value: string[]) => void, current: string[]) => {
     if (current.includes(id)) return setter(current.filter((item) => item !== id));
@@ -1600,9 +1607,7 @@ function WeeklyPlanner({ note }: any) {
     if (!selectedCalendars.length) return note("Bitte mindestens einen Kalender auswählen");
     setBusy("generate"); setError(""); setApproval(null);
     try {
-      const response = await fetch("/api/planner", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ selectedCalendarIds: selectedCalendars }) });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "Vorschlag konnte nicht erzeugt werden");
+      const result = await plannerRequest("/api/planner", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ selectedCalendarIds: selectedCalendars }) });
       setPlan(result.plan);
       setHistory(result.history || []);
       setSelectedOutcomes(result.plan.outcomes.map((item: any) => item.id));
@@ -1616,9 +1621,7 @@ function WeeklyPlanner({ note }: any) {
     if (!plan || !selectedOutcomes.length) return note("Bitte mindestens ein Wochenziel wählen");
     setBusy("review"); setError("");
     try {
-      const response = await fetch("/api/planner", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ planId: plan.id, selectedOutcomeIds: selectedOutcomes, selectedBlockIds: selectedBlocks }) });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "Review konnte nicht gespeichert werden");
+      const result = await plannerRequest("/api/planner", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ planId: plan.id, selectedOutcomeIds: selectedOutcomes, selectedBlockIds: selectedBlocks }) });
       setPlan(result.plan);
       setHistory(result.history || []);
       note("Review gemeinsam gespeichert · weiterhin 0 Writes");
@@ -1629,9 +1632,7 @@ function WeeklyPlanner({ note }: any) {
   const prepareApproval = async (block: any) => {
     setBusy("approval"); setError(""); setApproval(null); setConfirmation("");
     try {
-      const response = await fetch("/api/calendar/write-proposal", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ selectedCalendarIds: selectedCalendars, change: { action: "create", calendarId: block.calendarId, title: block.title, start: block.start, end: block.end, idempotencyKey: `weekly:${plan.id}:${block.id}` } }) });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "Schreibvorschlag konnte nicht vorbereitet werden");
+      const result = await plannerRequest("/api/calendar/write-proposal", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ selectedCalendarIds: selectedCalendars, change: { action: "create", calendarId: block.calendarId, title: block.title, start: block.start, end: block.end, idempotencyKey: `weekly:${plan.id}:${block.id}` } }) });
       setApproval({ ...result, block });
       note("Exakte Einzelvorschau vorbereitet · noch nicht geschrieben");
     } catch (reason) { setError(reason instanceof Error ? reason.message : "Freigabevorbereitung fehlgeschlagen"); }
@@ -1642,12 +1643,10 @@ function WeeklyPlanner({ note }: any) {
     if (!approval || confirmation !== "DIESEN_TERMIN_JETZT_SCHREIBEN") return;
     setBusy("approval"); setError("");
     try {
-      const response = await fetch("/api/calendar/write", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ approvalToken: approval.approvalToken, confirmation }) });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "Kalenderwrite wurde abgelehnt");
+      const result = await plannerRequest("/api/calendar/write", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ approvalToken: approval.approvalToken, confirmation }) }, true);
       setApproval(null); setConfirmation("");
       note(result.duplicatePrevented ? "Duplikat verhindert · nichts geschrieben" : "Einzeltermin geschrieben und auditiert");
-    } catch (reason) { setError(reason instanceof Error ? reason.message : "Kalenderwrite fehlgeschlagen"); }
+    } catch (reason) { setApproval(null); setConfirmation(""); setError(reason instanceof Error ? reason.message : "Kalenderwrite fehlgeschlagen; vor einem neuen Versuch Status prüfen"); }
     finally { setBusy("idle"); }
   };
 
@@ -1659,16 +1658,16 @@ function WeeklyPlanner({ note }: any) {
     </Intro>
     <section className="plannerFlow" aria-label="Geführte Wochenplanung">
       <Card className="plannerSources">
-        <div className="plannerStep"><span>1</span><div><Tag>QUELLENSTATUS</Tag><h3>{status.connected ? "Google Calendar ist verbunden" : status.configured ? "Google-Verbindung braucht Freigabe" : "Google Calendar ist unkonfiguriert"}</h3></div></div>
+        <div className="plannerStep"><span>1</span><div><Tag>QUELLENSTATUS</Tag><h3>{status.state === "loading" ? "Planner-Quellen werden geprüft" : status.state === "error" ? "Planner-Quellen nicht erreichbar" : status.connected ? "Google Calendar ist verbunden" : status.configured ? "Google-Verbindung braucht Freigabe" : "Google Calendar ist unkonfiguriert"}</h3></div></div>
         <p className="sourceLine"><I.Database /> Aufgaben, Inbox und Projekte: Laptop Shared Store · Kalender: begrenzter 8-Tage-Read · Zeitzone Europe/Berlin.</p>
-        {calendars.length > 0 ? <div className="plannerCalendars" role="group" aria-label="Kalender auswählen">
+        {status.state === "loading" ? <p role="status">Kalender und letzter Plan werden privat geladen …</p> : calendars.length > 0 ? <div className="plannerCalendars" role="group" aria-label="Kalender auswählen">
           {calendars.map((calendar) => <label key={calendar.id}><input checked={selectedCalendars.includes(calendar.id)} onChange={() => setSelectedCalendars((current) => current.includes(calendar.id) ? current.filter((id) => id !== calendar.id) : current.length < 12 ? [...current, calendar.id] : current)} type="checkbox"/><span><b>{calendar.summary}</b><small>{calendar.writable ? "Schreibziel möglich" : "Nur Lesen"}</small></span></label>)}
         </div> : <div className="honestEmpty"><I.CloudOff /><span><b>Keine echte Kalenderliste verfügbar</b>Ohne verbundene Quelle erzeugt Agentic OS keine Fake-Blöcke.</span></div>}
         <Btn onClick={status.connected && busy === "idle" ? generate : undefined}>{busy === "generate" ? "Wird ausgewertet …" : "Echten Vorschlag erzeugen"} <I.WandSparkles /></Btn>
       </Card>
 
       {error && (status.state==="error"?<RetryNotice message={error} onRetry={load} label="Quellen neu laden"/>:<div className="plannerError" role="alert"><I.TriangleAlert />{error}</div>)}
-      {!plan && status.state !== "loading" && <Card className="honestEmpty"><I.CalendarRange /><span><b>Noch kein Wochenplan vorhanden</b>Wähle die relevanten Kalender und erzeuge den ersten Vorschlag. Es erfolgt kein Kalenderwrite.</span></Card>}
+      {!plan && status.state === "ready" && <Card className="honestEmpty"><I.CalendarRange /><span><b>Noch kein Wochenplan vorhanden</b>Wähle die relevanten Kalender und erzeuge den ersten Vorschlag. Es erfolgt kein Kalenderwrite.</span></Card>}
       {plan && <>
         <Card>
           <div className="plannerStep"><span>2</span><div><Tag>ECHTER VORSCHLAG · 0 WRITES</Tag><h3>{plan.weekStart} bis {plan.windowEnd}</h3></div><em>{plan.capacity.bufferPercent}% Puffer</em></div>

@@ -199,6 +199,18 @@ test("agent and skill procedure clients discard stale controls on transport fail
   assert.match(page, /Private Skill-Quelle wird geladen/);
 });
 
+test("planner invalidates stale plans and exact approvals when source certainty is lost", async () => {
+  const page = await readFile(pagePath, "utf8");
+  assert.match(page, /setStatus\(\{ state: "loading", connected: false \}\)/);
+  assert.match(page, /setCalendars\(\[\]\); setPlan\(null\); setSelectedOutcomes\(\[\]\); setSelectedBlocks\(\[\]\); setHistory\(\[\]\); setApproval\(null\); setConfirmation\(""\)/);
+  assert.match(page, /status\.state!=="ready"\)throw new Error\("Private Planner-Quelle ist nicht schreibbereit"\)/);
+  assert.match(page, /Write-Ergebnis ist nicht bestätigt\. Kalender vor einem neuen Versuch prüfen\./);
+  assert.match(page, /plannerRequest\("\/api\/calendar\/write",[^;]+, true\)/);
+  assert.match(page, /catch \(reason\) \{ setApproval\(null\); setConfirmation\(""\);/);
+  assert.match(page, /status\.state === "loading" \? "Planner-Quellen werden geprüft"/);
+  assert.match(page, /!plan && status\.state === "ready"/);
+});
+
 test("knowledge search stays inside the signed metadata-only vault preview", async () => {
   const [page, route] = await Promise.all([
     readFile(pagePath, "utf8"),
