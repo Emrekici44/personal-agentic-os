@@ -377,6 +377,13 @@ export const systemProgress = {
       status: "complete",
     },
     {
+      id: "preference-source-recovery",
+      label: "Darstellung nach Offline-Start sicher wiederaufnehmen",
+      evidence: "Loading/Offline sichtbar · Controls fail-closed · Retry + automatische Runtime-Wiederaufnahme",
+      href: "#settings",
+      status: "complete",
+    },
+    {
       id: "ongoing-local-gap-audit",
       label: "Nächste lokale Bedien-/Recovery-Lücke prüfen",
       evidence: "Nur reversible lokale Änderungen · keine externen Writes, Migrationen, Installationen oder Kosten",

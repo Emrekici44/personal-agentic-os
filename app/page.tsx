@@ -112,6 +112,7 @@ export default function App() {
     [menu, setMenu] = useState(false),
     [toast, setToast] = useState(""),
     [theme, setTheme] = useState<"dark" | "light">("dark"),
+    [preferenceState, setPreferenceState] = useState<"loading" | "online" | "error">("loading"),
     [journal, setJournal] = useState(""),
     [mood, setMood] = useState("ruhig"),
     [runtimeHealth, setRuntimeHealth] = useState<any>({ state: "checking", checkedAt: null }),
@@ -123,19 +124,26 @@ export default function App() {
   const contentRef = useRef<HTMLElement>(null);
   const preferenceVersions = useRef({ theme: 0, branding: 0 });
   const loadPreferences = useCallback(async () => {
-    const session = await fetch("/api/state/session", { method: "POST" });
-    if (!session.ok) throw new Error("Private Sitzung nicht erreichbar");
-    const [themeResponse, brandingResponse] = await Promise.all([
-      fetch("/api/state/preferences/theme", { cache: "no-store" }),
-      fetch("/api/state/preferences/branding", { cache: "no-store" }),
-    ]);
-    if (!themeResponse.ok || !brandingResponse.ok) throw new Error("Gemeinsame Darstellung nicht erreichbar");
-    const [themePreference, brandingPreference] = await Promise.all([themeResponse.json(), brandingResponse.json()]);
-    preferenceVersions.current = { theme: Number(themePreference.version || 0), branding: Number(brandingPreference.version || 0) };
-    setTheme(themePreference.value === "light" ? "light" : "dark");
-    if (brandingPreference.value?.name) {
-      setBrand(brandingPreference.value);
-      store.set("brand", brandingPreference.value);
+    setPreferenceState("loading");
+    try {
+      const session = await fetch("/api/state/session", { method: "POST" });
+      if (!session.ok) throw new Error("Private Sitzung nicht erreichbar");
+      const [themeResponse, brandingResponse] = await Promise.all([
+        fetch("/api/state/preferences/theme", { cache: "no-store" }),
+        fetch("/api/state/preferences/branding", { cache: "no-store" }),
+      ]);
+      if (!themeResponse.ok || !brandingResponse.ok) throw new Error("Gemeinsame Darstellung nicht erreichbar");
+      const [themePreference, brandingPreference] = await Promise.all([themeResponse.json(), brandingResponse.json()]);
+      preferenceVersions.current = { theme: Number(themePreference.version || 0), branding: Number(brandingPreference.version || 0) };
+      setTheme(themePreference.value === "light" ? "light" : "dark");
+      if (brandingPreference.value?.name) {
+        setBrand(brandingPreference.value);
+        store.set("brand", brandingPreference.value);
+      }
+      setPreferenceState("online");
+    } catch (error) {
+      setPreferenceState("error");
+      throw error;
     }
   }, []);
   useEffect(() => {
@@ -153,6 +161,9 @@ export default function App() {
     setBrand(migratedBrand);
     store.set("brand", migratedBrand);
     void loadPreferences().catch(() => setTheme("dark"));
+    const recoverPreferences = () => void loadPreferences().catch(() => undefined);
+    window.addEventListener("agentic-os:runtime-online", recoverPreferences);
+    return () => window.removeEventListener("agentic-os:runtime-online", recoverPreferences);
   }, [loadPreferences]);
   useEffect(() => {
     const mobileBridge = (
@@ -190,6 +201,7 @@ export default function App() {
     return () => { window.clearInterval(interval); window.removeEventListener("online", recheck); window.removeEventListener("focus", recheck); };
   }, [checkRuntimeHealth]);
   const changeTheme = async (next: "dark" | "light") => {
+    if (preferenceState !== "online") return note("Gemeinsame Darstellung ist noch nicht schreibbereit");
     const previous = theme;
     setTheme(next);
     try {
@@ -214,6 +226,7 @@ export default function App() {
     }
   };
   const saveBranding = async (next: { name: string; short: string; accent: string }) => {
+    if (preferenceState !== "online") return note("Gemeinsame Darstellung ist noch nicht schreibbereit");
     try {
       await fetch("/api/state/session", { method: "POST" });
       const response = await fetch("/api/state/preferences/branding", {
@@ -369,6 +382,7 @@ export default function App() {
           <button
             aria-label={theme === "dark" ? "Light Mode aktivieren" : "Dark Mode aktivieren"}
             className="themeSwitch"
+            disabled={preferenceState !== "online"}
             onClick={() => changeTheme(theme === "dark" ? "light" : "dark")}
             title={theme === "dark" ? "Light Mode" : "Dark Mode"}
             type="button"
@@ -416,6 +430,8 @@ export default function App() {
               brand={brand}
               theme={theme}
               changeTheme={changeTheme}
+              preferenceState={preferenceState}
+              reloadPreferences={loadPreferences}
               save={saveBranding}
               note={note}
             />
@@ -2120,7 +2136,7 @@ function Brain() {
     </>
   );
 }
-function Settings({ brand, save, theme, changeTheme, note }: any) {
+function Settings({ brand, save, theme, changeTheme, note, preferenceState, reloadPreferences }: any) {
   const [d, setD] = useState(brand);
   const [backupState, setBackupState] = useState<any>({ state: "loading", backups: [], store: null });
   const [selectedBackup, setSelectedBackup] = useState("");
@@ -2186,9 +2202,11 @@ function Settings({ brand, save, theme, changeTheme, note }: any) {
           <Tag>DARSTELLUNG · GEMEINSAM</Tag>
           <h3>Light & Dark Mode</h3>
           <p>Die Auswahl liegt im privaten Shared Store und gilt für Desktop und iPhone.</p>
+          {preferenceState === "loading" && <p role="status">Gemeinsame Darstellung wird geprüft …</p>}
+          {preferenceState === "error" && <RetryNotice message="Theme und Branding sind gerade nicht verifiziert erreichbar." onRetry={reloadPreferences} label="Darstellung neu laden" />}
           <div className="themeChoices" role="group" aria-label="Farbschema">
-            <button aria-pressed={theme === "dark"} onClick={() => changeTheme("dark")}><I.Moon /> Dark</button>
-            <button aria-pressed={theme === "light"} onClick={() => changeTheme("light")}><I.Sun /> Light</button>
+            <button aria-pressed={theme === "dark"} disabled={preferenceState !== "online"} onClick={() => changeTheme("dark")}><I.Moon /> Dark</button>
+            <button aria-pressed={theme === "light"} disabled={preferenceState !== "online"} onClick={() => changeTheme("light")}><I.Sun /> Light</button>
           </div>
         </Card>
         <Card>
@@ -2216,8 +2234,8 @@ function Settings({ brand, save, theme, changeTheme, note }: any) {
               onChange={(e) => setD({ ...d, accent: e.target.value })}
             />
           </label>
-          <Btn onClick={brandingValid ? () => save(d) : undefined}>Branding gemeinsam speichern</Btn>
-          <small className="settingsHint">Gilt nach dem Speichern für Desktop und iPhone.</small>
+          <Btn onClick={brandingValid && preferenceState === "online" ? () => save(d) : undefined}>Branding gemeinsam speichern</Btn>
+          <small className="settingsHint">{preferenceState === "online" ? "Gilt nach dem Speichern für Desktop und iPhone." : "Speichern bleibt bis zur verifizierten gemeinsamen Quelle gesperrt."}</small>
         </Card>
         <Card>
           <Tag>KOSTENREGEL</Tag>

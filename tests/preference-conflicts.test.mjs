@@ -40,6 +40,10 @@ test("desktop and iPhone preference client reloads the shared source on 409", as
   assert.match(page, /preferenceVersions\.current\.branding/);
   assert.match(page, /response\.status === 409[\s\S]*await loadPreferences\(\)/);
   assert.match(page, /Theme nicht gespeichert · gemeinsamer Stand bleibt unverändert/);
+  assert.match(page, /agentic-os:runtime-online[\s\S]*recoverPreferences/);
+  assert.match(page, /disabled=\{preferenceState !== "online"\}/);
+  assert.match(page, /Theme und Branding sind gerade nicht verifiziert erreichbar/);
+  assert.match(page, /Speichern bleibt bis zur verifizierten gemeinsamen Quelle gesperrt/);
   assert.match(route, /setPreference\(id, body\.value, body\.version\)/);
   assert.match(route, /publicConflict\(error\) \? 409/);
 });

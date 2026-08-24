@@ -88,6 +88,8 @@ Project root: `outputs/agentic-os`. Private source remote: `https://github.com/E
 - Full verification for procedure-state conflicts: Root 121/121, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed. Live progress rendered 50/53 with 0 desktop/390×844 horizontal overflow.
 - Theme and Branding now carry shared versions from default 0 onward. Stale device saves return 409 and reload; failed Theme transport restores the prior visible state rather than claiming an unsynchronized shared preference.
 - Full verification for shared preference conflicts: Root 123/123, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed. Settings rendered both real Theme controls with 0 desktop/390×844 horizontal overflow; the check performed no preference mutation.
+- Preference recovery is now explicit: shell/Settings track Loading, Online and Offline; Theme/Branding writes are fail-closed until verified, Settings exposes Retry and the runtime-online event reloads the shared values automatically.
+- Full verification for preference recovery: Root 123/123, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed. Online Settings had both Theme controls enabled, no false Retry and 0 desktop/390×844 overflow; live progress rendered 52/55.
 
 ## Immediate continuation
 
