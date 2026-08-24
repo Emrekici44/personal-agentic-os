@@ -74,6 +74,7 @@ Die gebündelten Details stehen in `PENDING-DECISIONS.md`. Kein Punkt hier block
 - OAuth-Start- und Callback-Redirects sind ebenfalls final cachefrei; der 10-Minuten-State-Cookie wird auf Erfolg und Fehler gelöscht. Der Laufzeitnachweis verwendete nur fehlende/ungültige Eingaben und startete weder Google-Navigation noch Tokenaustausch.
 - Calendar-Status, Tokenprüfung und Katalog sind getrennte Recovery-Evidenz. Ein temporärer Refresh- oder Katalogfehler kann den Health-Endpunkt nicht mehr mitreißen, keinen Online-/Fehler-Widerspruch erzeugen und keinen Reconnect aus unklarem Status freischalten.
 - Alle Google-Netzaufrufe besitzen ein gemeinsames 8-Sekunden-Abbruchlimit. Timeout-/Transportfehler bleiben private, inhaltsarme Recovery-Evidenz; sie können weder endlos laden noch Rohfehler, Mockdaten oder eine automatische Aktion erzeugen.
+- Die exakte Calendar-Einzelfreigabe ist persistent und einmalig: verschlüsseltes Approval-Ledger, atomarer Inhalts-/Frist-/Klassenabgleich und `consumed` vor Google-Transport. Replay oder veränderter Diff wird lokal abgewiesen; Idempotenz bleibt zusätzlich aktiv.
 - Produktmodule enthalten keine eingebetteten Kalender-, Ereignis-, Fokusblock- oder Provider-Mocks mehr; Testverträge prüfen echte Guards ohne sie als Nutzerdatenpfad bereitzuhalten.
 - ChatGPT Pro ist kein API-Zugang. Companion Mode ist ein manueller Übergabepfad.
 - SQLite ist operative Quelle, Obsidian dauerhafte Wissensquelle und Google Calendar externe Ereignisquelle, bis Emre eine andere Migration ausdrücklich freigibt.

@@ -105,6 +105,7 @@ Last verified: 25.08.2026, Europe/Berlin.
 - Nach dem lokalen Abschlussaudit bleiben Root 78/78, TypeScript, ESLint, Electron 2/2, Expo TypeScript/Lint/Web-Export und Next-Produktionsbuild grün.
 - Calendar-Recovery trennt jetzt drei unabhängige Wahrheiten: erreichbarer Statusendpunkt, Tokenprüfung und Kalenderkatalog. Ein Katalogfehler verdeckt weder die OAuth-Konfiguration noch den sicheren Retry; eine unklare Tokenprüfung sperrt Reconnect und Reads bis zur erneuten Prüfung. Integration Health bleibt bei diesem Teilfehler erreichbar und zeigt niemals gleichzeitig `Online` und einen fehlenden Token.
 - Jeder Google-Transportpfad besitzt jetzt ein gemeinsames lokales 8-Sekunden-Limit: OAuth-Tokenaustausch/-Refresh, Katalog, begrenzte Reads, Tageszahl, Planner-Adapter sowie die bereits freigabegesteuerte Write-/Duplikatprüfung. Der Katalog fängt Timeout/Netzfehler als private, inhaltsfreie 502-Evidenz ab; er gibt weder Rohfehler noch Ersatzdaten aus.
+- Calendar-Freigaben sind jetzt echte einmalige Shared-Store-Entscheidungen: Die exakte Änderung wird verschlüsselt in der vorhandenen `approvals`-Tabelle registriert, beim Write atomar gegen Inhalt/Frist/Klasse geprüft und auf `consumed` gesetzt. Ein Replay desselben versiegelten Tokens wird vor jeder Google-Kommunikation abgewiesen. Der Laufzeittest verwendete ausschließlich eine temporäre isolierte Datenbank.
 
 ## Verification
 

@@ -72,6 +72,7 @@ Project root: `outputs/agentic-os`. Private source remote: `https://github.com/E
 - A 16-view desktop/390×844 audit found and fixed undersized mobile menu-close and Journal prompt controls; the repeat pass had 0 overflow and 0 active controls below 32×32 px. Do not claim physical acceptance of these newest screens until Emre performs the bundled Expo retest in `PENDING-DECISIONS.md`.
 - Calendar recovery now treats the private status endpoint, Google token refresh and calendar catalog as independent evidence. Connected UI was verified on desktop/390×844 with no contradictory token warning, overflow or console error. The test intentionally performed no event read, OAuth navigation or calendar write.
 - Google transport is uniformly bounded to 8 seconds, including token exchange/refresh, catalog, event/day/planner reads and guarded write transport. The catalog has its own generic private 502 recovery response. A live catalog probe still returned eight calendar roles without starting OAuth, reading events or writing.
+- Calendar approvals now use the existing SQLite `approvals` ledger: encrypted exact diff, 15-minute expiry, transactional one-use consumption and content-light audit. A temporary-store runtime test proved mismatch/replay rejection and no plaintext event title in the DB; no real approval or calendar action was created.
 
 ## Immediate continuation
 
