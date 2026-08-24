@@ -11,6 +11,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const { id } = await params;
     return respond(projectWorkspace(id));
   } catch (error) {
-    return respond({ error: publicApiError(error, "Projektarbeitsraum nicht verfügbar") }, { status: 404 });
+    const fallback = "Projektarbeitsraum ist vorübergehend nicht erreichbar";
+    const message = publicApiError(error, fallback);
+    return respond({ error: message, workspace: null, inventoryVerified: false, retrySafe: message === fallback }, { status: message === "Projekt nicht gefunden" ? 404 : 503 });
   }
 }

@@ -18,7 +18,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const { kind } = await params;
   if (!auth(request)) return NextResponse.json({ error: "Lokale Sitzung erforderlich" }, { status: 401, headers });
   if (!isCrudKind(kind)) return NextResponse.json({ error: "Unbekannter Datentyp" }, { status: 404, headers });
-  return NextResponse.json({ kind, records: listRecords(kind), source: "laptop-shared-store" }, { headers });
+  try {
+    return NextResponse.json({ kind, records: listRecords(kind), source: "laptop-shared-store", inventoryVerified: true }, { headers });
+  } catch {
+    return NextResponse.json({ error: "Gemeinsame Datensätze sind vorübergehend nicht erreichbar", kind, records: [], source: "unavailable", inventoryVerified: false, retrySafe: true }, { status: 503, headers });
+  }
 }
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ kind: string }> }) {

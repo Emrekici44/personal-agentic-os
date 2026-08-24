@@ -80,6 +80,8 @@ Project root: `outputs/agentic-os`. Private source remote: `https://github.com/E
 - Verification for this increment: Root 113/113, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed. Progress rendered 46/49 on desktop and without horizontal overflow at 390×844; content audit found no secrets, Vault note paths or forbidden tracked local state.
 - Session and OAuth cookie `Secure` flags now use one request-aware policy: direct HTTPS or configured Tailscale forwarding is accepted, an unrelated forwarded host is rejected and localhost remains available. The current shell environment does not expose `AGENTIC_OS_PRIVATE_HOST`, so live-header evidence was not fabricated; deterministic helper and route contracts cover the boundary.
 - Full verification after the cookie change: Root 115/115, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed. The live dashboard rendered 47/50 discrete items.
+- Core private read routes now catch local source failures themselves and return content-free 503 JSON with cleared/unverified inventories and a safe retry marker. This covers Store status/records, Audit, Archive, Backups, Preferences, Projects, Planner history, Agent runs and Skills; no existing user data was changed.
+- Full verification for structured read recovery: Root 117/117, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed; live progress rendered 48/51.
 
 ## Immediate continuation
 

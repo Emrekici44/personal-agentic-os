@@ -15,13 +15,18 @@ const headers = { "Cache-Control": "no-store, private" };
 export async function GET(request: NextRequest) {
   if (!authorized(request))
     return NextResponse.json({ error: "Lokale Sitzung erforderlich" }, { status: 401, headers });
-  return NextResponse.json({
-    backups: listStoreBackups(),
-    store: storeStatus(),
-    localOnly: true,
-    restorePerformed: false,
-    restoreAvailable: false,
-  }, { headers });
+  try {
+    return NextResponse.json({
+      backups: listStoreBackups(),
+      store: storeStatus(),
+      inventoryVerified: true,
+      localOnly: true,
+      restorePerformed: false,
+      restoreAvailable: false,
+    }, { headers });
+  } catch {
+    return NextResponse.json({ error: "Backup-Inventar ist vorübergehend nicht erreichbar", backups: [], store: null, inventoryVerified: false, retrySafe: true, localOnly: true, restorePerformed: false, restoreAvailable: false }, { status: 503, headers });
+  }
 }
 
 export async function POST(request: NextRequest) {

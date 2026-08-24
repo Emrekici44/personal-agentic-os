@@ -37,17 +37,22 @@ function loadAllowedSources(allowedSources: string[]) {
 
 export async function GET(request: NextRequest) {
   if (!authorized(request)) return reject(new Error("Lokale Sitzung erforderlich"), 401);
-  const definitions = listSkillDefinitions();
-  return NextResponse.json({
-    definitions,
-    runs: listSkillRuns(),
-    catalog: skillProcedureCatalog,
-    safety: skillSafetyContract,
-    legacyMetadataCount: definitions.filter((skill) => !skill.executable && skill.status === "metadata_only").length,
-    executionMode: "deterministic-local",
-    paidApiEnabled: false,
-    externalActionsEnabled: false,
-  }, { headers: responseHeaders });
+  try {
+    const definitions = listSkillDefinitions();
+    return NextResponse.json({
+      definitions,
+      runs: listSkillRuns(),
+      catalog: skillProcedureCatalog,
+      safety: skillSafetyContract,
+      inventoryVerified: true,
+      legacyMetadataCount: definitions.filter((skill) => !skill.executable && skill.status === "metadata_only").length,
+      executionMode: "deterministic-local",
+      paidApiEnabled: false,
+      externalActionsEnabled: false,
+    }, { headers: responseHeaders });
+  } catch {
+    return NextResponse.json({ error: "Skill-Bibliothek ist vorübergehend nicht erreichbar", definitions: [], runs: [], catalog: [], inventoryVerified: false, retrySafe: true, paidApiEnabled: false, externalActionsEnabled: false }, { status: 503, headers: responseHeaders });
+  }
 }
 
 export async function POST(request: NextRequest) {

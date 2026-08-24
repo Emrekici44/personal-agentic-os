@@ -7,7 +7,11 @@ const authorized = (request: NextRequest) => verifyLocalSession(request.cookies.
 
 export async function GET(request: NextRequest) {
   if (!authorized(request)) return NextResponse.json({ error: "Lokale Sitzung erforderlich" }, { status: 401, headers });
-  return NextResponse.json({ records: listArchivedRecords(), source: "laptop-shared-store", personalContentExposed: false, deletesPerformed: false }, { headers });
+  try {
+    return NextResponse.json({ records: listArchivedRecords(), source: "laptop-shared-store", inventoryVerified: true, personalContentExposed: false, deletesPerformed: false }, { headers });
+  } catch {
+    return NextResponse.json({ error: "Lokales Archiv ist vorübergehend nicht erreichbar", records: [], inventoryVerified: false, retrySafe: true, personalContentExposed: false, deletesPerformed: false }, { status: 503, headers });
+  }
 }
 
 export async function PATCH(request: NextRequest) {

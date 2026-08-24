@@ -20,7 +20,11 @@ export async function GET(
     return NextResponse.json({ error: "Lokale Sitzung erforderlich" }, { status: 401, headers });
   if (!isPreferenceId(id))
     return NextResponse.json({ error: "Unbekannte Einstellung" }, { status: 404, headers });
-  return NextResponse.json(getPreference(id), { headers });
+  try {
+    return NextResponse.json(getPreference(id), { headers });
+  } catch {
+    return NextResponse.json({ error: "Geteilte Einstellung ist vorübergehend nicht erreichbar", preference: null, retrySafe: true }, { status: 503, headers });
+  }
 }
 
 export async function PUT(

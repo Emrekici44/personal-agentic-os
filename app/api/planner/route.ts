@@ -14,7 +14,11 @@ function authenticated(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   if (!authenticated(request)) return respond({ error: "Lokale Sitzung erforderlich" }, { status: 401 });
-  return respond({ plan: latestWeeklyPlan(), history: listWeeklyPlanSummaries(), source: "laptop-shared-store", backgroundWrites: false, writesPerformed: false });
+  try {
+    return respond({ plan: latestWeeklyPlan(), history: listWeeklyPlanSummaries(), source: "laptop-shared-store", inventoryVerified: true, backgroundWrites: false, writesPerformed: false });
+  } catch {
+    return respond({ error: "Wochenplanverlauf ist vorübergehend nicht erreichbar", plan: null, history: [], source: "unavailable", inventoryVerified: false, retrySafe: true, backgroundWrites: false, writesPerformed: false }, { status: 503 });
+  }
 }
 
 export async function POST(request: NextRequest) {

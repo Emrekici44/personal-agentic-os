@@ -9,7 +9,11 @@ const respond = (body: unknown, init: ResponseInit = {}) => NextResponse.json(bo
 
 export async function GET(request: NextRequest) {
   if (!authorized(request)) return respond({ error: "Lokale Sitzung erforderlich" }, { status: 401 });
-  return respond({ profiles: agentWorkflowProfiles, runs: listAgentWorkflowRuns(), provider: "local-rules", model: "none", paidApiEnabled: false, externalActionsEnabled: false });
+  try {
+    return respond({ profiles: agentWorkflowProfiles, runs: listAgentWorkflowRuns(), inventoryVerified: true, provider: "local-rules", model: "none", paidApiEnabled: false, externalActionsEnabled: false });
+  } catch {
+    return respond({ error: "Agentenläufe sind vorübergehend nicht erreichbar", profiles: [], runs: [], inventoryVerified: false, retrySafe: true, provider: "local-rules", model: "none", paidApiEnabled: false, externalActionsEnabled: false }, { status: 503 });
+  }
 }
 
 export async function POST(request: NextRequest) {

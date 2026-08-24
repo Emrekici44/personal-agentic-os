@@ -349,6 +349,13 @@ export const systemProgress = {
       status: "complete",
     },
     {
+      id: "structured-read-recovery",
+      label: "Private Lesequellen strukturiert wiederaufnehmen",
+      evidence: "Store/Audit/Archiv/Backup/Preferences/Projekte/Planner/Agenten/Skills · 503 + leeres unbestätigtes Inventar · sicherer Retry",
+      href: "#settings",
+      status: "complete",
+    },
+    {
       id: "ongoing-local-gap-audit",
       label: "Nächste lokale Bedien-/Recovery-Lücke prüfen",
       evidence: "Nur reversible lokale Änderungen · keine externen Writes, Migrationen, Installationen oder Kosten",

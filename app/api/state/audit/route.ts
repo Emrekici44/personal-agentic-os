@@ -8,10 +8,14 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Lokale Sitzung erforderlich" }, { status: 401, headers });
   }
 
-  return NextResponse.json({
-    entries: listAuditEntries(8),
-    fields: ["action", "entityType", "createdAt"],
-    personalContentExposed: false,
-    source: "laptop-shared-store",
-  }, { headers });
+  try {
+    return NextResponse.json({
+      entries: listAuditEntries(8),
+      fields: ["action", "entityType", "createdAt"],
+      personalContentExposed: false,
+      source: "laptop-shared-store",
+    }, { headers });
+  } catch {
+    return NextResponse.json({ error: "Auditverlauf ist vorübergehend nicht erreichbar", entries: [], inventoryVerified: false, personalContentExposed: false, retrySafe: true }, { status: 503, headers });
+  }
 }
