@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { publicApiError } from "@/lib/public-api-error";
 import { projectWorkspace, verifyLocalSession } from "@/lib/shared-store";
 
 const headers = { "Cache-Control": "no-store, private" };
@@ -10,6 +11,6 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const { id } = await params;
     return respond(projectWorkspace(id));
   } catch (error) {
-    return respond({ error: error instanceof Error ? error.message : "Projektarbeitsraum nicht verfügbar" }, { status: 404 });
+    return respond({ error: publicApiError(error, "Projektarbeitsraum nicht verfügbar") }, { status: 404 });
   }
 }

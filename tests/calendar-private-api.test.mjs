@@ -29,16 +29,17 @@ test("disconnected production calendar routes return honest empty states, never 
 });
 
 test("bounded calendar reads use the server-side Europe Berlin window", async () => {
-  const [events, page] = await Promise.all([
+  const [events, adapter, page] = await Promise.all([
     route("events"),
+    readFile(new URL("../lib/google-calendar-read.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
   ]);
   assert.match(events, /weeklyWindow\(new Date\(\)\)/);
   assert.match(events, /assertBoundedWindow\(window\.start, window\.end\)/);
-  assert.match(events, /timeMin: window\.start/);
-  assert.match(events, /timeMax: window\.end/);
+  assert.match(events, /readGoogleCalendarWindow\(token, calendarIds, window\.start, window\.end, catalog\)/);
+  assert.match(adapter, /timeMin: new Date\(start\)\.toISOString\(\)/);
+  assert.match(adapter, /timeMax: new Date\(end\)\.toISOString\(\)/);
   assert.match(events, /timezone: window\.timezone/);
-  assert.match(events, /fields: "items\(id,summary,start,end\)"/);
   assert.match(events, /new Set\(req\.nextUrl\.searchParams\.getAll\("calendar"\)\)/);
   assert.doesNotMatch(page, /new URLSearchParams\(\{ start: start\.toISOString\(\), end: end\.toISOString\(\) \}\)/);
   assert.match(page, /calendarRead\.boundedDays[\s\S]*calendarRead\.timezone/);
@@ -93,7 +94,12 @@ test("every Google transport is time-bounded and catalog failures stay private",
   const helper = await readFile(new URL("../lib/google-transport.ts", import.meta.url), "utf8");
   assert.match(helper, /GOOGLE_REQUEST_TIMEOUT_MS = 8_000/);
   assert.match(helper, /AbortSignal\.timeout\(GOOGLE_REQUEST_TIMEOUT_MS\)/);
-  for (const source of files) {
+  for (const [index, source] of files.entries()) {
+    if (index === 4) {
+      assert.match(source, /readCalendarCatalog/);
+      assert.match(source, /readGoogleCalendarWindow/);
+      continue;
+    }
     assert.match(source, /googleRequestSignal/);
     for (const call of source.matchAll(/fetch\([\s\S]*?\)/g)) {
       if (/googleapis|oauth2\.google/.test(call[0])) assert.match(source, /signal:\s*googleRequestSignal\(\)/);

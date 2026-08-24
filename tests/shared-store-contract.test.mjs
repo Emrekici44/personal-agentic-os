@@ -12,7 +12,9 @@ test('shared operational records expose authenticated CRUD and route skills thro
   assert.match(store,/INSERT INTO audit_log/);
   assert.match(store,/Number\(input\?\.version\).*Number\(current\.version\)/);
   assert.match(store,/Datenkonflikt: Eintrag wurde auf einem anderen Client geändert/);
-  assert.match(route,/status: message\.startsWith\("Datenkonflikt"\) \? 409 : 400/);
+  assert.match(route,/const conflict = publicConflict\(error\)/);
+  assert.match(route,/status: conflict \? 409 : 400/);
+  assert.doesNotMatch(route,/error instanceof Error \? error\.message/);
 });
 test('tasks and habits validate planning fields before shared persistence',()=>{
   assert.match(store,/kind==='tasks'.*Fälligkeit muss ein gültiges Datum sein/s);

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { publicApiError, publicConflict } from "@/lib/public-api-error";
 import { isCrudKind, listArchivedRecords, restoreArchivedRecord, verifyLocalSession } from "@/lib/shared-store";
 
 const headers = { "Cache-Control": "no-store, private" };
@@ -16,7 +17,8 @@ export async function PATCH(request: NextRequest) {
     if (!isCrudKind(kind)) throw new Error("Unbekannter Archivtyp");
     return NextResponse.json(restoreArchivedRecord(kind, String(body.id || ""), Number(body.version)), { headers });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Wiederherstellung fehlgeschlagen";
-    return NextResponse.json({ error: message, restored: false, conflict: message.startsWith("Datenkonflikt") }, { status: message.startsWith("Datenkonflikt") ? 409 : 400, headers });
+    const conflict = publicConflict(error);
+    const message = publicApiError(error, "Wiederherstellung konnte nicht sicher abgeschlossen werden");
+    return NextResponse.json({ error: message, restored: false, conflict }, { status: conflict ? 409 : 400, headers });
   }
 }

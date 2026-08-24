@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { publicApiError } from "@/lib/public-api-error";
 import {
   backupStore,
   listStoreBackups,
@@ -31,7 +32,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ backup: backupStore(), restorePerformed: false }, { headers });
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Backup fehlgeschlagen" },
+      { error: publicApiError(error, "Lokales Backup konnte nicht sicher erstellt werden") },
       { status: 400, headers },
     );
   }
@@ -45,7 +46,7 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json(previewRestore(String(body.fileName || "")), { headers });
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Restore-Vorschau fehlgeschlagen" },
+      { error: publicApiError(error, "Restore-Vorschau konnte nicht sicher erzeugt werden") },
       { status: 400, headers },
     );
   }

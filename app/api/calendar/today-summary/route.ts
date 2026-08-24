@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
       boundedDays: 1,
       writesPerformed: false,
     });
-  } catch (error) {
-    return respond({ error: error instanceof Error ? error.message : "Tageskalender nicht verfügbar", writesPerformed: false }, { status: 502 });
+  } catch {
+    return respond({ error: "Tageskalender ist vorübergehend nicht erreichbar", eventCount: null, connected: null, retrySafe: true, writesPerformed: false }, { status: 502 });
   }
 }

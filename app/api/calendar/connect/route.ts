@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { oauthUrl, seal } from "@/lib/google-calendar";
+import { publicApiError } from "@/lib/public-api-error";
 import { verifyLocalSession } from "@/lib/shared-store";
 
 const headers = { "Cache-Control": "no-store, private" };
@@ -22,6 +23,6 @@ export async function GET(req: NextRequest) {
     response.headers.set("Cache-Control", "no-store, private");
     return response;
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : "OAuth nicht verfügbar" }, { status: 503, headers });
+    return NextResponse.json({ error: publicApiError(error, "Google-Verbindung ist vorübergehend nicht verfügbar"), externalNavigationStarted: false }, { status: 503, headers });
   }
 }

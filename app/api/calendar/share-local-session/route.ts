@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { persistTokenCookie } from '@/lib/google-calendar';
+import { publicApiError } from '@/lib/public-api-error';
 import { verifyLocalSession } from '@/lib/shared-store';
 
 const headers = { 'Cache-Control': 'no-store, private' };
@@ -12,6 +13,6 @@ export async function POST(req: NextRequest) {
     persistTokenCookie(req.cookies.get('agentic_os_google_token')?.value);
     return NextResponse.json({ sharedLocally: true, encryptedAtRest: true, credentialsExposed: false }, { headers });
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : 'Lokale Desktop-Freigabe fehlgeschlagen' }, { status: 400, headers });
+    return NextResponse.json({ error: publicApiError(error, 'Lokale Calendar-Übernahme konnte nicht sicher bestätigt werden'), sharedLocally: false, credentialsExposed: false }, { status: 400, headers });
   }
 }

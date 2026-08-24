@@ -108,7 +108,8 @@ Last verified: 25.08.2026, Europe/Berlin.
 - Calendar-Freigaben sind jetzt echte einmalige Shared-Store-Entscheidungen: Die exakte Änderung wird verschlüsselt in der vorhandenen `approvals`-Tabelle registriert, beim Write atomar gegen Inhalt/Frist/Klasse geprüft und auf `consumed` gesetzt. Ein Replay desselben versiegelten Tokens wird vor jeder Google-Kommunikation abgewiesen. Der Laufzeittest verwendete ausschließlich eine temporäre isolierte Datenbank.
 - Der kontrollierte Write unterscheidet jetzt `not_started`, `duplicate_prevented`, `rejected`, `unknown`, `written_unverified`, `written_audit_unconfirmed` und `written_verified`. Nach Write-Beginn wird inhaltsarm zurückgelesen und lokal auditiert; Timeout/unklares Ergebnis ist niemals retry-fähig und verlangt Kalenderprüfung plus neue exakte Vorschau. Auch der Duplikatfall erhält eine echte lokale Audit-ID statt einer fremden Event-ID.
 - Sichtbare technische Enum-Werte sind aus den Hauptansichten entfernt: Connector- und Kostenklassen, Bereichsstatus, Beziehungsart, Rhythmus und Trainingsintensität werden verständlich deutsch dargestellt. Die serverseitigen Codes bleiben unverändert für stabile Verträge. Usage & Limits verbindet Calendar-Berechtigungen lesbar und zeigt keine englischen Kostenbadges mehr.
-- Die strukturierte Dashboard-Fortschrittsquelle enthält die fünf neuen verifizierten Recovery-/Bedieninkremente als eigene abgeschlossene Checklistenpunkte. Es bleibt genau ein lokaler Audit aktiv; physischer iPhone-Nachtest und PostgreSQL-Ziel bleiben getrennte Nutzeraktionen. Der Zähler wird ausschließlich aus diesen diskreten Zuständen berechnet.
+- Die strukturierte Dashboard-Fortschrittsquelle enthält die verifizierten Recovery-/Bedieninkremente als eigene abgeschlossene Checklistenpunkte. Es bleibt genau ein lokaler Audit aktiv; physischer iPhone-Nachtest und PostgreSQL-Ziel bleiben getrennte Nutzeraktionen. Der Zähler wird ausschließlich aus diesen diskreten Zuständen berechnet.
+- Private API error handling now exposes only an allowlisted, length-bounded set of actionable validation messages. Runtime, filesystem, database and credential-shaped details collapse to content-free recovery text; Calendar read/planner failures distinguish stale selection (409), provider transport (502) and token-check uncertainty (503) without writes or automatic OAuth.
 
 ## Verification
 
@@ -138,6 +139,7 @@ Last verified: 25.08.2026, Europe/Berlin.
 - Transport-Browserprobe: derselbe private Integrationspfad lieferte weiterhin `Online` und acht Kalenderrollen ohne Console-Warnung. Die Probe bestand nur aus dem vorhandenen Katalog-Read; kein Eventabruf, OAuth-Start oder Write wurde ausgelöst.
 - Anonyme Write-Laufzeitprobe: 401, `no-store, private`, `written=false`, `approvalConsumed=false`; Request-Body, Approval-Ledger und Google-Transport wurden nicht erreicht.
 - Bedienprobe: Integration Health zeigt `Verbindungsart · Direkte API`, `Kostenfrei/Nutzungsbasiert/Ungeklärt`, `Berechtigungen` und keine internen Klassencodes. Usage & Limits rendert dieselben verständlichen Kostenklassen auf 390×844 ohne Überlauf oder Console-Warnung. Leere Bereichsdaten blieben unverändert; es wurden keine Beispieldatensätze für die Enum-Prüfung erzeugt.
+- Private-API-Fehlergrenze: Root 113/113, Lint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export und isolierter Produktionsbuild grün. Dashboard zeigt 46/49 diskrete Punkte; 390×844 ohne horizontalen Überlauf. Inhaltsaudit: 0 Secretmuster, 0 Vault-Dateipfade, 0 verbotene getrackte lokale Dateien.
 
 ## User boundaries
 

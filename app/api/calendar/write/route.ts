@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auditCalendarWrite, consumeApproval, type CalendarChange } from "@/lib/calendar-write";
 import { refreshedAccessToken } from "@/lib/google-calendar";
 import { googleRequestSignal } from "@/lib/google-transport";
+import { publicApiError } from "@/lib/public-api-error";
 import { verifyLocalSession } from "@/lib/shared-store";
 
 const headers = { "Cache-Control": "no-store, private" };
@@ -29,7 +30,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     change = consumeApproval(body.approvalToken, body.confirmation);
   } catch (error) {
-    return respond({ error: error instanceof Error ? error.message : "Kalenderfreigabe abgelehnt", written: false, outcome: "not_started", approvalConsumed: false, retryAllowed: false }, { status: 400 });
+    return respond({ error: publicApiError(error, "Kalenderfreigabe wurde sicher abgelehnt"), written: false, outcome: "not_started", approvalConsumed: false, retryAllowed: false }, { status: 400 });
   }
 
   const base = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(change.calendarId)}/events`;

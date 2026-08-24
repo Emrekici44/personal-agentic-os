@@ -2,11 +2,12 @@ import crypto from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 
 import { buildVaultWriteProposal, revalidateVaultWriteProposal } from "@/lib/obsidian-write-proposal";
+import { publicApiError } from "@/lib/public-api-error";
 import { approveVaultWriteProposal, listVaultWriteProposals, saveVaultWriteProposal, verifyLocalSession } from "@/lib/shared-store";
 
 const headers = { "Cache-Control": "no-store, private" };
 const authorized = (request: NextRequest) => verifyLocalSession(request.cookies.get("agentic_os_local_session")?.value);
-const errorResponse = (error: unknown, status = 400) => NextResponse.json({ error: error instanceof Error ? error.message : "Vault-Vorschlag fehlgeschlagen", applyAvailable: false, writesPerformed: false, existingNotesModified: 0 }, { status, headers });
+const errorResponse = (error: unknown, status = 400) => NextResponse.json({ error: publicApiError(error, "Vault-Vorschlag konnte nicht sicher verarbeitet werden"), applyAvailable: false, writesPerformed: false, existingNotesModified: 0 }, { status, headers });
 
 export async function GET(request: NextRequest) {
   if (!authorized(request)) return errorResponse(new Error("Lokale Sitzung erforderlich"), 401);

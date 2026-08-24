@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { publicApiError, publicConflict } from "@/lib/public-api-error";
 import {
   archiveRecord,
   createRecord,
@@ -28,7 +29,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const body = await request.json();
     return NextResponse.json(createRecord(kind, kind === "agents" ? validateAgentConfig(body) : body), { status: 201, headers });
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Erstellen fehlgeschlagen" }, { status: 400, headers });
+    return NextResponse.json({ error: publicApiError(error, "Eintrag konnte nicht sicher erstellt werden") }, { status: 400, headers });
   }
 }
 
@@ -40,8 +41,8 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const body = await request.json();
     return NextResponse.json(updateRecord(kind, String(body.id || ""), kind === "agents" ? validateAgentConfig(body) : body), { headers });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Aktualisieren fehlgeschlagen";
-    return NextResponse.json({ error: message, conflict: message.startsWith("Datenkonflikt") }, { status: message.startsWith("Datenkonflikt") ? 409 : 400, headers });
+    const conflict = publicConflict(error);
+    return NextResponse.json({ error: publicApiError(error, "Eintrag konnte nicht sicher aktualisiert werden"), conflict }, { status: conflict ? 409 : 400, headers });
   }
 }
 
@@ -55,7 +56,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     if (!id) throw new Error("ID fehlt");
     return NextResponse.json(archiveRecord(kind, id, version), { headers });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Archivieren fehlgeschlagen";
-    return NextResponse.json({ error: message, conflict: message.startsWith("Datenkonflikt") }, { status: message.startsWith("Datenkonflikt") ? 409 : 400, headers });
+    const conflict = publicConflict(error);
+    return NextResponse.json({ error: publicApiError(error, "Eintrag konnte nicht sicher archiviert werden"), conflict }, { status: conflict ? 409 : 400, headers });
   }
 }

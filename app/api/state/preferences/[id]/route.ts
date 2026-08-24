@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { publicApiError } from "@/lib/public-api-error";
 import {
   getPreference,
   isPreferenceId,
@@ -34,7 +35,7 @@ export async function PUT(
     return NextResponse.json(setPreference(id, body.value), { headers });
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Speichern fehlgeschlagen" },
+      { error: publicApiError(error, "Einstellung konnte nicht sicher gespeichert werden") },
       { status: 400, headers },
     );
   }

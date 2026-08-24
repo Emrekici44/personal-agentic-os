@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { agentWorkflowProfiles, buildAgentWorkflowProposal, isAgentWorkflowId } from "@/lib/agent-workflows";
+import { publicApiError } from "@/lib/public-api-error";
 import { latestWeeklyPlan, listAgentWorkflowRuns, listRecords, saveAgentWorkflowRun, transitionAgentWorkflowRun, verifyLocalSession } from "@/lib/shared-store";
 
 const authorized = (request: NextRequest) => verifyLocalSession(request.cookies.get("agentic_os_local_session")?.value);
@@ -20,7 +21,7 @@ export async function POST(request: NextRequest) {
     const proposal = buildAgentWorkflowProposal(body.workflowId, String(body.input || ""), sources, body.projectId ? String(body.projectId) : undefined);
     return respond({ run: saveAgentWorkflowRun(proposal), proposalOnly: true, paidApiUsed: false, externalActionsPerformed: false }, { status: 201 });
   } catch (error) {
-    return respond({ error: error instanceof Error ? error.message : "Workflow konnte nicht erzeugt werden", externalActionsPerformed: false }, { status: 400 });
+    return respond({ error: publicApiError(error, "Workflow-Vorschlag konnte nicht sicher erzeugt werden"), externalActionsPerformed: false }, { status: 400 });
   }
 }
 
@@ -30,6 +31,6 @@ export async function PATCH(request: NextRequest) {
     const body = await request.json();
     return respond({ run: transitionAgentWorkflowRun(String(body.runId || ""), body.action, body), externalActionsPerformed: false, nextExternalAction: "not_available" });
   } catch (error) {
-    return respond({ error: error instanceof Error ? error.message : "Workflow-Status konnte nicht gespeichert werden", externalActionsPerformed: false }, { status: 400 });
+    return respond({ error: publicApiError(error, "Workflow-Status konnte nicht sicher gespeichert werden"), externalActionsPerformed: false }, { status: 400 });
   }
 }

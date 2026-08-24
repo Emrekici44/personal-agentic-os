@@ -335,6 +335,13 @@ export const systemProgress = {
       status: "complete",
     },
     {
+      id: "private-api-error-boundary",
+      label: "Private API-Fehler inhaltsarm und recovery-sicher machen",
+      evidence: "Validierung bleibt handlungsfähig · Pfad/DB/Token/Laufzeitdetails redigiert · Calendar 409/502/503 getrennt",
+      href: "#integrations",
+      status: "complete",
+    },
+    {
       id: "ongoing-local-gap-audit",
       label: "Nächste lokale Bedien-/Recovery-Lücke prüfen",
       evidence: "Nur reversible lokale Änderungen · keine externen Writes, Migrationen, Installationen oder Kosten",

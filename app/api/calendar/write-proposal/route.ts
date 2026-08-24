@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createApproval, validateCalendarChange } from '@/lib/calendar-write';
+import { publicApiError } from '@/lib/public-api-error';
 import { verifyLocalSession } from '@/lib/shared-store';
 const headers={'Cache-Control':'no-store, private'};
 
@@ -11,6 +12,6 @@ export async function POST(req: NextRequest) {
     const approval = createApproval(change, body.selectedCalendarIds || []);
     return NextResponse.json({ proposalOnly: true, writesPerformed: false, deletesEnabled: false, exactChange: change, ...approval, expiresInSeconds: 900 },{headers});
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : 'Ungültiger Kalendervorschlag' }, { status: 400, headers });
+    return NextResponse.json({ error: publicApiError(error, 'Kalendervorschlag konnte nicht sicher geprüft werden'), proposalOnly: true, writesPerformed: false }, { status: 400, headers });
   }
 }

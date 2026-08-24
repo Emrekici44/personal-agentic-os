@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { executeLocalSkill, skillProcedureCatalog, skillSafetyContract } from "@/lib/local-skills.mjs";
+import { publicApiError } from "@/lib/public-api-error";
 import {
   archiveSkillDefinition,
   createSkillDefinition,
@@ -15,7 +16,7 @@ import {
 
 const responseHeaders = { "Cache-Control": "no-store, private" };
 const authorized = (request: NextRequest) => verifyLocalSession(request.cookies.get("agentic_os_local_session")?.value);
-const reject = (error: unknown, status = 400) => NextResponse.json({ error: error instanceof Error ? error.message : "Skill-Anfrage fehlgeschlagen", writesPerformed: false }, { status, headers: responseHeaders });
+const reject = (error: unknown, status = 400) => NextResponse.json({ error: publicApiError(error, "Skill-Anfrage konnte nicht sicher verarbeitet werden"), writesPerformed: false }, { status, headers: responseHeaders });
 
 function loadAllowedSources(allowedSources: string[]) {
   const snapshot: Record<string, unknown[]> = {};
