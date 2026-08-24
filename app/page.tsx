@@ -1351,13 +1351,23 @@ function Inbox({ note }: any) {
   const [type, setType] = useState("Idee"),
     [txt, setTxt] = useState(""),
     [triageId, setTriageId] = useState(""),
-    [triageDraft, setTriageDraft] = useState<any>(null);
-  const { records: entries, state, create, update } = useSharedRecords("inbox_items");
+    [triageDraft, setTriageDraft] = useState<any>(null),
+    [filter, setFilter] = useState<"open" | "assigned" | "completed" | "all">("open"),
+    [query, setQuery] = useState(""),
+    [archiveArmed, setArchiveArmed] = useState(false);
+  const { records: entries, state, create, update, archive } = useSharedRecords("inbox_items");
   const { records: projects } = useSharedRecords("projects");
   const { records: agents } = useSharedRecords("agents");
   const types = ["Idee", "Aufgabe", "Notiz", "ChatGPT-Notiz", "Link", "Dateiverweis"];
   const areaOptions = [["Inbox", "Noch offen"], ["faith", "Glaube"], ["career", "Karriere"], ["health", "Gesundheit"], ["finance", "Finanzen"], ["relations", "Beziehungen"], ["projects", "Projekte"]];
   const selectedEntry = entries.find((entry: any) => entry.id === triageId);
+  const categorized = {
+    open: entries.filter((entry: any) => entry.status !== "completed" && (!entry.area || entry.area === "Inbox") && !entry.projectId && !entry.agentId),
+    assigned: entries.filter((entry: any) => entry.status !== "completed" && ((entry.area && entry.area !== "Inbox") || entry.projectId || entry.agentId)),
+    completed: entries.filter((entry: any) => entry.status === "completed"),
+    all: entries,
+  };
+  const filteredEntries = categorized[filter].filter((entry: any) => !query.trim() || String(entry.title || "").toLocaleLowerCase("de-DE").includes(query.trim().toLocaleLowerCase("de-DE")));
   const capture = async () => {
     const value = txt.trim();
     if (!value) return;
@@ -1370,7 +1380,10 @@ function Inbox({ note }: any) {
   const openTriage = (entry: any) => {
     setTriageId(entry.id);
     setTriageDraft({ area: entry.area || "Inbox", projectId: entry.projectId || "", agentId: entry.agentId || "", status: entry.status || "active", content: entry.content || entry.title });
+    setArchiveArmed(false);
   };
+  const completeEntry = async (entry: any) => { try { await update({ ...entry, status: entry.status === "completed" ? "active" : "completed" }); note(entry.status === "completed" ? "Inbox-Eintrag wieder geöffnet" : "Inbox-Eintrag abgeschlossen"); } catch (error) { note(error instanceof Error ? error.message : "Status konnte nicht gespeichert werden"); } };
+  const archiveSelected = async () => { if (!selectedEntry || !archiveArmed) return; try { await archive(selectedEntry.id); setTriageId(""); setTriageDraft(null); setArchiveArmed(false); note("Inbox-Eintrag reversibel archiviert"); } catch (error) { note(error instanceof Error ? error.message : "Archivieren fehlgeschlagen"); } };
   const saveTriage = async () => {
     if (!selectedEntry || !triageDraft) return;
     try {
@@ -1432,8 +1445,10 @@ function Inbox({ note }: any) {
         <Card><Tag>ECHTE DATENQUELLE · LEER</Tag><h3>Dein Eingang ist leer</h3><p>Neue Einträge erscheinen in Desktop und iPhone.</p></Card>
       )}
       {state === "error" && <Card><Tag>OFFLINE</Tag><h3>Gemeinsamer Eingang nicht erreichbar</h3><p>Es werden keine lokalen Ersatz- oder Beispieldaten angezeigt.</p></Card>}
+      {state === "online" && <Card className="inboxReviewBar"><div><Tag>GEMEINSAME REVIEW-ANSICHT</Tag><b>{categorized.open.length} offen · {categorized.assigned.length} zugeordnet · {categorized.completed.length} abgeschlossen</b></div><div className="inboxFilters" role="group" aria-label="Inbox filtern">{[["open","Offen"],["assigned","Zugeordnet"],["completed","Abgeschlossen"],["all","Alle"]].map(([id,label]) => <button aria-pressed={filter === id} className={filter === id ? "active" : ""} key={id} onClick={() => setFilter(id as any)} type="button">{label}</button>)}</div><label><span className="srOnly">Inbox-Titel durchsuchen</span><input onChange={(event) => setQuery(event.target.value)} placeholder="Titel filtern …" type="search" value={query}/></label></Card>}
       <div className="inboxlist">
-        {entries.map((x: any) => (
+        {state === "online" && entries.length > 0 && filteredEntries.length === 0 && <Card className="honestEmpty"><I.Search/><span><b>Keine Einträge in dieser Ansicht</b>Filter oder Titelsuche ändern; es werden keine Ersatzdaten gezeigt.</span></Card>}
+        {filteredEntries.map((x: any) => (
           <Card key={x.id}>
             <i />
             <span>
@@ -1444,9 +1459,7 @@ function Inbox({ note }: any) {
                 {x.agentId ? ` · Agent: ${agents.find((agent: any) => agent.id === x.agentId)?.name || "nicht mehr verfügbar"}` : ""}
               </small>
             </span>
-            <button aria-expanded={triageId === x.id} onClick={() => triageId === x.id ? (setTriageId(""), setTriageDraft(null)) : openTriage(x)}>
-              {triageId === x.id ? "Triage schließen" : "Triage öffnen"} <I.SlidersHorizontal />
-            </button>
+            <div className="inboxCardActions"><button aria-pressed={x.status === "completed"} onClick={() => completeEntry(x)} type="button">{x.status === "completed" ? "Wieder öffnen" : "Abschließen"}<I.CheckCircle2/></button><button aria-expanded={triageId === x.id} onClick={() => triageId === x.id ? (setTriageId(""), setTriageDraft(null), setArchiveArmed(false)) : openTriage(x)} type="button">{triageId === x.id ? "Triage schließen" : "Triage öffnen"}<I.SlidersHorizontal /></button></div>
           </Card>
         ))}
       </div>
@@ -1460,7 +1473,7 @@ function Inbox({ note }: any) {
           <label>Stand<select value={triageDraft.status} onChange={(event) => setTriageDraft({ ...triageDraft, status: event.target.value })}><option value="active">Zu prüfen</option><option value="planned">Eingeplant</option><option value="completed">Abgeschlossen</option></select></label>
           <label className="wide">Privater Inhalt<textarea maxLength={8000} value={triageDraft.content} onChange={(event) => setTriageDraft({ ...triageDraft, content: event.target.value })} /></label>
         </div>
-        <div className="editorActions"><Btn onClick={triageDraft.content.trim().length >= 2 ? saveTriage : undefined}>Triage speichern</Btn><button onClick={() => { setTriageId(""); setTriageDraft(null); }}>Abbrechen</button></div>
+        <div className="editorActions"><Btn onClick={triageDraft.content.trim().length >= 2 ? saveTriage : undefined}>Triage speichern</Btn><button onClick={() => { setTriageId(""); setTriageDraft(null); setArchiveArmed(false); }}>Abbrechen</button>{!archiveArmed ? <button className="dangerQuiet" onClick={() => setArchiveArmed(true)}>Archivieren …</button> : <button className="dangerQuiet" onClick={archiveSelected}>Archivierung bestätigen</button>}</div>
       </Card>}
     </>
   );

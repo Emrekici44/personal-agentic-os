@@ -28,6 +28,7 @@
 - Private Obsidian metadata search now uses the real 27-note index behind the signed local session. It searches only title, relative path and frontmatter key names; note bodies/values stay server-side and existing Vault files remain untouched.
 - Daily task and habit planning now persists validated priority, due date, life area, real project links, daily/weekly cadence, completion and reversible archive state. Editors are shared across Electron/Expo and never seed example records or pressure-oriented streaks.
 - Tasks now include up to 20 validated, stable-ID checklist items. Subitems can be edited in the shared task editor and completed directly from Today; no schema/data migration or code-capable payload is involved.
+- Inbox review now provides truthful open/assigned/completed/all views, title-only local filtering, direct complete/reopen and two-step reversible archive from triage. All state remains in the encrypted shared source and no filter dispatches an agent or external action.
 
 ## Complete – Bedienwahrheit and responsive refinement
 

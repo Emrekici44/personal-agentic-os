@@ -105,10 +105,13 @@ test("journal links only real shared counts and a content-minimal daily calendar
 
 test("universal inbox provides real encrypted triage instead of fake file capture", async () => {
   const page = await readFile(pagePath, "utf8");
-  for (const label of ["Triage öffnen", "Lebensbereich", "Projekt", "Agentenreferenz", "Triage speichern", "Dateiverweis"]) assert.match(page, new RegExp(label));
+  for (const label of ["Triage öffnen", "Lebensbereich", "Projekt", "Agentenreferenz", "Triage speichern", "Dateiverweis", "GEMEINSAME REVIEW-ANSICHT", "Zugeordnet", "Abgeschlossen", "Inbox-Titel durchsuchen", "Archivierung bestätigen"]) assert.match(page, new RegExp(label));
   assert.match(page, /kein Datei-Upload oder Kopieren/i);
   assert.match(page, /useSharedRecords\("projects"\)/);
   assert.match(page, /useSharedRecords\("agents"\)/);
+  assert.match(page, /filteredEntries/);
+  assert.match(page, /completeEntry/);
+  assert.match(page, /archiveSelected/);
   assert.doesNotMatch(page, /\["Idee", "Aufgabe", "Notiz", "ChatGPT-Notiz", "Link", "Datei"\]/);
 });
 

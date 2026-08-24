@@ -9,7 +9,7 @@ export type ProgressItem = {
 };
 
 export const systemProgress = {
-  currentPhase: "Flexible gemeinsame Aufgaben-Checklisten bereit · nächster lokaler Restpunkt aktiv",
+  currentPhase: "Inbox-Review und Filter bereit · lokale Companion-Organisation wird vertieft",
   lastVerifiedAt: "24.08.2026 · Europe/Berlin",
   items: [
     {
@@ -225,8 +225,15 @@ export const systemProgress = {
     {
       id: "inbox-review-views",
       label: "Inbox-Review und klare lokale Ansichten",
-      evidence: "Offen/Zugeordnet/Erledigt filtern · keine automatische Weiterleitung",
+      evidence: "Offen/Zugeordnet/Erledigt/Alle · Titelsuche · Abschließen/Wiederöffnen · zweistufig archivieren",
       href: "#inbox",
+      status: "complete",
+    },
+    {
+      id: "companion-organization",
+      label: "Lokale ChatGPT-Companion-Organisation",
+      evidence: "Ausgewählte Zusammenfassungen ordnen · kein Scraping, kein API-/Verlaufszugriff",
+      href: "#chat",
       status: "active",
     },
     {

@@ -36,6 +36,7 @@ Project root: `outputs/agentic-os`. Private source remote: `https://github.com/E
 - Knowledge search is now a signed, private metadata-only view over the real 27-note Vault index. It searches title, relative path and frontmatter key names only; bodies/values are not exposed and the Vault remains unchanged.
 - Today now has shared task planning (priority, due date, area, optional real project) and daily/weekly habit cadence. Both support edit, completion and reversible archive; validation opened/cancelled the editors without creating fake records.
 - Shared tasks also support up to 20 validated checklist items. The desktop/mobile editor and direct item toggle were checked with an unsaved local draft, then cancelled; no fake record was persisted.
+- Inbox has shared open/assigned/completed/all filters, title-only search, direct complete/reopen and two-step archive. The real empty store rendered 0/0/0 and all controls were exercised on desktop/390×844 without creating data.
 
 ## Immediate continuation
 

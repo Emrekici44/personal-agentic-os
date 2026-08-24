@@ -59,6 +59,9 @@ Last verified: 24.08.2026, Europe/Berlin.
 - Aufgaben unterstützen jetzt bis zu 20 validierte Checklistenpunkte mit stabiler ID, 160-Zeichen-Grenze, Bearbeiten/Entfernen und direktem Abhaken im gemeinsamen Tagesbereich. Die Daten bleiben im vorhandenen versionierten Aufgaben-JSON; es war keine Schema- oder Bestandsmigration nötig.
 - Checklisten-Browser-Abnahme: ein rein lokaler, ungespeicherter Prüfpunkt wurde im Desktop-Editor hinzugefügt, auf 390×844 ohne Überlauf dargestellt und anschließend verworfen. Es entstand kein Testdatensatz.
 - Nach der Checklisten-Erweiterung bleiben Root 75/75, TypeScript, ESLint, Electron 2/2, Expo TypeScript/Lint/Web-Export und Next-Produktionsbuild grün; Secret-/Inhaltsaudit und `git diff --check` sind sauber.
+- Die Inbox besitzt jetzt gemeinsame Review-Ansichten für offen, zugeordnet, abgeschlossen und alle sowie eine titelbasierte lokale Suche. Einträge lassen sich direkt abschließen/wieder öffnen; die bestehende Triage unterstützt zusätzlich eine zweistufige reversible Archivierung. Keine Filteraktion startet einen Agenten oder externen Write.
+- Inbox-Browser-Abnahme: alle vier Filter, aktiver Status, Nullzähler und Titelsuche wurden im echten leeren Store auf Desktop/390×844 geprüft; 0 horizontaler Überlauf und keine Testdatensätze.
+- Nach der Inbox-Review-Erweiterung bleiben Root 75/75, TypeScript, ESLint, Electron 2/2, Expo TypeScript/Lint/Web-Export und Next-Produktionsbuild grün.
 
 ## Verification
 
