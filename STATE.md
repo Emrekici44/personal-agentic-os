@@ -70,6 +70,9 @@ Last verified: 24.08.2026, Europe/Berlin.
 - Ein isolierter Laufzeittest mit temporärer Datenbank hat Erstupdate, abgelehntes veraltetes Zweitupdate, abgelehntes veraltetes Archiv und unveränderten aktuellen Datensatz verifiziert. Der temporäre Testbestand wurde danach entfernt; Emres echte Datenbank blieb unberührt.
 - Die gemeinsame Shell prüft den lokalen Datenkern beim Start, bei Fokus/Online-Ereignis und alle 30 Sekunden. Bei Ausfall erscheint eine explizite Retry-Fläche; es entsteht keine stille lokale Ersatzkopie. Der echte Onlinezustand renderte auf Desktop/390×844 ohne Banner oder Überlauf.
 - Nach der Offline-/Konflikthärtung sind Root 78/78 einschließlich isoliertem temporärem Datenbanktest, TypeScript, ESLint, Electron 2/2, Expo TypeScript/Lint/Web-Export und Next-Produktionsbuild grün.
+- Globaler Browseraudit: 16 zentrale Ansichten renderten auf Desktop und 390×844 mit Inhaltsfläche, mobiler Bottom-Bar, 0 horizontalem Überlauf und 0 Offlinezuständen. Der erste Lauf fand vier zu kleine Touchziele (Menü-Schließen plus drei Journal-Impulse); nach dem 44-px-Fix meldete der zweite Lauf 0 aktive Buttons unter 32×32 px.
+- Eine physische iPhone-Abnahme des aktuellen Nachtstands ist in `PENDING-DECISIONS.md` gebündelt und wird nicht automatisch behauptet. Der vorherige Expo-Navigationsstand bleibt physisch bestätigt.
+- Nach dem lokalen Abschlussaudit bleiben Root 78/78, TypeScript, ESLint, Electron 2/2, Expo TypeScript/Lint/Web-Export und Next-Produktionsbuild grün.
 
 ## Verification
 

@@ -39,11 +39,12 @@ Project root: `outputs/agentic-os`. Private source remote: `https://github.com/E
 - Inbox has shared open/assigned/completed/all filters, title-only search, direct complete/reopen and two-step archive. The real empty store rendered 0/0/0 and all controls were exercised on desktop/390×844 without creating data.
 - ChatGPT Companion captures only a user-selected title/summary plus optional area/project into encrypted Inbox storage. Its local library can search and reorganize real captures. Three provider cards tell the truth: manual subscription mode, API disabled/cost-gated, local model unverified. Empty-state validation created no data.
 - Shared record updates and archives now require the current SQLite row version. Stale clients receive 409 and reload; an isolated temporary DB runtime test confirmed the newer row survives stale update/archive attempts. The app shell checks runtime health every 30 seconds/focus/online and shows a retry banner instead of maintaining a hidden device-local copy.
+- A 16-view desktop/390×844 audit found and fixed undersized mobile menu-close and Journal prompt controls; the repeat pass had 0 overflow and 0 active controls below 32×32 px. Do not claim physical acceptance of these newest screens until Emre performs the bundled Expo retest in `PENDING-DECISIONS.md`.
 
 ## Immediate continuation
 
 1. Use `MASTER-GAPS.md` as the evidence-based remaining-work inventory and `PENDING-DECISIONS.md` for every external/user boundary.
-2. Continue the next local vertical slice: private route hardening, flexible task checklists, or richer local Inbox/Chat organization.
+2. The private-route, checklist, Inbox/Chat organization and local control-audit slices are complete. Continue only the next non-gated item from `MASTER-GAPS.md`, or prepare a decision-ready preview without external/filesystem writes.
 3. Seed real shared projects/tasks/inbox only through Emre's normal UI; never create personal examples for testing.
 4. Any selected focus block must still enter the exact single-event approval screen; never test the final write without Emre's action-time confirmation.
 5. Do not add a restore/Vault-Apply executor, PostgreSQL target, Graphify runtime, provider, connector, file copy or autostart unless its exact pending decision is approved.

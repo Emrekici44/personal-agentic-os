@@ -35,6 +35,7 @@ test("keeps the futuristic shell responsive and motion-accessible", async () => 
   assert.match(css, /--cyan: #2ad7ff/);
   assert.match(css, /@media \(max-width: 720px\)/);
   assert.match(css, /\.mobileNav/);
+  assert.match(css, /\.logo>button,\.prompts button\{min-height:44px\}/);
   assert.match(page, /function MobileNav/);
   assert.match(
     page,

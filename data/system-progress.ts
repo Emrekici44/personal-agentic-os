@@ -9,7 +9,7 @@ export type ProgressItem = {
 };
 
 export const systemProgress = {
-  currentPhase: "Offline- und Versionskonflikte abgesichert · abschließender Bedienaudit aktiv",
+  currentPhase: "Lokaler Abschlussaudit grün · physischer iPhone-Nachtest gebündelt offen",
   lastVerifiedAt: "24.08.2026 · Europe/Berlin",
   items: [
     {
@@ -246,9 +246,16 @@ export const systemProgress = {
     {
       id: "final-control-audit-current",
       label: "Abschließender globaler Bedienaudit",
-      evidence: "Prominente Controls, Statuswahrheit, Desktop/390×844 und physischer Expo-Nachtest bündeln",
+      evidence: "16 Kernansichten · 0 Überlauf · 0 aktive Touchziele unter 32×32 · 44-px-Menü/Journal-Fix",
       href: "#home",
-      status: "active",
+      status: "complete",
+    },
+    {
+      id: "physical-iphone-nightly-retest",
+      label: "Aktuellen Nachtstand physisch auf dem iPhone bestätigen",
+      evidence: "Expo neu öffnen · Heute, Inbox, Companion und Theme ohne Testdaten prüfen",
+      href: "#home",
+      status: "user_action",
     },
     {
       id: "master-gap-audit",

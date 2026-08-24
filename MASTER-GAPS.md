@@ -24,7 +24,7 @@ Stand: 24.08.2026, Europe/Berlin. Diese Liste verwendet nur diskrete Zustände. 
 | --- | --- | --- | --- |
 | 1 | Private API-Oberfläche vollständig vereinheitlichen | Alle wissens-/providerbezogenen Status- und Preview-Routen hinter die signierte lokale Sitzung legen | 401 ohne Sitzung, `no-store, private`, bestehende UI grün |
 | 2 | Projektdateien und Dokumentverweise | Zunächst nur validierte Referenz-Metadaten/Links, kein stilles Kopieren oder Öffnen | Ehrlicher Dateiverweis; keine Vault-/Dateisystemmutation |
-| 3 | Vollständiger Bedienaudit | Prominente Controls erneut auf Desktop/390×844 und im nächsten physischen Expo-Stand prüfen | Echte Aktion oder sichtbar gesperrt; keine irreführenden Toasts |
+Der lokale Bedienaudit ist abgeschlossen: 16 Kernansichten wurden auf Desktop und 390×844 ohne horizontalen Überlauf geprüft; alle sichtbaren aktiven mobilen Buttons erreichen mindestens 32 px in beiden Dimensionen, Menü/Journal-Impulse mindestens 44 px. Der physische Expo-Nachtest bleibt eine gebündelte Nutzeraktion.
 
 ## Nutzerentscheidung oder externe Grenze
 
@@ -37,6 +37,7 @@ Die gebündelten Details stehen in `PENDING-DECISIONS.md`. Kein Punkt hier block
 - Weitere Calendar-Writes, Nachrichten, Transaktionen oder Gesundheitsaktionen.
 - Run Unattended, Windows-Autostart/Installer und Schlaf-/Energieverhalten.
 - Echte Dateiübernahme aus persönlichen Ordnern.
+- Physischer Expo-Nachtest des aktuellen Nachtstands.
 
 ## Wahrheitsregeln
 
