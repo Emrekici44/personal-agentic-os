@@ -22,3 +22,11 @@ test("system progress exposes verified vault evidence and accessible live status
   assert.match(pageSource, /aria-live="polite" role="status"/);
   assert.match(pageSource, /progressChecklist/);
 });
+
+test("system progress reflects the current recovery audit without fake precision", () => {
+  assert.match(progressSource, /lastVerifiedAt: "25\.08\.2026 · Europe\/Berlin"/);
+  assert.match(progressSource, /id: "source-recovery-truth"[\s\S]*status: "complete"/);
+  assert.match(progressSource, /id: "ongoing-local-gap-audit"[\s\S]*status: "active"/);
+  assert.match(progressSource, /Projekt, Usage, Journal und Calendar/);
+  assert.match(progressSource, /keine externen Writes, Migrationen, Installationen oder Kosten/);
+});

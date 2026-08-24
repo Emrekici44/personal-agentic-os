@@ -9,8 +9,8 @@ export type ProgressItem = {
 };
 
 export const systemProgress = {
-  currentPhase: "Lokale Lücken, Archiv und API-/Recovery-Härtung abgeschlossen · Nutzergrenzen offen",
-  lastVerifiedAt: "24.08.2026 · Europe/Berlin",
+  currentPhase: "Recovery- und Bedienhärtung läuft · stabile Inkremente privat gesichert",
+  lastVerifiedAt: "25.08.2026 · Europe/Berlin",
   items: [
     {
       id: "foundation",
@@ -291,6 +291,20 @@ export const systemProgress = {
       evidence: "Zweistufige Archiv-/Restore-Freigabe · Abhängigkeiten · exakte Version · Transaktion/Audit · kein Delete/externer Write",
       href: "#settings",
       status: "complete",
+    },
+    {
+      id: "source-recovery-truth",
+      label: "Quellenwahrheit und sichere Wiederaufnahme",
+      evidence: "Projekt, Usage, Journal und Calendar · alte Evidenz verworfen · gezielte Retries · Berlin-Zeitfenster",
+      href: "#integrations",
+      status: "complete",
+    },
+    {
+      id: "ongoing-local-gap-audit",
+      label: "Nächste lokale Bedien-/Recovery-Lücke prüfen",
+      evidence: "Nur reversible lokale Änderungen · keine externen Writes, Migrationen, Installationen oder Kosten",
+      href: "#settings",
+      status: "active",
     },
     {
       id: "migration-boundary",
