@@ -1792,6 +1792,7 @@ function Integrations({ note }: any) {
   };
   const selectedConnector=integrationHealth.connectors.find((connector:any)=>connector.id===selectedConnectorId);
   const connectionIcons:Record<string,any>={"google-calendar":I.CalendarDays,obsidian:I.BookOpen,"shared-store":I.Database,openai:I.Sparkles,"google-tasks":I.CheckSquare,"health-local":I.Activity,"finance-local":I.Landmark,tailscale:I.ShieldCheck};
+  const healthStatusLabel:Record<string,string>={online:"Online",degraded:"Eingeschränkt",offline:"Offline",unconfigured:"Nicht konfiguriert"};
   const formatHealthTime=(value:string|null)=>value?new Intl.DateTimeFormat("de-DE",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit",timeZone:"Europe/Berlin"}).format(new Date(value)):"Noch nie verifiziert";
   return (
     <>
@@ -1878,14 +1879,14 @@ function Integrations({ note }: any) {
       {integrationHealth.state==="error"&&<p className="plannerError" role="alert"><I.TriangleAlert/>{integrationHealth.error}</p>}
       <div className="connections healthConnections">
         {integrationHealth.connectors.map((connector:any)=>{const Icon=connectionIcons[connector.id]||I.Plug;return <Card className={selectedConnectorId===connector.id?"selected":""} key={connector.id}>
-          <div className="row"><span className="connector"><Icon/></span><div className="connectionBadges"><i className={`badge ${connector.status}`}>{connector.status}</i><i className={`costBadge ${String(connector.costClass).toLowerCase().replace(/[^a-z]+/g,"-")}`}>{connector.costClass}</i></div></div>
+          <div className="row"><span className="connector"><Icon/></span><div className="connectionBadges"><i className={`badge ${connector.status}`}>{healthStatusLabel[connector.status]||"Nicht verifiziert"}</i><i className={`costBadge ${String(connector.costClass).toLowerCase().replace(/[^a-z]+/g,"-")}`}>{connector.costClass}</i></div></div>
           <h3>{connector.name}</h3><p>{connector.area}</p>
           <dl><dt>Letzter Erfolg</dt><dd>{formatHealthTime(connector.lastSuccessfulSync)}</dd><dt>Aktuelle Prüfung</dt><dd>{connector.currentAction}</dd><dt>Scope</dt><dd>{connector.permissionScope.join(" · ")}</dd></dl>
           {connector.recentError&&<p className="connectionError"><I.TriangleAlert/>{connector.recentError}</p>}
-          <button className="connectionDetailsButton" aria-expanded={selectedConnectorId===connector.id} onClick={()=>setSelectedConnectorId(current=>current===connector.id?"":connector.id)}>Details & Wiederverbinden<I.ChevronDown/></button>
+          <button className="connectionDetailsButton" aria-expanded={selectedConnectorId===connector.id} onClick={()=>setSelectedConnectorId(current=>current===connector.id?"":connector.id)}>Details & sichere Schritte<I.ChevronDown/></button>
         </Card>})}
       </div>
-      {selectedConnector&&<Card className="connectionDetails"><div className="row"><div><Tag>CONNECTOR CONTRACT · {selectedConnector.classification}</Tag><h3>{selectedConnector.name}</h3></div><i className={`badge ${selectedConnector.status}`}>{selectedConnector.status}</i></div><div className="connectionDetailGrid"><span><b>Datenschutz</b>{selectedConnector.privacy}</span><span><b>Sicherer Wiederverbindungsweg</b>{selectedConnector.reconnect}</span><span><b>Letzte Prüfung</b>{formatHealthTime(selectedConnector.checkedAt)}</span><span><b>Kostenklasse</b>{selectedConnector.costClass} · keine Aktivierung durch diese Ansicht</span></div><details><summary>Verifizierte Evidenz anzeigen</summary><pre>{JSON.stringify(selectedConnector.evidence,null,2)}</pre></details><small><I.Lock/>Keine Zugangsdaten, opaque IDs oder persönlichen Inhalte werden hier angezeigt.</small></Card>}
+      {selectedConnector&&<Card className="connectionDetails"><div className="row"><div><Tag>CONNECTOR CONTRACT · {selectedConnector.classification}</Tag><h3>{selectedConnector.name}</h3></div><i className={`badge ${selectedConnector.status}`}>{healthStatusLabel[selectedConnector.status]||"Nicht verifiziert"}</i></div><div className="connectionDetailGrid"><span><b>Datenschutz</b>{selectedConnector.privacy}</span><span><b>Sicherer Wiederverbindungsweg</b>{selectedConnector.reconnect}</span><span><b>Letzte Prüfung</b>{formatHealthTime(selectedConnector.checkedAt)}</span><span><b>Kostenklasse</b>{selectedConnector.costClass} · keine Aktivierung durch diese Ansicht</span></div><details><summary>Verifizierte Evidenz anzeigen</summary><pre>{JSON.stringify(selectedConnector.evidence,null,2)}</pre></details><small><I.Lock/>Keine Zugangsdaten, opaque IDs oder persönlichen Inhalte werden hier angezeigt.</small></Card>}
     </>
   );
 }
