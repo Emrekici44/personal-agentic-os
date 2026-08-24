@@ -48,6 +48,21 @@ test("project UI exposes real detail workflows and no fake execution surfaces", 
   assert.match(css, /\.projectTabs\{[^}]*overflow:auto/);
 });
 
+test("project detail sources fail closed instead of rendering stale zeroes or controls", async () => {
+  const page = await readFile(new URL("../app/page.tsx", import.meta.url), "utf8");
+  assert.match(page, /setWorkspace\(null\);\s*setWorkspaceState\("loading"\)/);
+  assert.match(page, /catch \{ setWorkspace\(null\); setWorkspaceState\("error"\); \}/);
+  assert.match(page, /taskState==="online"\?open:"—"/);
+  assert.match(page, /inboxState==="online"\?linkedInbox:"—"/);
+  assert.match(page, /Projektaufgaben sind gerade nicht erreichbar/);
+  assert.match(page, /Projekt-Inbox ist gerade nicht erreichbar/);
+  assert.match(page, /Projektressourcen sind gerade nicht erreichbar/);
+  assert.match(page, /disabled=\{taskState!=="online"\}/);
+  assert.match(page, /disabled=\{inboxState!=="online"\}/);
+  assert.match(page, /workspaceState==="online"&&workspace\?\.weekly\?\.length/);
+  assert.match(page, /workspaceState==="online"&&workspace\?\.audit\?\.length/);
+});
+
 test("project resources are encrypted references and never file operations", async () => {
   const [page, css, store] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),

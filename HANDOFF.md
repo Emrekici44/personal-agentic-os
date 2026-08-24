@@ -1,6 +1,6 @@
 # Resume handoff
 
-Checkpoint date: 24.08.2026, Europe/Berlin.
+Checkpoint date: 25.08.2026, Europe/Berlin.
 
 ## Resume location
 
@@ -23,6 +23,7 @@ Project root: `outputs/agentic-os`. Private source remote: `https://github.com/E
 - Knowledge now clears Vault metadata, audit rows, diff proposals and short-lived approval material during Reload and after transport/JSON failure. Practical read-only check: real Vault Online, 27 note metadata records, no active Diff, no Apply control, 390×844 with 0 alerts/overflow. Existing notes and Vault files were untouched.
 - Backup/archive recovery now clears stale inventory, selected backup and Restore preview during Loading/Offline and blocks create/preview until Online. Practical read-only check: Backup status Ready, 1 local backup inventoried, Restore Apply visibly disabled, 390×844 with 0 alerts/overflow. No backup creation, restore or archive mutation was executed.
 - Integration Health/Calendar refresh now clears stale connector/calendar catalogs and exposes scoped Loading/Offline/verified-empty states plus Retry; the visible `TESTADAPTER` fallback is gone. Practical private check: Calendar Online, 8 real calendar options, 8 connector cards, no `TESTADAPTER`, 390×844 with 0 alerts/overflow. No reconnect, OAuth change, read action or write was triggered.
+- Project recovery is now source-specific: stale workspace/audit payloads are cleared before reload; task, inbox and resource controls require their own Online source; unavailable counts show `—` instead of a false zero. The real empty project overview rendered on desktop and 390×844 without alerts/overflow and without creating data.
 - Calendar status, calendar list, bounded event read, OAuth entry and local encrypted-token handoff now reject unsigned clients with 401 and private no-store responses. Disconnected clients receive no demo calendars/events; obsolete mock proposal and approval routes are retired with 410.
 - Existing Vault notes remain unchanged.
 - PostgreSQL PoC is files-only and deliberately inactive. Docker/Podman/psql were not installed.

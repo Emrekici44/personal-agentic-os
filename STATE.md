@@ -1,6 +1,6 @@
 # Current state
 
-Last verified: 24.08.2026, Europe/Berlin.
+Last verified: 25.08.2026, Europe/Berlin.
 
 ## Operational
 
@@ -30,6 +30,7 @@ Last verified: 24.08.2026, Europe/Berlin.
 - Der Wissensbereich leert bei Reload/Transportfehler Vault-Metadaten, Auditliste, Diffvorschauen, aktive Proposal-ID und kurzlebigen Approval-Token. Diff erzeugen/freigeben ist nur bei gleichzeitig Online geprüftem Vault-Index und Vorschau-Store möglich; ein fachlich abgelehnter Request verändert weiterhin keine Vault-Datei. Praktisch: realer Index Online mit 27 Notizen, keine aktive Diffvorschau, kein Apply-Control, 0 Alerts/Überlauf, 0 Vault-Writes.
 - Backup- und Archiv-Inventar unterscheiden Loading/Offline jetzt von einem verifizierten Leerstand. Reload/Transportfehler löschen Auswahl und Restore-Vorschau; Create/Preview wird vor dem Request gesperrt, solange das private Inventar nicht Online ist. Ein unbestätigtes Backup-Ergebnis verlangt zuerst eine neue Inventarprüfung. Praktisch: Backup-Quelle Bereit, 1 lokales Backup sichtbar, Restore-Apply weiterhin gesperrt, 390×844 ohne Alerts/Überlauf; kein Backup oder Restore ausgelöst.
 - Das Integration Health Center leert Connector- und Kalenderkatalog während einer neuen Prüfung und zeigt getrennt Loading, Offline, unkonfiguriert oder verifiziert leer. Der frühere sichtbare `TESTADAPTER`-Fallback ist entfernt; begrenzte Event-Reads besitzen einen gefangenen Fehlerzustand statt unhandled Promise. Praktisch: Calendar Online, 8 echte Kalenderoptionen, 8 Connector-Karten, kein `TESTADAPTER`, 390×844 ohne Alerts/Überlauf; keine Verbindung oder Schreibaktion verändert.
+- Der Projektarbeitsraum invalidiert Wochenplanbezug und Audit bei jedem Reload/Fehler und zeigt Aufgaben-/Inbox-/Ressourcenzahlen nur bei jeweils verifizierter Quelle. Editor-, Zuordnungs- und Toggle-Controls bleiben quellenweise gesperrt; Retry lädt gezielt aus dem Shared Store. Der reale leere Projektbestand renderte auf Desktop/390×844 ohne Alert oder Überlauf; kein Datensatz wurde angelegt.
 - PostgreSQL server evaluation and an unstarted loopback-only PoC are documented. Docker/Podman/psql are absent; no install, account or migration occurred.
 - Graphify 0.17.2 TypeScript line was evaluated from official repository/package material; it remains uninstalled and non-core.
 - Journal, tasks and real persistent habits now share one focused daily workspace. The Knowledge audit reads content-free action metadata from the authenticated shared store instead of static examples.
