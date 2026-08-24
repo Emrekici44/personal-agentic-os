@@ -195,6 +195,13 @@ export const systemProgress = {
       status: "complete",
     },
     {
+      id: "agent-config-truth",
+      label: "Eigene Agenten transparent konfigurieren",
+      evidence: "Zweck/Bereiche/Companion/Status · API-Modell gesperrt · keine Ausführung behauptet",
+      href: "#agents",
+      status: "complete",
+    },
+    {
       id: "master-gap-audit",
       label: "Restlücken gegen den vollständigen Masterauftrag prüfen",
       evidence: "Controls, Statuswahrheit, responsive Clients, Doku und sichere nächste Schritte",

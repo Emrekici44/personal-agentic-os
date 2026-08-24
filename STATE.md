@@ -50,6 +50,7 @@ Last verified: 24.08.2026, Europe/Berlin.
 - Journaltext wird bei neuen Creates/Updates vor dem öffentlichen JSON entfernt und ausschließlich feldverschlüsselt gespeichert. Das reale Inventar ergab 0 Journaldatensätze und 0 Legacy-Klartextzeilen, daher war keine Bestandsmigration nötig. Die gemeinsame Historie besitzt jetzt eine echte private Detailansicht statt „folgt“.
 - Die Universal Inbox besitzt jetzt echte gemeinsame Triage nach Lebensbereich, bestehendem Projekt, bestehender Agentenreferenz und Bearbeitungsstand. Projekt-/Agent-IDs werden serverseitig gegen aktive Datensätze validiert. „Datei“ wurde durch den ehrlichen `Dateiverweis` ohne Upload/Kopie ersetzt; leeres Erfassen ist sichtbar gesperrt.
 - Voller Inbox-Inhalt wird bei neuen Creates/Updates ausschließlich feldverschlüsselt gespeichert; im öffentlichen JSON bleibt nur ein kurzer operativer Titel. Das reale Inventar meldet 0 Inbox-Datensätze und 0 Legacy-Klartextzeilen, sodass keine Migration oder Nutzerentscheidung nötig war.
+- Eigene Agent-Konfigurationen erfassen jetzt echten Zweck, zugeordnete Lebensbereiche, Arbeitsmodus, Modellgrenze und Status. Zulässig sind nur `Kein Provider` oder eine manuelle ChatGPT-Companion-Übergabe; OpenAI API bleibt sichtbar gesperrt. Der Server lehnt nicht verifizierte Modelle, Provider und ausführbare Status ab. Karten zeigen Bereiche, Modell und reale Aktivität `Keine Ausführung` statt Online-Behauptungen.
 
 ## Verification
 
@@ -70,6 +71,7 @@ Last verified: 24.08.2026, Europe/Berlin.
 - Einstellungsbrowser-Abnahme: Shared Branding, lokales Backup, Restore-Sperre und Datengrenzen rendern mit Live-Schema v8. Ein echtes lokales Backup wurde erstellt und Integrität `ok` geprüft; Restore blieb gesperrt. Usage & Limits zeigte auf 390×844 0 horizontalen Überlauf, echte Calendar-/Storage-Evidenz und keine erfundenen Plan-Zähler.
 - Journalbrowser-Abnahme: echter Calendar-Read meldete 9 heutige Ereignisse ohne Titel, Tasks/Habits stammen aus dem Shared Store und alle alten Beispielzähler sind entfernt. Desktop und 390×844 blieben ohne horizontalen Überlauf; der aktuelle Privacy-Check meldete 0 Legacy-Klartextzeilen.
 - Inboxbrowser-Abnahme: sechs wahrheitsgemäße Capture-Typen inklusive `Dateiverweis`, deaktiviertes Leer-Erfassen, ehrlicher leerer Shared-Store-Zustand und 0 horizontaler Überlauf auf Desktop/390×844. Die Triage-Verträge sind ohne Erzeugen erfundener Nutzerdaten getestet.
+- Agentenbrowser-Abnahme: sicherer leerer Konfigurator mit sechs Bereichszuordnungen, `Kein Provider`, `Kein Modell`, deaktivierter OpenAI-API-Option und deaktiviertem Leer-Speichern. Abbruch erzeugte keine Daten; fünf lokale Workflowprofile und mobile 390×844 blieben ohne Überlauf.
 - Git: Spezialisierte Lebensbereiche sind als `6a7ff8273526ceede71daa72b25b3a2481047602` auf privatem `main`; der Settings-/Backup-/Usage-Meilenstein befindet sich in der abschließenden Matrix vor seinem eigenen Push.
 
 ## User boundaries
