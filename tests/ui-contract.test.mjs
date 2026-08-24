@@ -234,6 +234,17 @@ test("backup and archive recovery never render unavailable inventory as empty", 
   assert.match(page, /archiveState\.state === "online" && archiveState\.records\.map/);
 });
 
+test("integration health clears stale catalogs and exposes real calendar retry states", async () => {
+  const page = await readFile(pagePath, "utf8");
+  assert.match(page, /setIntegrationHealth\(\{state:"loading",connectors:\[\]\}\);setSelectedConnectorId\(""\)/);
+  assert.match(page, /setCalendarStatus\(\{state:"loading",configured:false,connected:false,mode:"unavailable"\}\);setLiveCalendars\(\[\]\);setSelectedCalendars\(\[\]\)/);
+  assert.match(page, /setCalendarStatus\(\{state:"online",\.\.\.statusResult\}\)/);
+  assert.match(page, /Google-Status und Kalenderkatalog sind gerade nicht erreichbar/);
+  assert.match(page, /calendarStatus\.state === "online" && !liveCalendars\.length/);
+  assert.match(page, /Begrenzter Kalenderabruf nicht erreichbar/);
+  assert.doesNotMatch(page, /TESTADAPTER/);
+});
+
 test("knowledge search stays inside the signed metadata-only vault preview", async () => {
   const [page, route] = await Promise.all([
     readFile(pagePath, "utf8"),

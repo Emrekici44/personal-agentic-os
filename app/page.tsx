@@ -1723,32 +1723,17 @@ function Integrations({ note }: any) {
     [selectedCalendars, setSelectedCalendars] = useState<string[]>([]),
     [calendarRead, setCalendarRead] = useState<any>({ state: "idle", events: [] }),
     [calendarStatus, setCalendarStatus] = useState<any>({
+      state: "loading",
       configured: false,
       connected: false,
       mode: "unavailable",
     }),[integrationHealth,setIntegrationHealth]=useState<any>({state:"loading",connectors:[]}),[selectedConnectorId,setSelectedConnectorId]=useState("");
-  const loadIntegrationHealth=useCallback(async()=>{try{await fetch("/api/state/session",{method:"POST"});const response=await fetch("/api/integrations/health",{cache:"no-store"}),result=await response.json();if(!response.ok)throw new Error(result.error);setIntegrationHealth({state:"online",...result});setSelectedConnectorId(current=>current||result.connectors?.[0]?.id||"")}catch(cause){setIntegrationHealth({state:"error",connectors:[],error:cause instanceof Error?cause.message:"Health Center nicht erreichbar"})}},[]);
+  const loadIntegrationHealth=useCallback(async()=>{setIntegrationHealth({state:"loading",connectors:[]});setSelectedConnectorId("");try{const session=await fetch("/api/state/session",{method:"POST"});if(!session.ok)throw new Error("Private Sitzung nicht erreichbar");const response=await fetch("/api/integrations/health",{cache:"no-store"}),result=await response.json();if(!response.ok)throw new Error(result.error);setIntegrationHealth({state:"online",...result});setSelectedConnectorId(result.connectors?.[0]?.id||"")}catch(cause){setIntegrationHealth({state:"error",connectors:[],error:cause instanceof Error?cause.message:"Health Center nicht erreichbar"})}},[]);
+  const loadCalendarState=useCallback(async()=>{setCalendarStatus({state:"loading",configured:false,connected:false,mode:"unavailable"});setLiveCalendars([]);setSelectedCalendars([]);setCalendarRead({state:"idle",events:[]});try{const session=await fetch("/api/state/session",{method:"POST"});if(!session.ok)throw new Error();const [statusResponse,calendarsResponse]=await Promise.all([fetch("/api/calendar/status",{cache:"no-store"}),fetch("/api/calendar/calendars",{cache:"no-store"})]);const [statusResult,calendarResult]=await Promise.all([statusResponse.json(),calendarsResponse.json()]);if(!statusResponse.ok||!calendarsResponse.ok)throw new Error();const calendars=calendarResult.calendars||[];setCalendarStatus({state:"online",...statusResult});setLiveCalendars(calendars);setSelectedCalendars(calendars.filter((calendar:any)=>calendar.selected).slice(0,6).map((calendar:any)=>calendar.id))}catch{setCalendarStatus({state:"error",configured:false,connected:false,mode:"unavailable"});setLiveCalendars([]);setSelectedCalendars([])}},[]);
   useEffect(() => {
-    void (async () => {
-      try {
-        const session = await fetch("/api/state/session", { method: "POST" });
-        if (!session.ok) throw new Error();
-        const [statusResponse, calendarsResponse] = await Promise.all([
-          fetch("/api/calendar/status", { cache: "no-store" }),
-          fetch("/api/calendar/calendars", { cache: "no-store" }),
-        ]);
-        const [statusResult, calendarResult] = await Promise.all([statusResponse.json(), calendarsResponse.json()]);
-        setCalendarStatus(statusResponse.ok ? statusResult : { configured: false, connected: false, mode: "unavailable" });
-        const calendars = calendarsResponse.ok ? calendarResult.calendars || [] : [];
-        setLiveCalendars(calendars);
-        setSelectedCalendars(calendars.filter((calendar: any) => calendar.selected).slice(0, 6).map((calendar: any) => calendar.id));
-      } catch {
-        setCalendarStatus({ configured: false, connected: false, mode: "unavailable" });
-        setLiveCalendars([]);
-      }
-    })();
+    void loadCalendarState();
     void loadIntegrationHealth();
-  }, [loadIntegrationHealth]);
+  }, [loadCalendarState,loadIntegrationHealth]);
   const readWeek = async () => {
     if (!selectedCalendars.length) return note("Bitte mindestens einen Kalender auswählen");
     setCalendarRead({ state: "loading", events: [] });
@@ -1758,9 +1743,13 @@ function Integrations({ note }: any) {
     end.setDate(end.getDate() + 8);
     const query = new URLSearchParams({ start: start.toISOString(), end: end.toISOString() });
     selectedCalendars.forEach((id) => query.append("calendar", id));
-    const response = await fetch(`/api/calendar/events?${query}`, { cache: "no-store" });
-    const result = await response.json();
-    setCalendarRead(response.ok ? { state: "online", ...result } : { state: "error", events: [], error: result.error || "Lesen fehlgeschlagen" });
+    try {
+      const response = await fetch(`/api/calendar/events?${query}`, { cache: "no-store" });
+      const result = await response.json();
+      setCalendarRead(response.ok ? { state: "online", ...result } : { state: "error", events: [], error: result.error || "Lesen fehlgeschlagen" });
+    } catch {
+      setCalendarRead({ state: "error", events: [], error: "Begrenzter Kalenderabruf nicht erreichbar" });
+    }
   };
   const selectedConnector=integrationHealth.connectors.find((connector:any)=>connector.id===selectedConnectorId);
   const connectionIcons:Record<string,any>={"google-calendar":I.CalendarDays,obsidian:I.BookOpen,"shared-store":I.Database,openai:I.Sparkles,"google-tasks":I.CheckSquare,"health-local":I.Activity,"finance-local":I.Landmark,tailscale:I.ShieldCheck};
@@ -1783,13 +1772,14 @@ function Integrations({ note }: any) {
           </span>
           <div>
             <Tag>
-              GOOGLE CALENDAR · {calendarStatus.eventWriteReady ? "EVENTS LIVE · KONTROLLIERT" : calendarStatus.connected ? "READ-ONLY · NEUE FREIGABE NÖTIG" : calendarStatus.configured ? "OAUTH BEREIT" : "TESTADAPTER"}
+              GOOGLE CALENDAR · {calendarStatus.state === "loading" ? "STATUS WIRD GEPRÜFT" : calendarStatus.state === "error" ? "STATUS NICHT ERREICHBAR" : calendarStatus.eventWriteReady ? "EVENTS LIVE · KONTROLLIERT" : calendarStatus.connected ? "READ-ONLY · NEUE FREIGABE NÖTIG" : calendarStatus.configured ? "OAUTH BEREIT" : "NICHT KONFIGURIERT"}
             </Tag>
             <h3>Wochenplanung sicher verbinden</h3>
           </div>
-          <em>{calendarStatus.connected ? "Online" : calendarStatus.configured ? "Bereit" : "Unkonfiguriert"}</em>
+          <em>{calendarStatus.state === "loading" ? "Prüft" : calendarStatus.state === "error" ? "Offline" : calendarStatus.connected ? "Online" : calendarStatus.configured ? "Bereit" : "Unkonfiguriert"}</em>
         </div>
-        {!calendarStatus.configured && (
+        {calendarStatus.state === "error" && <RetryNotice message="Google-Status und Kalenderkatalog sind gerade nicht erreichbar." onRetry={loadCalendarState} label="Kalenderstatus neu laden"/>}
+        {calendarStatus.state === "online" && !calendarStatus.configured && (
           <div className="setupBoundary">
             <I.Shield />
             <span>
@@ -1799,12 +1789,12 @@ function Integrations({ note }: any) {
             </span>
           </div>
         )}
-        {calendarStatus.configured && !calendarStatus.eventWriteReady && (
+        {calendarStatus.state === "online" && calendarStatus.configured && !calendarStatus.eventWriteReady && (
           <button className="btn soft" onClick={async()=>{const session=await fetch("/api/state/session",{method:"POST"});if(!session.ok)return note("Private Sitzung ist nicht erreichbar");window.location.assign("/api/calendar/connect")}}>
             Lesen + kontrollierte Event-Writes freigeben <I.ExternalLink />
           </button>
         )}
-        {calendarStatus.eventWriteReady && !calendarStatus.sharedWithDesktop && (
+        {calendarStatus.state === "online" && calendarStatus.eventWriteReady && !calendarStatus.sharedWithDesktop && (
           <button className="btn soft" onClick={async () => { const session=await fetch("/api/state/session",{method:"POST"});if(!session.ok)return note("Private Sitzung ist nicht erreichbar");const response = await fetch("/api/calendar/share-local-session", { method: "POST" }); if (response.ok) setCalendarStatus((current: any) => ({ ...current, sharedWithDesktop: true })); else note("Lokale Calendar-Übernahme ist nicht verfügbar"); }}>
             Verbindung verschlüsselt für Desktop übernehmen
           </button>
@@ -1822,8 +1812,8 @@ function Integrations({ note }: any) {
                 {calendar.summary} · {calendar.writable ? "schreibbar" : "nur lesen"}
               </label>
             ))}
-            {!liveCalendars.length && <p className="emptyInline">Keine verifizierten Kalender verfügbar. Es werden keine Testkalender eingesetzt.</p>}
-            <Btn soft onClick={calendarStatus.connected && calendarRead.state !== "loading" ? readWeek : undefined}>
+            {calendarStatus.state === "loading" ? <p role="status">Kalenderkatalog wird geladen …</p> : calendarStatus.state === "online" && !liveCalendars.length ? <p className="emptyInline">Die verifizierte Kalenderliste ist leer. Es werden keine Ersatzkalender eingesetzt.</p> : null}
+            <Btn soft onClick={calendarStatus.state === "online" && calendarStatus.connected && calendarRead.state !== "loading" ? readWeek : undefined}>
               Nächste 8 Tage lesen
             </Btn>
           </div>

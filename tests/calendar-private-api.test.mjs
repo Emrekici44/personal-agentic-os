@@ -40,6 +40,9 @@ test("retired calendar mock endpoints cannot approve or propose anything", async
 test("calendar UI creates the private session before protected reads and shows no-test-data truth", async () => {
   const page = await readFile(new URL("../app/page.tsx", import.meta.url), "utf8");
   assert.match(page, /const session = await fetch\("\/api\/state\/session"/);
-  assert.match(page, /Keine verifizierten Kalender verfügbar\. Es werden keine Testkalender eingesetzt\./);
+  assert.match(page, /Die verifizierte Kalenderliste ist leer\. Es werden keine Ersatzkalender eingesetzt\./);
+  assert.match(page, /calendarStatus\.state === "loading" \? "STATUS WIRD GEPRÜFT"/);
+  assert.match(page, /calendarStatus\.state === "error" \? "Offline"/);
+  assert.doesNotMatch(page, /TESTADAPTER/);
   assert.match(page, /window\.location\.assign\("\/api\/calendar\/connect"\)/);
 });
