@@ -56,6 +56,9 @@ Last verified: 24.08.2026, Europe/Berlin.
 - `MASTER-GAPS.md` trennt den vollständigen verifizierten Funktionsbestand, lokal ausführbare vertikale Restpunkte und echte Nutzer-/Extern-Grenzen. `PENDING-DECISIONS.md` bündelt nun zusätzlich Windows-Dauerbetrieb/Installer und persönliche Projektdateien, statt den übrigen Arbeitslauf daran anzuhalten.
 - Providerstatus und Vault-Normalisierungsvorschau sind jetzt ebenfalls nur hinter der signierten lokalen Sitzung erreichbar und antworten privat/cachefrei. Sie liefern weder Schlüssel noch Vault-Inhalte.
 - Nach Restlückenaudit/API-Härtung sind Root 75/75, TypeScript, ESLint, Electron 2/2, Expo TypeScript/Lint/Web-Export und Next-Produktionsbuild grün. Die reale Usage-Seite lud mit signierter Sitzung; Inhalts- und Secretaudit sind sauber.
+- Aufgaben unterstützen jetzt bis zu 20 validierte Checklistenpunkte mit stabiler ID, 160-Zeichen-Grenze, Bearbeiten/Entfernen und direktem Abhaken im gemeinsamen Tagesbereich. Die Daten bleiben im vorhandenen versionierten Aufgaben-JSON; es war keine Schema- oder Bestandsmigration nötig.
+- Checklisten-Browser-Abnahme: ein rein lokaler, ungespeicherter Prüfpunkt wurde im Desktop-Editor hinzugefügt, auf 390×844 ohne Überlauf dargestellt und anschließend verworfen. Es entstand kein Testdatensatz.
+- Nach der Checklisten-Erweiterung bleiben Root 75/75, TypeScript, ESLint, Electron 2/2, Expo TypeScript/Lint/Web-Export und Next-Produktionsbuild grün; Secret-/Inhaltsaudit und `git diff --check` sind sauber.
 
 ## Verification
 

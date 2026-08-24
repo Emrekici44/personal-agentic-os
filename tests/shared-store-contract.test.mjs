@@ -15,6 +15,8 @@ test('tasks and habits validate planning fields before shared persistence',()=>{
   assert.match(store,/kind==='tasks'.*Fälligkeit muss ein gültiges Datum sein/s);
   assert.match(store,/\['low','medium','high'\]/);
   assert.match(store,/\['Inbox','Glaube','Karriere','Gesundheit','Finanzen','Beziehungen','Projekte'\]/);
+  assert.match(store,/checklist\.length>20/);
+  assert.match(store,/Aufgaben-Checkliste ist ungültig/);
   assert.match(store,/kind==='habits'.*\['daily','weekly'\]/s);
   assert.match(store,/completedOn\.length>90/);
   assert.match(store,/UPDATE \$\{kind\} SET status='archived'/);

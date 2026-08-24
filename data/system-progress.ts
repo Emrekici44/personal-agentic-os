@@ -9,7 +9,7 @@ export type ProgressItem = {
 };
 
 export const systemProgress = {
-  currentPhase: "Vollständiger Restlückenaudit dokumentiert · private API-Oberfläche wird vereinheitlicht",
+  currentPhase: "Flexible gemeinsame Aufgaben-Checklisten bereit · nächster lokaler Restpunkt aktiv",
   lastVerifiedAt: "24.08.2026 · Europe/Berlin",
   items: [
     {
@@ -216,6 +216,20 @@ export const systemProgress = {
       status: "complete",
     },
     {
+      id: "task-checklists",
+      label: "Flexible gemeinsame Aufgaben-Checklisten",
+      evidence: "Max. 20 validierte Unterpunkte · Bearbeiten/Abhaken · Desktop/390×844 · keine Testdaten",
+      href: "#habits",
+      status: "complete",
+    },
+    {
+      id: "inbox-review-views",
+      label: "Inbox-Review und klare lokale Ansichten",
+      evidence: "Offen/Zugeordnet/Erledigt filtern · keine automatische Weiterleitung",
+      href: "#inbox",
+      status: "active",
+    },
+    {
       id: "master-gap-audit",
       label: "Restlücken gegen den vollständigen Masterauftrag prüfen",
       evidence: "MASTER-GAPS + PENDING-DECISIONS · geprüft/nächster lokaler Schritt/Nutzergrenze getrennt",
@@ -225,9 +239,9 @@ export const systemProgress = {
     {
       id: "private-api-surface",
       label: "Private Status- und Preview-API vereinheitlichen",
-      evidence: "Vault-Normalisierung + Providerstatus signiert und cachefrei · weitere Routen werden auditiert",
+      evidence: "Vault-Status/Normalisierung + Providerstatus signiert, privat und cachefrei",
       href: "#integrations",
-      status: "active",
+      status: "complete",
     },
     {
       id: "migration-boundary",
