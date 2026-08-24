@@ -3,7 +3,7 @@ import { refreshedAccessToken } from "@/lib/google-calendar";
 import { readCalendarCatalog, readGoogleCalendarWindow } from "@/lib/google-calendar-read";
 import { buildWeeklyPlan, weeklyWindow } from "@/lib/weekly-planner";
 import { publicApiError } from "@/lib/public-api-error";
-import { latestWeeklyPlan, listRecords, listWeeklyPlanSummaries, reviewWeeklyPlan, saveWeeklyPlan, verifyLocalSession } from "@/lib/shared-store";
+import { latestWeeklyPlan, listRecords, listWeeklyPlanSummaries, reviewWeeklyPlan, saveWeeklyPlan, verifyLocalSession, withStoreTransaction } from "@/lib/shared-store";
 
 const headers = { "Cache-Control": "no-store, private" };
 const respond = (body: unknown, init: ResponseInit = {}) => NextResponse.json(body, { ...init, headers });
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     const fallback = "Wochenplan konnte lokal nicht sicher gespeichert werden";
     const message = publicApiError(error, fallback);
-    return respond({ error: message, writesPerformed: false }, { status: message === fallback ? 500 : 400 });
+    return respond({ error: message, retrySafe: message === fallback, writesPerformed: false }, { status: message === fallback ? 503 : 400 });
   }
 }
 
@@ -70,11 +70,11 @@ export async function PATCH(request: NextRequest) {
   try {
     if (!authenticated(request)) return respond({ error: "Lokale Sitzung erforderlich", writesPerformed: false }, { status: 401 });
     const body = await request.json();
-    const plan = reviewWeeklyPlan(String(body.planId || ""), body);
+    const plan = withStoreTransaction(() => reviewWeeklyPlan(String(body.planId || ""), body));
     return respond({ plan, history: listWeeklyPlanSummaries(), calendarWritesPrepared: false, writesPerformed: false });
   } catch (error) {
     const fallback = "Auswahl konnte lokal nicht sicher gespeichert werden";
     const message = publicApiError(error, fallback);
-    return respond({ error: message, writesPerformed: false }, { status: message === fallback ? 500 : 400 });
+    return respond({ error: message, retrySafe: message === fallback, writesPerformed: false }, { status: message === fallback ? 503 : 400 });
   }
 }

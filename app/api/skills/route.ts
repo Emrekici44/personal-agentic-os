@@ -12,11 +12,12 @@ import {
   saveSkillRun,
   updateSkillDefinition,
   verifyLocalSession,
+  withStoreTransaction,
 } from "@/lib/shared-store";
 
 const responseHeaders = { "Cache-Control": "no-store, private" };
 const authorized = (request: NextRequest) => verifyLocalSession(request.cookies.get("agentic_os_local_session")?.value);
-const reject = (error: unknown, status = 400) => NextResponse.json({ error: publicApiError(error, "Skill-Anfrage konnte nicht sicher verarbeitet werden"), writesPerformed: false }, { status, headers: responseHeaders });
+const reject = (error: unknown, status = 400) => { const fallback = "Skill-Anfrage konnte lokal nicht sicher verarbeitet werden", message = publicApiError(error, fallback), retrySafe = status === 400 && message === fallback; return NextResponse.json({ error: message, retrySafe, writesPerformed: false }, { status: retrySafe ? 503 : status, headers: responseHeaders }); };
 
 function loadAllowedSources(allowedSources: string[]) {
   const snapshot: Record<string, unknown[]> = {};
@@ -60,13 +61,13 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     if (body.action === "create_definition") {
-      return NextResponse.json({ definition: createSkillDefinition(body.definition), writesPerformed: true, externalActionsPerformed: false }, { status: 201, headers: responseHeaders });
+      return NextResponse.json({ definition: withStoreTransaction(() => createSkillDefinition(body.definition)), writesPerformed: true, externalActionsPerformed: false }, { status: 201, headers: responseHeaders });
     }
     if (body.action === "run_preview") {
       const skill = listSkillDefinitions().find((entry) => entry.id === String(body.skillId || ""));
       if (!skill) throw new Error("Skill nicht gefunden");
       const preview = executeLocalSkill(skill, body.input, loadAllowedSources(skill.allowedSources));
-      return NextResponse.json({ run: saveSkillRun(skill, preview), previewOnly: true, externalActionsPerformed: false }, { status: 201, headers: responseHeaders });
+      return NextResponse.json({ run: withStoreTransaction(() => saveSkillRun(skill, preview)), previewOnly: true, externalActionsPerformed: false }, { status: 201, headers: responseHeaders });
     }
     throw new Error("Unbekannte Skill-Aktion");
   } catch (error) {
@@ -78,9 +79,9 @@ export async function PATCH(request: NextRequest) {
   if (!authorized(request)) return reject(new Error("Lokale Sitzung erforderlich"), 401);
   try {
     const body = await request.json();
-    if (body.action === "update_definition") return NextResponse.json({ definition: updateSkillDefinition(String(body.skillId || ""), body.definition), externalActionsPerformed: false }, { headers: responseHeaders });
-    if (body.action === "archive_definition") return NextResponse.json({ result: archiveSkillDefinition(String(body.skillId || "")), externalActionsPerformed: false }, { headers: responseHeaders });
-    if (body.action === "review_run") return NextResponse.json({ run: reviewSkillRun(String(body.runId || "")), externalActionsPerformed: false }, { headers: responseHeaders });
+    if (body.action === "update_definition") return NextResponse.json({ definition: withStoreTransaction(() => updateSkillDefinition(String(body.skillId || ""), body.definition)), externalActionsPerformed: false }, { headers: responseHeaders });
+    if (body.action === "archive_definition") return NextResponse.json({ result: withStoreTransaction(() => archiveSkillDefinition(String(body.skillId || ""))), externalActionsPerformed: false }, { headers: responseHeaders });
+    if (body.action === "review_run") return NextResponse.json({ run: withStoreTransaction(() => reviewSkillRun(String(body.runId || ""))), externalActionsPerformed: false }, { headers: responseHeaders });
     throw new Error("Unbekannte Skill-Aktion");
   } catch (error) {
     return reject(error);

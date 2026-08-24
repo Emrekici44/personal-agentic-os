@@ -5,6 +5,7 @@ import {
   isPreferenceId,
   setPreference,
   verifyLocalSession,
+  withStoreTransaction,
 } from "@/lib/shared-store";
 
 const authorized = (request: NextRequest) =>
@@ -36,11 +37,12 @@ export async function PUT(
     if (!authorized(request)) return NextResponse.json({ error: "Lokale Sitzung erforderlich" }, { status: 401, headers });
     if (!isPreferenceId(id)) throw new Error("Unbekannte Einstellung");
     const body = await request.json();
-    return NextResponse.json(setPreference(id, body.value), { headers });
+    return NextResponse.json(withStoreTransaction(() => setPreference(id, body.value)), { headers });
   } catch (error) {
+    const fallback = "Einstellung konnte lokal nicht sicher gespeichert werden", message = publicApiError(error, fallback), retrySafe = message === fallback;
     return NextResponse.json(
-      { error: publicApiError(error, "Einstellung konnte nicht sicher gespeichert werden") },
-      { status: 400, headers },
+      { error: message, retrySafe },
+      { status: retrySafe ? 503 : 400, headers },
     );
   }
 }

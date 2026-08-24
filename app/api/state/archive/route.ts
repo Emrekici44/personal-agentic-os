@@ -22,7 +22,7 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json(restoreArchivedRecord(kind, String(body.id || ""), Number(body.version)), { headers });
   } catch (error) {
     const conflict = publicConflict(error);
-    const message = publicApiError(error, "Wiederherstellung konnte nicht sicher abgeschlossen werden");
-    return NextResponse.json({ error: message, restored: false, conflict }, { status: conflict ? 409 : 400, headers });
+    const fallback = "Wiederherstellung konnte lokal nicht sicher abgeschlossen werden", message = publicApiError(error, fallback), retrySafe = !conflict && message === fallback;
+    return NextResponse.json({ error: message, restored: false, conflict, retrySafe }, { status: conflict ? 409 : retrySafe ? 503 : 400, headers });
   }
 }

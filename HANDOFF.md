@@ -82,6 +82,8 @@ Project root: `outputs/agentic-os`. Private source remote: `https://github.com/E
 - Full verification after the cookie change: Root 115/115, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed. The live dashboard rendered 47/50 discrete items.
 - Core private read routes now catch local source failures themselves and return content-free 503 JSON with cleared/unverified inventories and a safe retry marker. This covers Store status/records, Audit, Archive, Backups, Preferences, Projects, Planner history, Agent runs and Skills; no existing user data was changed.
 - Full verification for structured read recovery: Root 117/117, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed; live progress rendered 48/51.
+- Shared mutations that pair operational state with audit now use one exported SQLite transaction service at every production API caller. A temporary isolated database with failing audit triggers proved both create and update roll back completely; no real record or external system was touched.
+- Full verification for atomic mutations: Root 119/119, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed; live progress rendered 49/52.
 
 ## Immediate continuation
 

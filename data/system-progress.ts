@@ -356,6 +356,13 @@ export const systemProgress = {
       status: "complete",
     },
     {
+      id: "atomic-shared-mutations",
+      label: "Gemeinsame lokale Änderungen atomar speichern",
+      evidence: "Datensatz + Audit in einer SQLite-Transaktion · erzwungener Auditfehler vollständig zurückgerollt · sichere 503-Wiederholung",
+      href: "#settings",
+      status: "complete",
+    },
+    {
       id: "ongoing-local-gap-audit",
       label: "Nächste lokale Bedien-/Recovery-Lücke prüfen",
       evidence: "Nur reversible lokale Änderungen · keine externen Writes, Migrationen, Installationen oder Kosten",

@@ -71,6 +71,7 @@
 - Private API errors now pass through one tested public-message boundary. User-correctable validation remains visible, while database/path/token/runtime details are redacted; Calendar reads and planner generation return distinct retry-safe 409/502/503 recovery outcomes instead of collapsing provider outages into input errors.
 - Private HTTPS cookie handling is unified across local session issuance and Google OAuth. `Secure` follows direct HTTPS or verified configured Tailscale forwarding, while localhost development remains functional and forwarded-proto spoofing from an unrelated host is ignored.
 - Core private read endpoints now own their recovery contract: a failed local source yields a cache-free 503 response with an explicitly unverified empty inventory and a safe retry hint. No framework HTML error, stale count or mock record is used as fallback.
+- Multi-step Shared Store mutations are now atomic through one repository transaction service. Data rows and audit rows commit or roll back together for records, preferences, skills, agent workflows, planner reviews and Vault-preview state; failed local transactions return a truthful retry-safe 503 rather than a validation error.
 
 ## Complete – Bedienwahrheit and responsive refinement
 

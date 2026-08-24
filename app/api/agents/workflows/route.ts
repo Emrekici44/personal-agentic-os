@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { agentWorkflowProfiles, buildAgentWorkflowProposal, isAgentWorkflowId } from "@/lib/agent-workflows";
 import { publicApiError } from "@/lib/public-api-error";
-import { latestWeeklyPlan, listAgentWorkflowRuns, listRecords, saveAgentWorkflowRun, transitionAgentWorkflowRun, verifyLocalSession } from "@/lib/shared-store";
+import { latestWeeklyPlan, listAgentWorkflowRuns, listRecords, saveAgentWorkflowRun, transitionAgentWorkflowRun, verifyLocalSession, withStoreTransaction } from "@/lib/shared-store";
 
 const authorized = (request: NextRequest) => verifyLocalSession(request.cookies.get("agentic_os_local_session")?.value);
 const headers = { "Cache-Control": "no-store, private" };
@@ -23,9 +23,10 @@ export async function POST(request: NextRequest) {
     if (!isAgentWorkflowId(body.workflowId)) throw new Error("Unbekannter Agenten-Workflow");
     const sources = { projects: listRecords("projects"), tasks: listRecords("tasks"), inbox: listRecords("inbox_items"), habits: listRecords("habits"), journal: listRecords("journal_metadata"), areas: listRecords("area_records"), weeklyPlan: latestWeeklyPlan() };
     const proposal = buildAgentWorkflowProposal(body.workflowId, String(body.input || ""), sources, body.projectId ? String(body.projectId) : undefined);
-    return respond({ run: saveAgentWorkflowRun(proposal), proposalOnly: true, paidApiUsed: false, externalActionsPerformed: false }, { status: 201 });
+    return respond({ run: withStoreTransaction(() => saveAgentWorkflowRun(proposal)), proposalOnly: true, paidApiUsed: false, externalActionsPerformed: false }, { status: 201 });
   } catch (error) {
-    return respond({ error: publicApiError(error, "Workflow-Vorschlag konnte nicht sicher erzeugt werden"), externalActionsPerformed: false }, { status: 400 });
+    const fallback = "Workflow-Vorschlag konnte lokal nicht sicher erzeugt werden", message = publicApiError(error, fallback), retrySafe = message === fallback;
+    return respond({ error: message, retrySafe, externalActionsPerformed: false }, { status: retrySafe ? 503 : 400 });
   }
 }
 
@@ -33,8 +34,9 @@ export async function PATCH(request: NextRequest) {
   if (!authorized(request)) return respond({ error: "Lokale Sitzung erforderlich", externalActionsPerformed: false }, { status: 401 });
   try {
     const body = await request.json();
-    return respond({ run: transitionAgentWorkflowRun(String(body.runId || ""), body.action, body), externalActionsPerformed: false, nextExternalAction: "not_available" });
+    return respond({ run: withStoreTransaction(() => transitionAgentWorkflowRun(String(body.runId || ""), body.action, body)), externalActionsPerformed: false, nextExternalAction: "not_available" });
   } catch (error) {
-    return respond({ error: publicApiError(error, "Workflow-Status konnte nicht sicher gespeichert werden"), externalActionsPerformed: false }, { status: 400 });
+    const fallback = "Workflow-Status konnte lokal nicht sicher gespeichert werden", message = publicApiError(error, fallback), retrySafe = message === fallback;
+    return respond({ error: message, retrySafe, externalActionsPerformed: false }, { status: retrySafe ? 503 : 400 });
   }
 }

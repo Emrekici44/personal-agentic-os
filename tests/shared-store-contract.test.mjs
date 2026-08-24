@@ -13,7 +13,9 @@ test('shared operational records expose authenticated CRUD and route skills thro
   assert.match(store,/Number\(input\?\.version\).*Number\(current\.version\)/);
   assert.match(store,/Datenkonflikt: Eintrag wurde auf einem anderen Client geändert/);
   assert.match(route,/const conflict = publicConflict\(error\)/);
-  assert.match(route,/status: conflict \? 409 : 400/);
+  assert.match(route,/status: conflict \? 409 : retrySafe \? 503 : 400/);
+  assert.match(route,/withStoreTransaction\(\(\) => createRecord/);
+  assert.match(route,/withStoreTransaction\(\(\) => updateRecord/);
   assert.doesNotMatch(route,/error instanceof Error \? error\.message/);
 });
 test('tasks and habits validate planning fields before shared persistence',()=>{
