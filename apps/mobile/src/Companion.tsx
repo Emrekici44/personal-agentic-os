@@ -75,7 +75,7 @@ export default function Companion() {
         allowsLinkPreview={false}
         automaticallyAdjustContentInsets={false}
         bounces={false}
-        cacheEnabled
+        cacheEnabled={false}
         contentInsetAdjustmentBehavior="never"
         decelerationRate="normal"
         domStorageEnabled

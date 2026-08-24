@@ -3277,12 +3277,16 @@ textarea::placeholder {
   }
 
   .hamb {
+    position: relative;
+    z-index: 27;
     width: 38px;
     height: 38px;
     border: 1px solid rgba(70, 190, 232, 0.18);
     border-radius: 6px;
     background: rgba(13, 33, 50, 0.75);
     color: var(--cyan);
+    pointer-events: auto;
+    touch-action: manipulation;
   }
 
   .hamb svg {
@@ -3448,6 +3452,8 @@ textarea::placeholder {
     backdrop-filter: blur(20px);
     box-shadow: 0 -16px 36px rgba(0, 0, 0, 0.28);
     padding: 7px 3px calc(7px + env(safe-area-inset-bottom));
+    pointer-events: auto;
+    touch-action: manipulation;
   }
 
   .mobileNav button,
@@ -3457,6 +3463,12 @@ textarea::placeholder {
     min-height: 49px;
     color: #60798c;
     border-radius: 7px;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    font: inherit;
+    pointer-events: auto;
+    touch-action: manipulation;
   }
 
   .mobileNav button.active,
@@ -3757,8 +3769,10 @@ textarea::placeholder {
 .os[data-theme="light"] .search,.os[data-theme="light"] .themeSwitch,.os[data-theme="light"] input,.os[data-theme="light"] textarea,.os[data-theme="light"] select{background:#fff;color:#17384d;border-color:rgba(28,124,164,.2)}
 .os[data-theme="light"] .privacy{background:rgba(222,242,244,.78)}
 .os[data-theme="light"] .mobileNav{background:rgba(246,252,254,.96);border-color:rgba(31,125,162,.18)}
-.os[data-theme="light"] .mobileNav a{color:#607a8b}
-.os[data-theme="light"] .mobileNav a.active{color:#0879ac;background:rgba(25,160,211,.08)}
+.os[data-theme="light"] .mobileNav a,
+.os[data-theme="light"] .mobileNav button{color:#607a8b}
+.os[data-theme="light"] .mobileNav a.active,
+.os[data-theme="light"] .mobileNav button.active{color:#0879ac;background:rgba(25,160,211,.08)}
 .os[data-theme="light"] .toast{background:#ffffff;color:#16394d;border-color:rgba(20,146,191,.25)}
 
 @media (max-width:720px){

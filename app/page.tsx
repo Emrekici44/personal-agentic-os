@@ -222,7 +222,11 @@ export default function App() {
             {brand.name}
             <small>life operating system</small>
           </span>
-          <button aria-label="Menü schließen" onClick={() => setMenu(false)}>
+          <button
+            aria-label="Menü schließen"
+            onClick={() => setMenu(false)}
+            type="button"
+          >
             <I.X />
           </button>
         </div>
@@ -264,6 +268,7 @@ export default function App() {
             aria-label="Hauptmenü öffnen"
             className="hamb"
             onClick={() => setMenu((current) => !current)}
+            type="button"
           >
             <I.Menu />
           </button>
@@ -275,6 +280,7 @@ export default function App() {
             aria-label="Wissen durchsuchen"
             className="search"
             onClick={() => navigate("brain")}
+            type="button"
           >
             <I.Search />
             Suchen
@@ -284,6 +290,7 @@ export default function App() {
             className="themeSwitch"
             onClick={() => changeTheme(theme === "dark" ? "light" : "dark")}
             title={theme === "dark" ? "Light Mode" : "Dark Mode"}
+            type="button"
           >
             {theme === "dark" ? <I.Sun /> : <I.Moon />}
           </button>
@@ -340,6 +347,7 @@ export default function App() {
           aria-label="Menü schließen"
           className="shade"
           onClick={() => setMenu(false)}
+          type="button"
         />
       )}{" "}
       {toast && (
@@ -1925,20 +1933,17 @@ function MobileNav({ v, go }: any) {
         ["habits", "Aufgaben", I.CheckSquare],
         ["agents", "Agenten", I.Bot],
       ].map(([id, n, Icon]: any) => (
-        <a
+        <button
           aria-current={v === id ? "page" : undefined}
           aria-label={n}
           className={v === id ? "active" : ""}
-          href={`#${id}`}
-          onClick={(event) => {
-            event.preventDefault();
-            go(id);
-          }}
+          onClick={() => go(id)}
           key={id}
+          type="button"
         >
           <Icon />
           <span>{n}</span>
-        </a>
+        </button>
       ))}
     </div>
   );
