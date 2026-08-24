@@ -13,6 +13,8 @@ Official references: [Personal pricing](https://tailscale.com/pricing), [Serve e
 5. The helper starts a production Next server on `127.0.0.1:3211`, configures private HTTPS Serve, verifies the MagicDNS URL, and prints that URL. It never calls `tailscale funnel`.
 6. For Expo Go development over Tailscale, double-click `Agentic OS - iPhone Tailscale starten.cmd`. It obtains the current Tailscale IPv4 and MagicDNS name from the signed-in client, supplies the private HTTPS URL to the WebView, and advertises Metro on the private Tailscale IP.
 
+Before showing a QR code, the iPhone helper now verifies that a real Next.js JavaScript asset is accepted from the exact private MagicDNS origin. This prevents a misleading state where server-rendered HTML is visible but every control is inert because a development server rejected the private origin. The Expo shell also waits for a content-free `agentic-os-ready` signal from the hydrated app instead of treating HTML load alone as success.
+
 No IP, MagicDNS name, account identifier, or secret is committed. `EXPO_PUBLIC_AGENTIC_OS_URL` is public runtime configuration, not a credential. The Tailscale access policy remains the authorization boundary.
 
 ## One honest remote test

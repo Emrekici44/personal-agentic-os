@@ -97,7 +97,8 @@ test("marks remaining illustrative domain data instead of presenting it as real"
 });
 
 test("keeps the iPhone shell safe-area aware and resistant to touch and zoom bugs", async () => {
-  const [css, layout, companion] = await Promise.all([
+  const [page, css, layout, companion] = await Promise.all([
+    readFile(pagePath, "utf8"),
     readFile(cssPath, "utf8"),
     readFile(layoutPath, "utf8"),
     readFile(mobileCompanionPath, "utf8"),
@@ -111,6 +112,9 @@ test("keeps the iPhone shell safe-area aware and resistant to touch and zoom bug
   assert.match(companion, /contentInsetAdjustmentBehavior="never"/);
   assert.match(companion, /allowsBackForwardNavigationGestures=\{false\}/);
   assert.match(companion, /isMainDocument/);
+  assert.match(companion, /message\?\.type !== "agentic-os-ready"/);
+  assert.match(companion, /setTimeout\(\(\) => setFailed\(true\), 8000\)/);
+  assert.match(page, /mobileBridge\?\.postMessage/);
 });
 
 test("allows only the detected private LAN host for Next development assets", async () => {
@@ -136,4 +140,7 @@ test("keeps Tailscale access private, dynamic, and Funnel-free", async () => {
   assert.match(iphoneHelper, /\$status\.TailscaleIPs/);
   assert.match(iphoneHelper, /\$env:REACT_NATIVE_PACKAGER_HOSTNAME = \$tailscaleIp/);
   assert.match(iphoneHelper, /\$privateUrl = "https:\/\/\$\{dnsName\}"/);
+  assert.match(iphoneHelper, /Test-InteractivePrivateOrigin/);
+  assert.match(iphoneHelper, /Headers @\{ Origin = \$Url \}/);
+  assert.match(iphoneHelper, /AGENTIC_OS_PRIVATE_HOST = \$dnsName/);
 });

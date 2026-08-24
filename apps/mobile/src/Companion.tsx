@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Linking, Platform, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { WebView } from "react-native-webview";
@@ -12,13 +12,23 @@ export default function Companion() {
   const insets = useSafeAreaInsets();
   const [failed, setFailed] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [documentLoaded, setDocumentLoaded] = useState(false);
+  const [runtimeReady, setRuntimeReady] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
 
   const retry = useCallback(() => {
     setFailed(false);
     setLoading(true);
+    setDocumentLoaded(false);
+    setRuntimeReady(false);
     setReloadKey((value) => value + 1);
   }, []);
+
+  useEffect(() => {
+    if (!documentLoaded || runtimeReady || failed) return;
+    const timer = setTimeout(() => setFailed(true), 8000);
+    return () => clearTimeout(timer);
+  }, [documentLoaded, failed, runtimeReady]);
 
   if (!config.ok) {
     return (
@@ -93,8 +103,24 @@ export default function Companion() {
             setFailed(true);
           }
         }}
-        onLoadEnd={() => setLoading(false)}
-        onLoadStart={() => setLoading(true)}
+        onLoadEnd={() => setDocumentLoaded(true)}
+        onLoadStart={() => {
+          setDocumentLoaded(false);
+          setRuntimeReady(false);
+          setLoading(true);
+        }}
+        onMessage={(event) => {
+          try {
+            const message = JSON.parse(event.nativeEvent.data);
+            if (message?.type !== "agentic-os-ready" || message?.version !== 1)
+              return;
+            setRuntimeReady(true);
+            setLoading(false);
+            setFailed(false);
+          } catch {
+            // Ignore unknown bridge messages; no page content is logged.
+          }
+        }}
         onShouldStartLoadWithRequest={shouldLoad}
         originWhitelist={["http://*", "https://*"]}
         overScrollMode="never"

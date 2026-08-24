@@ -137,6 +137,16 @@ export default function App() {
       .then((preference) => setTheme(preference.value === "light" ? "light" : "dark"))
       .catch(() => setTheme("dark"));
   }, []);
+  useEffect(() => {
+    const mobileBridge = (
+      window as Window & {
+        ReactNativeWebView?: { postMessage: (message: string) => void };
+      }
+    ).ReactNativeWebView;
+    mobileBridge?.postMessage(
+      JSON.stringify({ type: "agentic-os-ready", version: 1 }),
+    );
+  }, []);
   const note = (s: string) => {
     setToast(s);
     setTimeout(() => setToast(""), 2400);

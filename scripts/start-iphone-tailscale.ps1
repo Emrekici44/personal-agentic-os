@@ -21,6 +21,24 @@ if (-not $dnsName -or -not $tailscaleIp) {
 }
 
 $privateUrl = "https://${dnsName}"
+$env:AGENTIC_OS_PRIVATE_HOST = $dnsName
+
+function Test-InteractivePrivateOrigin([string]$Url) {
+  try {
+    $htmlResponse = Invoke-WebRequest -Uri $Url -UseBasicParsing -TimeoutSec 8
+    $scriptMatch = [regex]::Match($htmlResponse.Content, '<script[^>]+src="([^"]+)"')
+    if (-not $scriptMatch.Success) {
+      return $false
+    }
+
+    $scriptUrl = [Uri]::new([Uri]$Url, $scriptMatch.Groups[1].Value).AbsoluteUri
+    $scriptResponse = Invoke-WebRequest -Uri $scriptUrl -Headers @{ Origin = $Url } -UseBasicParsing -TimeoutSec 8
+    return $scriptResponse.StatusCode -eq 200 -and [string]$scriptResponse.Headers."Content-Type" -match "javascript"
+  } catch {
+    return $false
+  }
+}
+
 try {
   $response = Invoke-WebRequest -Uri $privateUrl -UseBasicParsing -TimeoutSec 5
   if ($response.StatusCode -lt 200 -or $response.StatusCode -ge 500) {
@@ -30,9 +48,12 @@ try {
   throw "Der private Serve-Endpunkt ist nicht erreichbar. Starte zuerst 'Agentic OS - Privat unterwegs starten'."
 }
 
+if (-not (Test-InteractivePrivateOrigin $privateUrl)) {
+  throw "Die sichtbare Seite ist nicht interaktiv: Der Next-Server wurde ohne den privaten Tailscale-Host gestartet. Schließe den Agentic-OS-Webserver und starte den Tailscale-iPhone-Launcher erneut."
+}
+
 $env:EXPO_PUBLIC_AGENTIC_OS_URL = $privateUrl
 $env:REACT_NATIVE_PACKAGER_HOSTNAME = $tailscaleIp
-$env:AGENTIC_OS_PRIVATE_HOST = $dnsName
 
 Write-Host ""
 Write-Host "  AGENTIC OS - EXPO UEBER TAILSCALE" -ForegroundColor Cyan
