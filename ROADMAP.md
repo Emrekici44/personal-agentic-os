@@ -16,6 +16,7 @@
 - Real shared life-area records for faith, health, finance, relationships and split career; encrypted private fields, honest empty states and reversible archive.
 - Real Sunday weekly planner: signed private GET/generate/review API, encrypted shared plans/outcomes/focus proposals, Europe/Berlin DST-safe 8-day window, real Calendar/task/inbox/project evidence, max. 3 outcomes, 35% buffer and exact single-write handoff.
 - Professional shared project workspace with real overview/detail, validated project metadata, linked tasks and inbox, weekly-plan evidence, content-light audit history and responsive desktop/mobile controls.
+- Five real local agent workflows: project coach, faith/reflection, health planning, finance overview and relationship care; real Shared Store evidence, encrypted run/resume state, review/pause/resume, content-light audit and zero external/background actions.
 
 ## Complete – Bedienwahrheit and responsive refinement
 

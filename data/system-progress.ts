@@ -9,7 +9,7 @@ export type ProgressItem = {
 };
 
 export const systemProgress = {
-  currentPhase: "Professioneller Projektarbeitsraum bereit · echte Datenquellen",
+  currentPhase: "Fünf transparente lokale Agenten-Workflows bereit",
   lastVerifiedAt: "24.08.2026 · Europe/Berlin",
   items: [
     {
@@ -136,6 +136,13 @@ export const systemProgress = {
       label: "Gemeinsamer professioneller Projektarbeitsraum",
       evidence: "Ziel, Status, nächste Aktion, Aufgaben, Inbox, Wochenplanbezug und inhaltsarmer Verlauf",
       href: "#projects",
+      status: "complete",
+    },
+    {
+      id: "agent-workflows",
+      label: "Fünf transparente lokale Agenten-Workflows",
+      evidence: "Echte Shared-Store-Quellen · verschlüsselte Läufe · Review, Pause und Fortsetzen · 0 externe Aktionen",
+      href: "#agents",
       status: "complete",
     },
     {

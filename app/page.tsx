@@ -1129,62 +1129,38 @@ function Journal({ text, setText, mood, setMood, note, embedded = false }: any) 
   );
 }
 function Agents({ note }: any) {
-  const{records,state,create,update}=useSharedRecords('agents');const[editing,setEditing]=useState<any>(null),[name,setName]=useState('');
-  const save=async()=>{try{if(editing?.id)await update({...editing,name,title:name});else await create({name,title:name,status:'planned',areas:[],providerMode:'subscription'});setEditing(null);setName('')}catch(error){note(error instanceof Error?error.message:'Agent konnte nicht gespeichert werden')}};
+  const { records, state, create, update } = useSharedRecords("agents");
+  const { records: projects } = useSharedRecords("projects");
+  const [editing, setEditing] = useState<any>(null), [agentDraft, setAgentDraft] = useState<any>({ name: "", purpose: "", areas: [] }), [workflowState, setWorkflowState] = useState<any>({ state: "loading", profiles: [], runs: [] }), [selectedWorkflow, setSelectedWorkflow] = useState("project_coach"), [workflowInput, setWorkflowInput] = useState(""), [projectId, setProjectId] = useState(""), [activeRunId, setActiveRunId] = useState(""), [selectedSuggestions, setSelectedSuggestions] = useState<string[]>([]), [busy, setBusy] = useState(false), [workflowError, setWorkflowError] = useState("");
+  const loadWorkflows = useCallback(async () => { try { await fetch("/api/state/session", { method: "POST" }); const response = await fetch("/api/agents/workflows", { cache: "no-store" }); const result = await response.json(); if (!response.ok) throw new Error(); setWorkflowState({ state: "online", ...result }); if (!activeRunId && result.runs?.length) setActiveRunId(result.runs[0].id); } catch { setWorkflowState({ state: "error", profiles: [], runs: [] }); } }, [activeRunId]);
+  useEffect(() => { loadWorkflows(); }, [loadWorkflows]);
+  const activeRun = workflowState.runs.find((run: any) => run.id === activeRunId);
+  const activeSuggestionKey = JSON.stringify(activeRun?.decision?.selectedSuggestionIds || []);
+  useEffect(() => { setSelectedSuggestions(JSON.parse(activeSuggestionKey)); }, [activeRunId, activeSuggestionKey]);
+  const workflowIcon = (id: string) => id === "project_coach" ? I.FolderKanban : id === "faith_reflection" ? I.MoonStar : id === "health_planner" ? I.HeartPulse : id === "finance_overview" ? I.WalletCards : I.UsersRound;
+  const saveAgent = async () => { try { if (editing?.id) await update({ ...editing, ...agentDraft, title: agentDraft.name }); else await create({ ...agentDraft, title: agentDraft.name, status: "planned", providerMode: "subscription" }); setEditing(null); note("Agent-Metadaten gespeichert · keine Ausführung aktiviert"); } catch (error) { note(error instanceof Error ? error.message : "Agent konnte nicht gespeichert werden"); } };
+  const generate = async () => { if (workflowInput.trim().length < 2) return note("Bitte einen klaren Arbeitsauftrag eingeben"); setBusy(true); setWorkflowError(""); try { const response = await fetch("/api/agents/workflows", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ workflowId: selectedWorkflow, input: workflowInput, projectId: selectedWorkflow === "project_coach" ? projectId || undefined : undefined }) }); const result = await response.json(); if (!response.ok) throw new Error(result.error); await loadWorkflows(); setActiveRunId(result.run.id); setWorkflowInput(""); note("Lokaler Vorschlagslauf gespeichert · 0 externe Aktionen"); } catch (error) { setWorkflowError(error instanceof Error ? error.message : "Workflow fehlgeschlagen"); } finally { setBusy(false); } };
+  const transition = async (action: "review" | "pause" | "resume") => { if (!activeRun) return; setBusy(true); setWorkflowError(""); try { const response = await fetch("/api/agents/workflows", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ runId: activeRun.id, action, selectedSuggestionIds: action === "review" ? selectedSuggestions : undefined }) }); const result = await response.json(); if (!response.ok) throw new Error(result.error); await loadWorkflows(); setActiveRunId(result.run.id); note(action === "review" ? "Review gespeichert · keine Aktion ausgeführt" : action === "pause" ? "Workflow pausiert" : "Workflow zur Review fortgesetzt"); } catch (error) { setWorkflowError(error instanceof Error ? error.message : "Statuswechsel fehlgeschlagen"); } finally { setBusy(false); } };
+  const toggleSuggestion = (id: string) => setSelectedSuggestions((current) => current.includes(id) ? current.filter((value) => value !== id) : [...current, id]);
   return (
     <>
       <Intro
-        eyebrow="AGENTEN SIND DIENSTE"
-        title="Dein koordiniertes Agenten-Team."
-        action={
-          <Btn onClick={() => {setEditing({});setName('')}}>
-            <I.Plus />
-            Agent
-          </Btn>
-        }
-      />
-      <div className="agentSummary"><span><i className={state==='online'?'online':'unconfigured'}/>{records.length} persistent erfasst</span><span><i className="unconfigured"/>Ausführung nur nach echter Provider-Konfiguration</span></div>
-      {editing&&<Card className="inlineEditor"><Tag>AGENT-KONFIGURATOR</Tag><label>Name<input value={name} onChange={event=>setName(event.target.value)} placeholder="Agentname"/></label><p>Neue Agenten starten als „geplant“. Es wird keine Ausführbarkeit behauptet.</p><Btn onClick={save}>Konfiguration speichern</Btn><button onClick={()=>setEditing(null)}>Abbrechen</button></Card>}
-      {state==='online'&&records.length===0&&<Card><Tag>ECHTE DATENQUELLE · LEER</Tag><h3>Noch keine Agenten konfiguriert</h3><p>Die früheren Statusbehauptungen wurden entfernt.</p></Card>}
-      <div className="agents">
-        {records.map((a: any) => (
-          <Card key={a.id}>
-            <div className="row">
-              <span className="agentIcon">
-                <I.Bot />
-              </span>
-              <i className="badge unconfigured">{a.status}</i>
-            </div>
-            <h3>{a.name||a.title}</h3>
-            <p>{a.purpose||'Zweck noch nicht beschrieben'}</p>
-            <div className="chips">
-              {(a.areas||[]).map((x: string) => (
-                <span key={x}>{x}</span>
-              ))}
-            </div>
-            <label>
-              Modell
-              <select
-                value={a.providerMode||'subscription'}
-                onChange={(e) => update({...a,providerMode:e.target.value})}
-              >
-                <option value="subscription">ChatGPT Companion</option>
-                <option value="api" disabled>OpenAI API · nicht konfiguriert</option>
-                <option value="local" disabled>Lokales Modell · nicht verifiziert</option>
-              </select>
-            </label>
-            <div className="activity">
-              <I.Activity />
-              <span>
-                Metadaten persistent<small>Keine Ausführung verbunden</small>
-              </span>
-            </div>
-            <button onClick={() => {setEditing(a);setName(a.name||a.title)}}>
-              Konfigurieren <I.Settings2 />
-            </button>
-          </Card>
-        ))}
+        eyebrow="LOKALE WORKFLOWS · TRANSPARENT & FREIGABEGESTEUERT"
+        title="Assistenten, die Vorschläge machen – nicht heimlich handeln."
+        action={<Btn soft onClick={() => { setEditing({}); setAgentDraft({ name: "", purpose: "", areas: [] }); }}><I.Plus /> Eigener Agent</Btn>}
+      ><p>Alle fünf Kern-Workflows lesen nur den privaten Shared Store. Kein Modell, keine API-Kosten, keine Hintergrundaktion.</p></Intro>
+      <div className="workflowTruth"><span><I.Cpu/><b>Lokale Regeln</b><small>Modell: keines</small></span><span><I.Database/><b>Shared Store</b><small>Input/Output verschlüsselt</small></span><span><I.ShieldCheck/><b>Freigabegrenze</b><small>Vorschlag ≠ Aktion</small></span><span><I.BadgeEuro/><b>Kosten</b><small>0 € pro Lauf</small></span></div>
+      {workflowState.state === "error" && <p role="alert">Die privaten Workflow-Daten sind gerade nicht erreichbar.</p>}
+      <div className="workflowProfiles">{workflowState.profiles.map((profile: any) => { const Icon = workflowIcon(profile.id), latest = workflowState.runs.find((run: any) => run.workflowId === profile.id); return <button aria-pressed={selectedWorkflow === profile.id} className={selectedWorkflow === profile.id ? "active" : ""} key={profile.id} onClick={() => { setSelectedWorkflow(profile.id); setActiveRunId(latest?.id || ""); setWorkflowError(""); }}><span><Icon/></span><div><b>{profile.name}</b><small>{profile.purpose}</small></div><em>{latest ? latest.status === "paused" ? "Pausiert" : latest.status === "reviewed" ? "Geprüft" : "Review offen" : "Noch kein Lauf"}</em></button>; })}</div>
+      <div className="workflowLayout">
+        <Card className="workflowStart"><Tag>NEUER VORSCHLAGSLAUF</Tag><h3>{workflowState.profiles.find((profile: any)=>profile.id===selectedWorkflow)?.name || "Workflow"}</h3><p>{workflowState.profiles.find((profile: any)=>profile.id===selectedWorkflow)?.boundary}</p>{selectedWorkflow === "project_coach" && <label>Projektbezug (optional)<select value={projectId} onChange={event=>setProjectId(event.target.value)}><option value="">Alle echten Projekte</option>{projects.map((project:any)=><option key={project.id} value={project.id}>{project.title}</option>)}</select></label>}<label>Was soll der Assistent organisatorisch klären?<textarea value={workflowInput} onChange={event=>setWorkflowInput(event.target.value)} placeholder="Klarer Arbeitsauftrag – keine Zugangsdaten oder unnötigen sensiblen Details …" maxLength={1000}/></label><div className="workflowGate"><I.Shield/><span><b>Nur Vorschlag erzeugen</b>Keine Aufgabe, Nachricht, Transaktion, Kalenderänderung oder externe Aktion.</span></div><Btn onClick={!busy && workflowInput.trim().length >= 2 ? generate : undefined}>{busy ? "Wird lokal ausgewertet …" : "Vorschlag lokal erzeugen"}<I.WandSparkles/></Btn></Card>
+        <Card className="workflowResult"><div className="row"><div><Tag>OUTPUT & STATUS</Tag><h3>{activeRun ? workflowState.profiles.find((profile:any)=>profile.id===activeRun.workflowId)?.name : "Noch kein Lauf gewählt"}</h3></div>{activeRun&&<em className={`runStatus ${activeRun.status}`}>{activeRun.status}</em>}</div>{workflowError&&<p className="plannerError" role="alert"><I.TriangleAlert/>{workflowError}</p>}{!activeRun&&<div className="honestEmpty"><I.Bot/><span><b>Noch kein echter Vorschlagslauf</b>Wähle einen Workflow und formuliere einen Arbeitsauftrag. Es werden keine Ergebnisse erfunden.</span></div>}{activeRun&&<><p>{activeRun.output.summary}</p><div className="sourceCounts">{Object.entries(activeRun.sourceEvidence).map(([key,value])=><span key={key}><b>{typeof value === "boolean" ? value ? "Ja" : "Nein" : String(value)}</b>{key}</span>)}</div><div className="workflowSuggestions">{activeRun.output.suggestions.map((item:any)=><label className={selectedSuggestions.includes(item.id)?"selected":""} key={item.id}><input checked={selectedSuggestions.includes(item.id)} disabled={activeRun.status==="reviewed"} onChange={()=>toggleSuggestion(item.id)} type="checkbox"/><span><b>{item.title}</b><small>{item.rationale}</small></span><em>Vorschlag</em></label>)}</div><div className="workflowActions">{activeRun.status === "proposal" && <><Btn onClick={!busy ? ()=>transition("review") : undefined}>Review speichern</Btn><button onClick={()=>transition("pause")} disabled={busy}>Pausieren</button></>}{activeRun.status === "paused" && <Btn onClick={!busy ? ()=>transition("resume") : undefined}>Workflow fortsetzen</Btn>}{activeRun.status === "reviewed" && <span><I.CheckCircle2/>Review abgeschlossen · keine Folgeaktion ausgeführt</span>}</div><small className="workflowBoundary"><I.Lock/>Externe oder folgenreiche Aktionen sind in diesem Workflow nicht implementiert und brauchen später eine eigene exakte Vorschau und Freigabe.</small></>}</Card>
       </div>
+      {workflowState.runs.length > 0 && <Card className="workflowHistory"><Tag>RESUME & AUDIT</Tag><div>{workflowState.runs.slice(0,10).map((run:any)=><button className={activeRunId===run.id?"active":""} key={run.id} onClick={()=>setActiveRunId(run.id)}><I.History/><span><b>{workflowState.profiles.find((profile:any)=>profile.id===run.workflowId)?.name}</b><small>{new Intl.DateTimeFormat("de-DE",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit",timeZone:"Europe/Berlin"}).format(new Date(run.updatedAt))} · Schritt {run.currentStep}</small></span><em>{run.status}</em></button>)}</div></Card>}
+      <div className="sectionhead"><h3>Eigene Agent-Metadaten</h3><span>{records.length} persistent · nicht ausführbar</span></div>
+      {editing && <Card className="agentConfigurator"><div className="row"><Tag>AGENT-KONFIGURATOR · METADATEN</Tag><button aria-label="Konfigurator schließen" onClick={()=>setEditing(null)}><I.X/></button></div><label>Name<input value={agentDraft.name} onChange={event=>setAgentDraft({...agentDraft,name:event.target.value})} placeholder="Agentname"/></label><label>Zweck<textarea value={agentDraft.purpose} onChange={event=>setAgentDraft({...agentDraft,purpose:event.target.value})} placeholder="Wofür soll diese Konfiguration später dienen?"/></label><p>Speichern aktiviert keine Ausführung und keinen Modellzugriff.</p><div className="editorActions"><Btn onClick={agentDraft.name.trim().length>=2?saveAgent:undefined}>Metadaten speichern</Btn><button onClick={()=>setEditing(null)}>Abbrechen</button></div></Card>}
+      {state === "online" && records.length === 0 && <Card className="honestEmpty"><I.Bot/><span><b>Keine eigenen Agent-Metadaten</b>Die fünf geprüften System-Workflows oben funktionieren unabhängig davon lokal.</span></Card>}
+      <div className="agentMetadata">{records.map((agent:any)=><Card key={agent.id}><div className="row"><span className="agentIcon"><I.Bot/></span><i className="badge unconfigured">Metadaten</i></div><h3>{agent.name||agent.title}</h3><p>{agent.purpose||"Zweck noch nicht beschrieben"}</p><small>ChatGPT Companion · keine automatische Ausführung</small><button onClick={()=>{setEditing(agent);setAgentDraft({name:agent.name||agent.title,purpose:agent.purpose||"",areas:agent.areas||[]})}}>Konfigurieren<I.Settings2/></button></Card>)}</div>
     </>
   );
 }

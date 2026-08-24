@@ -28,17 +28,22 @@ Last verified: 24.08.2026, Europe/Berlin.
 - Abgelaufene Google-Access-Tokens werden jetzt serverseitig über den lokal verschlüsselt gespeicherten Refresh-Token erneuert. Der Status ist erst Online, wenn diese Erneuerung gelingt; Secrets und Tokens bleiben außerhalb UI, Logs und Git.
 - Der Projektbereich ist jetzt ein echter gemeinsamer Arbeitsraum: professionelle Karten-/Listenübersicht, editierbares Ziel, Beschreibung, Status, Zieldatum und nächste Aktion, projektgebundene Aufgaben, direkte sowie nachträgliche Inbox-Zuordnung, Wochenplanbezug und ein inhaltsarmer Audit-Verlauf. Veraltete Fake-Avatare, Demo-Ziele und die funktionslose Timeline wurden entfernt.
 - Projekt-, Aufgaben- und Inbox-Updates halten ihre strukturierten SQLite-Spalten und JSON-Nutzdaten konsistent. Projektverknüpfungen werden serverseitig gegen echte, nicht archivierte Projekte validiert; die neue Workspace-API ist signiert, privat, cachefrei und gibt keine persönlichen Inhalte im Audit aus.
+- Fünf echte lokale Agenten-Workflows sind verfügbar: Projekt-Coach, Glaubens-/Reflexionsassistent, Gesundheitsplaner, Finanzübersichtsassistent und Beziehungspflege-Assistent. Sie lesen ausschließlich freigegebene Shared-Store-Quellen, erzeugen deterministische Vorschläge mit `local-rules` und `model=none`, verwenden keine OpenAI-API und verursachen 0 € pro Lauf.
+- Jeder Workflow besitzt klaren Input, Quellenbeleg, Vorschlagsoutput und Status. Eingabe, Output und Fortsetzungsstand werden feldverschlüsselt gespeichert; das Audit enthält nur Workflow-ID, Status und Zähler. Review, Pause und Fortsetzen sind synchronisiert. Externe oder folgenreiche Aktionen werden weder angeboten noch ausgeführt und benötigen später eine gesonderte exakte Freigabestufe.
+- Glaubens-, Gesundheits-, Finanz- und Beziehungsvorschläge bleiben organisatorisch. Es gibt keine religiöse Autoritätsbehauptung, Diagnose, medizinische oder finanzielle Fachberatung, Transaktion oder automatische Nachricht.
 
 ## Verification
 
-- Root tests: 43/43 passed after the project workspace contracts and weekly-planner safeguards.
+- Root tests: 46/46 passed after the agent-workflow, project-workspace and weekly-planner safeguards.
 - Root lint and optimized Next build: passed after the final UI/documentation refresh.
 - Electron security checks: 2/2 passed. Expo TypeScript, lint and static web export passed.
 - Browser: the private Tailscale URL passed desktop 1280-wide and mobile 390×844 checks without horizontal overflow or console errors. The life-area overview, faith empty state/editor, finance fields and split career columns rendered from the shared source.
 - Electron: the current window opened the real faith area and its editor; cancel closed it without creating a record. Obsidian and Calendar still reported Online from verified sources.
 - Production build, Electron checks and Expo TypeScript/lint/web export passed. Desktop and 390×844 browser checks rendered the real planner with no horizontal overflow or captured runtime error; mobile drawer opened and closed correctly.
 - Projektbrowser-Abnahme: echter leerer Shared-Store-Zustand, vollständiger Erfassungseditor mit deaktiviertem Leer-Speichern und Abbruch ohne Mutation; mobile 390×844 mit 0 horizontalem Überlauf.
-- Git: life-area milestone `688e3c7` is on private `main`; the weekly-planner milestone is ready for its audited incremental commit.
+- Agentenbrowser-Abnahme: alle fünf echten Workflow-Profile, Schutzgrenzen, Shared-Store-Quellen und lokale Kosten-/Modellwahrheit renderten auf Desktop und 390×844 ohne horizontalen Überlauf. Der Startknopf blieb ohne Eingabe deaktiviert; der Finanzassistent zeigte die Fachberatungs-/Transaktionsgrenze. Zur Prüfung wurde bewusst kein echter Lauf erzeugt.
+- Produktionsbuild, Root-Lint/TypeScript, Electron 2/2 sowie Expo TypeScript/Lint/Web-Export sind nach dem Agentenmeilenstein grün.
+- Git: Projektarbeitsraum-Commit `b3b70cf7ec57f0205f01d70cb9163487dff89595` ist auf privatem `main`; der Agentenmeilenstein ist für seinen auditierten inkrementellen Commit bereit.
 
 ## User boundaries
 
