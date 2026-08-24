@@ -9,7 +9,7 @@ export type ProgressItem = {
 };
 
 export const systemProgress = {
-  currentPhase: "Google Calendar · kontrollierte Event-Freigabe",
+  currentPhase: "Wahrheit & gemeinsamer Datenkern",
   lastVerifiedAt: "24.08.2026 · Europe/Berlin",
   items: [
     {
@@ -71,9 +71,23 @@ export const systemProgress = {
     {
       id: "google-first-event",
       label: "Erster kontrollierter Testtermin",
-      evidence: "Wartet auf exakte Vorschau und separate Einzelbestätigung",
+      evidence: "Einzeln freigegeben, geschrieben, zurückgelesen und auditiert",
       href: "#integrations",
-      status: "user_action",
+      status: "complete",
+    },
+    {
+      id: "shared-crud",
+      label: "Gemeinsame echte Daten für Kernbereiche",
+      evidence: "Projekte, Aufgaben, Inbox, Agenten, Skills und Journal-Metadaten",
+      href: "#projects",
+      status: "active",
+    },
+    {
+      id: "server-evaluation",
+      label: "Laptop-unabhängige PostgreSQL-Architektur prüfen",
+      evidence: "Kosten, Datenschutz, Backups, Offline und Exit vergleichen",
+      href: "#settings",
+      status: "pending",
     },
   ] as ProgressItem[],
 };

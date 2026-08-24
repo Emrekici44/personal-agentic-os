@@ -52,60 +52,6 @@ const areas = [
   ],
   ["projects", "Projekte", "#d1a33c", "4 aktiv · 6 geparkt", I.LayoutGrid],
 ] as const;
-const agents = [
-  [
-    "Wochenplaner",
-    "Plant drei Outcomes mit 35% Puffer",
-    ["Karriere", "Gesundheit"],
-    "gpt-5.4",
-    "online",
-  ],
-  [
-    "Projekt-Coach",
-    "Hält Ziele und nächste Schritte klar",
-    ["Projekte"],
-    "gpt-5.4",
-    "busy",
-  ],
-  [
-    "Glaube & Reflexion",
-    "Begleitet Routinen und Reflexion",
-    ["Glaube"],
-    "gpt-5.4-mini",
-    "online",
-  ],
-  [
-    "Health Planner",
-    "Ordnet Training, Essen und Erholung",
-    ["Gesundheit"],
-    "gpt-5.4-mini",
-    "online",
-  ],
-  [
-    "Finanz-Überblick",
-    "Liest und strukturiert, handelt nie",
-    ["Finanzen"],
-    "gpt-5.4",
-    "unconfigured",
-  ],
-  [
-    "Beziehungspflege",
-    "Hilft Zusagen und Menschen zu erinnern",
-    ["Beziehungen"],
-    "gpt-5.4-mini",
-    "online",
-  ],
-];
-const skills = [
-  ["Wochenreset", "Planung", "Wochenplaner", "Bereit"],
-  ["Deep-Work-Schutz", "Energie", "Wochenplaner", "Bereit"],
-  ["Projekt-Dekomposition", "Projekte", "Projekt-Coach", "Bereit"],
-  ["Tagesreflexion", "Glaube", "Glaube & Reflexion", "Bereit"],
-  ["Trainingswoche", "Gesundheit", "Health Planner", "Bereit"],
-  ["Budget-Review", "Finanzen", "Finanz-Überblick", "Konfiguration"],
-  ["Kontakt-Impuls", "Beziehungen", "Beziehungspflege", "Bereit"],
-  ["Vault-Import", "Wissen", "—", "Read-only"],
-];
 const nav: any[] = [
   ["home", "Kommando", I.Gauge],
   ["inbox", "Inbox", I.Inbox],
@@ -140,11 +86,18 @@ const store = {
   set: (k: string, v: any) =>
     localStorage.setItem("aos:" + k, JSON.stringify(v)),
 };
+function useSharedRecords(kind:string){
+  const[records,setRecords]=useState<any[]>([]),[state,setState]=useState<'loading'|'online'|'error'>('loading');
+  const load=useCallback(async()=>{try{await fetch('/api/state/session',{method:'POST'});const response=await fetch(`/api/state/records/${kind}`,{cache:'no-store'});if(!response.ok)throw new Error();const data=await response.json();setRecords(data.records||[]);setState('online')}catch{setState('error')}},[kind]);
+  useEffect(()=>{load()},[load]);
+  const create=async(data:any)=>{const response=await fetch(`/api/state/records/${kind}`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(data)});const result=await response.json();if(!response.ok)throw new Error(result.error||'Speichern fehlgeschlagen');await load();return result};
+  const update=async(data:any)=>{const response=await fetch(`/api/state/records/${kind}`,{method:'PATCH',headers:{'content-type':'application/json'},body:JSON.stringify(data)});const result=await response.json();if(!response.ok)throw new Error(result.error||'Aktualisieren fehlgeschlagen');await load();return result};
+  return{records,state,create,update,reload:load};
+}
 export default function App() {
   const [v, setV] = useState<View>("home"),
     [menu, setMenu] = useState(false),
     [toast, setToast] = useState(""),
-    [tasks, setTasks] = useState<any[]>([]),
     [journal, setJournal] = useState(""),
     [mood, setMood] = useState("ruhig"),
     [vaultOnline, setVaultOnline] = useState(false),
@@ -155,13 +108,6 @@ export default function App() {
     });
   const contentRef = useRef<HTMLElement>(null);
   useEffect(() => {
-    setTasks(
-      store.get("tasks", [
-        { id: 1, t: "Wochenplan bestätigen", area: "Projekte", done: false },
-        { id: 2, t: "Qurʾān: 4 Seiten lesen", area: "Glaube", done: true },
-        { id: 3, t: "Mama anrufen", area: "Beziehungen", done: false },
-      ]),
-    );
     setJournal(store.get("journal", ""));
     const savedBrand = store.get("brand", {
       name: "Agentic OS",
@@ -180,10 +126,6 @@ export default function App() {
       .then((status) => setVaultOnline(status.status === "online"))
       .catch(() => setVaultOnline(false));
   }, []);
-  const saveTasks = (x: any[]) => {
-    setTasks(x);
-    store.set("tasks", x);
-  };
   const note = (s: string) => {
     setToast(s);
     setTimeout(() => setToast(""), 2400);
@@ -280,7 +222,7 @@ export default function App() {
           <I.ShieldCheck />
           <span>
             <b>Lokal geschützt</b>
-            <small>Keine Konten verbunden</small>
+            <small>Lokaler Shared Store · Verbindungen im Health Center</small>
           </span>
         </div>
       </aside>
@@ -315,14 +257,14 @@ export default function App() {
           ref={contentRef}
           tabIndex={-1}
         >
-          {v === "home" && <Home go={navigate} tasks={tasks} vaultOnline={vaultOnline} />}{" "}
+          {v === "home" && <Home go={navigate} vaultOnline={vaultOnline} />}{" "}
           {v === "areas" && <Areas go={navigate} />} {v === "faith" && <Faith note={note} />}
           {v === "career" && <Career />}
           {v === "finance" && <Finance />}
           {v === "health" && <Health />}
           {v === "relations" && <Relations />}
           {v === "projects" && <Projects note={note} />}
-          {v === "habits" && <Habits tasks={tasks} save={saveTasks} />}{" "}
+          {v === "habits" && <Habits />}{" "}
           {v === "journal" && (
             <Journal
               text={journal}
@@ -396,7 +338,18 @@ function Intro({ eyebrow, title, children, action }: any) {
     </div>
   );
 }
-function Home({ go, tasks, vaultOnline }: any) {
+function Home({ go, vaultOnline }: any) {
+  const { records: tasks, state: taskState } = useSharedRecords("tasks");
+  const [calendarState, setCalendarState] = useState("loading");
+  useEffect(() => {
+    fetch("/api/calendar/status", { cache: "no-store" })
+      .then((response) => response.json())
+      .then((status) =>
+        setCalendarState(status.connected ? "online" : status.configured ? "offline" : "unconfigured"),
+      )
+      .catch(() => setCalendarState("offline"));
+  }, []);
+  const openTasks = tasks.filter((task: any) => task.status !== "done" && !task.archived_at);
   return (
     <>
       <Intro eyebrow="DEIN SYSTEM AUF EINEN BLICK" title="Guten Abend, Emre.">
@@ -479,23 +432,26 @@ function Home({ go, tasks, vaultOnline }: any) {
         <Card>
           <div className="row">
             <Tag>PRIORITÄTEN</Tag>
-            <b>{tasks.filter((x: any) => !x.done).length} offen</b>
+            <b>{taskState === "online" ? `${openTasks.length} offen` : "Lädt …"}</b>
           </div>
-          {tasks.slice(0, 3).map((t: any) => (
+          {openTasks.slice(0, 3).map((t: any) => (
             <div className="miniTask" key={t.id}>
-              <i className={t.done ? "checked" : ""}>{t.done && <I.Check />}</i>
+              <i />
               <span>
-                {t.t}
-                <small>{t.area}</small>
+                {t.title}
+                <small>{t.life_area || "Ohne Bereich"}</small>
               </span>
             </div>
           ))}
+          {taskState === "online" && openTasks.length === 0 && (
+            <p className="muted">Noch keine gemeinsamen Aufgaben.</p>
+          )}
         </Card>
         <Card>
           <Tag>SYSTEMSTATUS</Tag>
           {[
             ["Wochenplaner", "online"],
-            ["Google Calendar", "unconfigured"],
+            ["Google Calendar", calendarState],
             ["OpenAI", "unconfigured"],
             ["Obsidian", vaultOnline ? "online" : "unconfigured"],
           ].map((x) => (
@@ -1041,37 +997,22 @@ function Relations() {
   );
 }
 function Projects({ note }: any) {
-  const [view, setView] = useState("Board");
-  const p = [
-    [
-      "Agentic OS",
-      "System im Alltag verankern",
-      "Aktiv",
-      "68%",
-      "12 Chats · 4 Skills",
-    ],
-    [
-      "Selbstständigkeit",
-      "Angebot validieren",
-      "Fokus",
-      "58%",
-      "7 Notizen · 2 Agenten",
-    ],
-    ["Health Baseline", "Stabile Routinen", "Aktiv", "82%", "3 Meilensteine"],
-    ["Wohnung optimieren", "Räume vereinfachen", "Geparkt", "24%", "5 Ideen"],
-  ];
+  const [view, setView] = useState("Board"),[showCreate,setShowCreate]=useState(false),[title,setTitle]=useState(''),[selected,setSelected]=useState<any>(null);
+  const{records:p,state,create}=useSharedRecords('projects');
+  const add=async()=>{try{await create({title,status:'active',goal:'Noch kein Ziel definiert'});setTitle('');setShowCreate(false)}catch(error){note(error instanceof Error?error.message:'Projekt konnte nicht gespeichert werden')}};
   return (
     <>
       <Intro
         eyebrow="FLEXIBLER PROJEKTRAUM"
         title="Vorhaben, die sich mit dir entwickeln."
         action={
-          <Btn onClick={() => note("Projekt-Erfassung geöffnet · noch nicht gespeichert")}>
+          <Btn onClick={() => setShowCreate(true)}>
             <I.Plus />
             Projekt
           </Btn>
         }
       />
+      {showCreate&&<Card className="inlineEditor"><label>Projektname<input value={title} onChange={event=>setTitle(event.target.value)} placeholder="Neues Projekt"/></label><Btn onClick={add}>Projekt speichern</Btn><button onClick={()=>setShowCreate(false)}>Abbrechen</button></Card>}
       <div className="projectTools">
         {["Board", "Liste", "Timeline"].map((item) => (
           <button
@@ -1084,25 +1025,25 @@ function Projects({ note }: any) {
           </button>
         ))}
         <span />
-        <button onClick={() => note("Projektfilter geöffnet")}>
+        <button disabled title="Filter folgt nach gemeinsamem Datenimport">
           <I.Filter />
           Filter
         </button>
       </div>
-      <div className="projects">
-        {p.map((x, i) => (
-          <Card key={x[0]}>
+      {state==='loading'&&<p role="status">Gemeinsame Projekte werden geladen …</p>}
+      {state==='online'&&p.length===0&&<Card><Tag>ECHTE DATENQUELLE · LEER</Tag><h3>Noch keine gemeinsamen Projekte</h3><p>Lege das erste Projekt an. Frühere Demo-Karten wurden entfernt.</p></Card>}
+      {selected&&<Card className="projectDetail"><button onClick={()=>setSelected(null)}>← Zurück</button><Tag>{selected.status}</Tag><h2>{selected.title}</h2><p>{selected.goal||'Noch kein Ziel definiert'}</p><dl><dt>Datenquelle</dt><dd>Laptop Shared Store</dd><dt>Version</dt><dd>{selected.version}</dd><dt>Nächster Schritt</dt><dd>{selected.nextAction||'Noch nicht festgelegt'}</dd></dl></Card>}
+      {!selected&&<div className="projects">
+        {p.map((x:any, i:number) => (
+          <button className="projectOpen" key={x.id} onClick={()=>setSelected(x)}><Card>
             <div className="row">
               <span className={"projectSymbol s" + i}>
                 <I.FolderKanban />
               </span>
-              <em>{x[2]}</em>
+              <em>{x.status}</em>
             </div>
-            <h3>{x[0]}</h3>
-            <p>{x[1]}</p>
-            <div className="projectbar">
-              <i style={{ width: x[3] }} />
-            </div>
+            <h3>{x.title}</h3>
+            <p>{x.goal||'Noch kein Ziel definiert'}</p>
             <div className="projectmeta">
               <span>
                 <I.CheckSquare />
@@ -1110,30 +1051,28 @@ function Projects({ note }: any) {
               </span>
               <span>
                 <I.MessagesSquare />
-                {x[4]}
+                Gemeinsamer Datensatz
               </span>
             </div>
             <div className="avatars">
               <i>WP</i>
               <i>PC</i>
-              <button
-                aria-label={`Agent oder Skill zu ${x[0]} hinzufügen`}
-                onClick={() => note(`${x[0]}: Zuordnung geöffnet`)}
-              >
+              <span aria-label="Zuordnungen noch nicht konfiguriert">
                 <I.Plus />
-              </button>
+              </span>
             </div>
-          </Card>
+          </Card></button>
         ))}
-      </div>
+      </div>}
     </>
   );
 }
-function Habits({ tasks, save }: any) {
+function Habits() {
   const [txt, setTxt] = useState("");
-  const add = () => {
+  const { records: tasks, state, create, update } = useSharedRecords("tasks");
+  const add = async () => {
     if (txt.trim()) {
-      save([...tasks, { id: Date.now(), t: txt, area: "Inbox", done: false }]);
+      await create({ title: txt, status: "active", area: "Inbox", done: false });
       setTxt("");
     }
   };
@@ -1148,8 +1087,8 @@ function Habits({ tasks, save }: any) {
       <div className="habitgrid">
         <Card>
           <div className="row">
-            <Tag>HEUTE</Tag>
-            <b>3 von 6</b>
+            <Tag>HABIT-VORLAGE · NOCH NICHT PERSISTENT</Tag>
+            <b>Beispiel</b>
           </div>
           {[
             ["Fajr bewusst beten", true, "Glaube"],
@@ -1168,7 +1107,7 @@ function Habits({ tasks, save }: any) {
           ))}
         </Card>
         <Card>
-          <Tag>AUFGABEN</Tag>
+          <Tag>AUFGABEN · GEMEINSAMER SERVERZUSTAND</Tag>
           <div className="taskadd">
             <input
               value={txt}
@@ -1179,21 +1118,16 @@ function Habits({ tasks, save }: any) {
               <I.Plus />
             </button>
           </div>
+          {state === "online" && tasks.length === 0 && <p>Noch keine gemeinsamen Aufgaben.</p>}
           {tasks.map((t: any) => (
             <button
               className="taskrow"
-              onClick={() =>
-                save(
-                  tasks.map((x: any) =>
-                    x.id === t.id ? { ...x, done: !x.done } : x,
-                  ),
-                )
-              }
+              onClick={() => update({ ...t, done: !t.done })}
               key={t.id}
             >
               <i className={t.done ? "done" : ""}>{t.done && <I.Check />}</i>
               <span className={t.done ? "strike" : ""}>
-                {t.t}
+                {t.title}
                 <small>{t.area}</small>
               </span>
             </button>
@@ -1216,6 +1150,7 @@ function Habits({ tasks, save }: any) {
   );
 }
 function Journal({ text, setText, mood, setMood, note }: any) {
+  const { records: entries, create } = useSharedRecords("journal_metadata");
   const insertPrompt = (prompt: string) => {
     const separator = text.trim() ? "\n\n" : "";
     setText(`${text}${separator}${prompt}\n`);
@@ -1229,7 +1164,7 @@ function Journal({ text, setText, mood, setMood, note }: any) {
         <Card className="editor">
           <div className="row">
             <Tag>REFLEXION</Tag>
-            <span>Automatisch lokal gespeichert</span>
+            <span>Entwurf auf diesem Gerät · Abschluss verschlüsselt im gemeinsamen Store</span>
           </div>
           <h3>Was hat heute Bedeutung gehabt?</h3>
           <textarea
@@ -1242,7 +1177,7 @@ function Journal({ text, setText, mood, setMood, note }: any) {
             <button onClick={() => insertPrompt("Was darf ich loslassen?")}>Was darf ich loslassen?</button>
             <button onClick={() => insertPrompt("Was nehme ich mit?")}>Was nehme ich mit?</button>
           </div>
-          <Btn onClick={() => note("Journal lokal gespeichert")}>
+          <Btn onClick={async () => {await create({title:`Journal ${new Date().toISOString().slice(0,10)}`,entryDate:new Date().toISOString().slice(0,10),mood,energy:3,text,status:'active'});setText('');note("Journal-Metadaten gemeinsam gespeichert · Textfeld verschlüsselt")}}>
             Eintrag abschließen
           </Btn>
         </Card>
@@ -1283,79 +1218,65 @@ function Journal({ text, setText, mood, setMood, note }: any) {
         </Card>
         <Card>
           <Tag>VERLAUF</Tag>
-          {[
-            "22. August · Klarheit",
-            "21. August · Training",
-            "20. August · Familie",
-          ].map((x) => (
-            <button className="history" key={x} onClick={() => note(`${x} als Vorschau geöffnet`)}>
-              {x}
-              <I.ChevronRight />
-            </button>
-          ))}
+          {entries.length===0&&<p>Noch keine gemeinsamen Journaleinträge.</p>}
+          {entries.map((x:any)=><div className="history" key={x.id}><span>{x.entryDate} · {x.mood||'ohne Stimmung'}</span><small>Text verschlüsselt · Detailansicht folgt</small></div>)}
         </Card>
       </div>
     </>
   );
 }
 function Agents({ note }: any) {
+  const{records,state,create,update}=useSharedRecords('agents');const[editing,setEditing]=useState<any>(null),[name,setName]=useState('');
+  const save=async()=>{try{if(editing?.id)await update({...editing,name,title:name});else await create({name,title:name,status:'planned',areas:[],providerMode:'subscription'});setEditing(null);setName('')}catch(error){note(error instanceof Error?error.message:'Agent konnte nicht gespeichert werden')}};
   return (
     <>
       <Intro
         eyebrow="AGENTEN SIND DIENSTE"
         title="Dein koordiniertes Agenten-Team."
         action={
-          <Btn onClick={() => note("Agent-Konfigurator geöffnet")}>
+          <Btn onClick={() => {setEditing({});setName('')}}>
             <I.Plus />
             Agent
           </Btn>
         }
       />
-      <div className="agentSummary">
-        <span>
-          <i className="online" />4 online
-        </span>
-        <span>
-          <i className="busy" />1 beschäftigt
-        </span>
-        <span>
-          <i className="unconfigured" />1 unkonfiguriert
-        </span>
-      </div>
+      <div className="agentSummary"><span><i className={state==='online'?'online':'unconfigured'}/>{records.length} persistent erfasst</span><span><i className="unconfigured"/>Ausführung nur nach echter Provider-Konfiguration</span></div>
+      {editing&&<Card className="inlineEditor"><Tag>AGENT-KONFIGURATOR</Tag><label>Name<input value={name} onChange={event=>setName(event.target.value)} placeholder="Agentname"/></label><p>Neue Agenten starten als „geplant“. Es wird keine Ausführbarkeit behauptet.</p><Btn onClick={save}>Konfiguration speichern</Btn><button onClick={()=>setEditing(null)}>Abbrechen</button></Card>}
+      {state==='online'&&records.length===0&&<Card><Tag>ECHTE DATENQUELLE · LEER</Tag><h3>Noch keine Agenten konfiguriert</h3><p>Die früheren Statusbehauptungen wurden entfernt.</p></Card>}
       <div className="agents">
-        {agents.map((a: any) => (
-          <Card key={a[0]}>
+        {records.map((a: any) => (
+          <Card key={a.id}>
             <div className="row">
               <span className="agentIcon">
                 <I.Bot />
               </span>
-              <i className={"badge " + a[4]}>{a[4]}</i>
+              <i className="badge unconfigured">{a.status}</i>
             </div>
-            <h3>{a[0]}</h3>
-            <p>{a[1]}</p>
+            <h3>{a.name||a.title}</h3>
+            <p>{a.purpose||'Zweck noch nicht beschrieben'}</p>
             <div className="chips">
-              {a[2].map((x: string) => (
+              {(a.areas||[]).map((x: string) => (
                 <span key={x}>{x}</span>
               ))}
             </div>
             <label>
               Modell
               <select
-                defaultValue={a[3]}
-                onChange={(e) => note(`${a[0]}: Modell lokal auf ${e.target.value} gesetzt`)}
+                value={a.providerMode||'subscription'}
+                onChange={(e) => update({...a,providerMode:e.target.value})}
               >
-                <option>gpt-5.4</option>
-                <option>gpt-5.4-mini</option>
-                <option>gpt-5.4-nano</option>
+                <option value="subscription">ChatGPT Companion</option>
+                <option value="api" disabled>OpenAI API · nicht konfiguriert</option>
+                <option value="local" disabled>Lokales Modell · nicht verifiziert</option>
               </select>
             </label>
             <div className="activity">
               <I.Activity />
               <span>
-                Zuletzt: Wochenentwurf erstellt<small>vor 18 Min.</small>
+                Metadaten persistent<small>Keine Ausführung verbunden</small>
               </span>
             </div>
-            <button onClick={() => note(`${a[0]} konfiguriert`)}>
+            <button onClick={() => {setEditing(a);setName(a.name||a.title)}}>
               Konfigurieren <I.Settings2 />
             </button>
           </Card>
@@ -1366,18 +1287,22 @@ function Agents({ note }: any) {
 }
 function Skills() {
   const [q, setQ] = useState(""),
-    [category, setCategory] = useState("Alle");
-  const list = skills.filter(
+    [category, setCategory] = useState("Alle"),[editing,setEditing]=useState<any>(null),[name,setName]=useState('');
+  const{records,state,create,update}=useSharedRecords('skills');
+  const list = records.filter(
     (x) =>
-      x.join(" ").toLowerCase().includes(q.toLowerCase()) &&
-      (category === "Alle" || x.join(" ").toLowerCase().includes(category.toLowerCase())),
+      JSON.stringify(x).toLowerCase().includes(q.toLowerCase()) &&
+      (category === "Alle" || String(x.category||'').toLowerCase().includes(category.toLowerCase())),
   );
+  const save=async()=>{if(editing?.id)await update({...editing,name,title:name});else await create({name,title:name,status:'metadata_only',category:'Allgemein'});setEditing(null);setName('')};
   return (
     <>
       <Intro
         eyebrow="WIEDERVERWENDBARE WORKFLOWS"
         title="Skills, die dein System tragen."
+        action={<Btn onClick={()=>{setEditing({});setName('')}}><I.Plus/>Skill</Btn>}
       />
+      {editing&&<Card className="inlineEditor"><Tag>SKILL-METADATEN</Tag><label>Name<input value={name} onChange={event=>setName(event.target.value)} placeholder="Skillname"/></label><p>Ein gespeicherter Skill ist zunächst nur Metadaten – nicht automatisch ausführbar.</p><Btn onClick={save}>Skill speichern</Btn><button onClick={()=>setEditing(null)}>Abbrechen</button></Card>}
       <div className="skillbar">
         <label>
           <I.Search />
@@ -1398,6 +1323,7 @@ function Skills() {
           </button>
         ))}
       </div>
+      {state==='online'&&records.length===0&&<Card><Tag>ECHTE DATENQUELLE · LEER</Tag><h3>Noch keine Skills erfasst</h3><p>„Bereit“ wird erst nach einer verifizierten ausführbaren Implementierung angezeigt.</p></Card>}
       <div className="skilltable">
         <div>
           <b>Skill</b>
@@ -1405,16 +1331,16 @@ function Skills() {
           <b>Agent</b>
           <b>Status</b>
         </div>
-        {list.map((x, i) => (
-          <div key={x[0]}>
+        {list.map((x:any, i:number) => (
+          <button className="skillRecord" key={x.id} onClick={()=>{setEditing(x);setName(x.name||x.title)}}>
             <span>
               <i>{i + 1}</i>
-              <b>{x[0]}</b>
+              <b>{x.name||x.title}</b>
             </span>
-            <span>{x[1]}</span>
-            <span>{x[2]}</span>
-            <em className={x[3] === "Bereit" ? "ok" : ""}>{x[3]}</em>
-          </div>
+            <span>{x.category||'Allgemein'}</span>
+            <span>{x.agent||'Nicht zugewiesen'}</span>
+            <em>Nur Metadaten</em>
+          </button>
         ))}
       </div>
     </>
@@ -1550,26 +1476,16 @@ function Chats({ note }: any) {
     </>
   );
 }
-const defaultInboxEntries = [
-  ["Angebotsidee konkretisieren", "Idee", "Karriere"],
-  ["Meal-Prep vereinfachen", "Aufgabe", "Gesundheit"],
-  ["Artikel zu Fokusarbeit", "Link", "Inbox"],
-  ["Gesprächsnotiz", "Notiz", "Beziehungen"],
-];
-
 function Inbox({ note }: any) {
   const [type, setType] = useState("Idee"),
-    [txt, setTxt] = useState(""),
-    [entries, setEntries] = useState(defaultInboxEntries);
-  useEffect(() => setEntries(store.get("inbox", defaultInboxEntries)), []);
-  const capture = () => {
+    [txt, setTxt] = useState("");
+  const { records: entries, state, create, update } = useSharedRecords("inbox_items");
+  const capture = async () => {
     const value = txt.trim();
     if (!value) return;
-    const next = [[value, type, "Inbox"], ...entries];
-    setEntries(next);
-    store.set("inbox", next);
+    await create({ title: value, itemType: type.toLowerCase(), status: "active", area: "Inbox" });
     setTxt("");
-    note(`${type} lokal erfasst`);
+    note(`${type} im gemeinsamen Eingang gespeichert`);
   };
   return (
     <>
@@ -1622,18 +1538,21 @@ function Inbox({ note }: any) {
           </Btn>
         </div>
       </Card>
+      {state === "online" && entries.length === 0 && (
+        <Card><Tag>ECHTE DATENQUELLE · LEER</Tag><h3>Dein Eingang ist leer</h3><p>Neue Einträge erscheinen in Desktop und iPhone.</p></Card>
+      )}
       <div className="inboxlist">
-        {entries.map((x, index) => (
-          <Card key={`${x[0]}-${index}`}>
+        {entries.map((x: any) => (
+          <Card key={x.id}>
             <i />
             <span>
-              <b>{x[0]}</b>
+              <b>{x.title}</b>
               <small>
-                {x[1]} · {x[2]}
+                {x.itemType || "Notiz"} · {x.area || "Inbox"}
               </small>
             </span>
-            <button onClick={() => note(`${x[0]} zur Triage ausgewählt`)}>
-              Triage <I.ChevronRight />
+            <button onClick={() => update({ ...x, status: "planned" })}>
+              Als geprüft markieren <I.Check />
             </button>
           </Card>
         ))}

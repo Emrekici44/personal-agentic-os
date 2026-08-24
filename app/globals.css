@@ -3699,3 +3699,14 @@ textarea::placeholder {
     transition-duration: 0.01ms !important;
   }
 }
+
+.projectOpen,.skillRecord{appearance:none;background:transparent;border:0;color:inherit;font:inherit;text-align:left;width:100%;padding:0}
+.projectOpen:focus-visible,.skillRecord:focus-visible{outline:2px solid var(--accent,#27d3ff);outline-offset:4px}
+.projectOpen .card{height:100%;cursor:pointer}
+.inlineEditor{display:flex;align-items:end;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+.inlineEditor label{display:grid;gap:6px;min-width:min(320px,100%)}
+.inlineEditor input{background:#071522;border:1px solid #23445b;border-radius:8px;color:#edfaff;padding:11px 12px}
+.projectDetail{margin-bottom:18px}.projectDetail dl{display:grid;grid-template-columns:max-content 1fr;gap:8px 18px}.projectDetail dt{color:#8ca5b7}.projectDetail dd{margin:0}
+.skilltable>.skillRecord{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;align-items:center;border-top:1px solid rgba(94,183,224,.14);padding:14px 16px}
+.skilltable>.skillRecord:hover{background:rgba(39,211,255,.05)}
+button:disabled{cursor:not-allowed;opacity:.48}
