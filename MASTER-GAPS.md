@@ -63,6 +63,7 @@ Die gebündelten Details stehen in `PENDING-DECISIONS.md`. Kein Punkt hier block
 - Connector-/Kalenderkataloge werden beim Refresh invalidiert und unterscheiden Loading/Offline von einer verifiziert leeren Liste. Es existiert keine sichtbare `TESTADAPTER`-Behauptung mehr; begrenzte Reads fangen Transportfehler ohne Ersatzdaten ab.
 - Projektkarten und -details behandeln Projekt, Aufgaben, Inbox/Ressourcen sowie Wochenplan/Audit als getrennte Quellen. Nicht verifizierte Zähler erscheinen als unbekannt, alte Workspace-Payloads werden verworfen und mutierende Teilcontrols bleiben bis zum gezielten Retry gesperrt.
 - Usage-/Limits-Evidenz besitzt keinen stale-while-error-Pfad mehr: Provider-, Kosten-, Scope-, Store- und Backupwerte werden während Refresh/Offline invalidiert und erst nach gemeinsamer erfolgreicher Live-Prüfung wieder als präzise Evidenz gezeigt.
+- Die titel- und inhaltsfreie Tageszahl im Journal ist reconnect-/retry-fähig und wird vor jeder Prüfung invalidiert. Calendar-OAuth-Einstieg und lokale Tokenübernahme melden Transportunsicherheit, ohne Navigation oder Erfolg still zu behaupten.
 - Produktmodule enthalten keine eingebetteten Kalender-, Ereignis-, Fokusblock- oder Provider-Mocks mehr; Testverträge prüfen echte Guards ohne sie als Nutzerdatenpfad bereitzuhalten.
 - ChatGPT Pro ist kein API-Zugang. Companion Mode ist ein manueller Übergabepfad.
 - SQLite ist operative Quelle, Obsidian dauerhafte Wissensquelle und Google Calendar externe Ereignisquelle, bis Emre eine andere Migration ausdrücklich freigibt.

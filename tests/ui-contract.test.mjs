@@ -102,6 +102,9 @@ test("journal links only real shared counts and a content-minimal daily calendar
   assert.match(route, /boundedDays: 1/);
   assert.match(route, /writesPerformed: false/);
   assert.doesNotMatch(route, /summary|description|location|attendees/);
+  assert.match(await readFile(pagePath, "utf8"), /setCalendarSummary\(\{ state: "loading" \}\)/);
+  assert.match(await readFile(pagePath, "utf8"), /onRetry=\{loadCalendarSummary\}/);
+  assert.match(await readFile(pagePath, "utf8"), /window\.addEventListener\("agentic-os:runtime-online", recover\)/);
 });
 
 test("universal inbox provides real encrypted triage instead of fake file capture", async () => {

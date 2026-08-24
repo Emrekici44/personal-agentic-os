@@ -23,6 +23,7 @@
 - Integration Health and Calendar catalog now clear stale cards/selections during refresh, expose Loading/Offline/verified-empty independently and provide a scoped Calendar retry. The final visible `TESTADAPTER` fallback was removed; bounded read failures are handled without a write or fake catalog.
 - Project workspace recovery now invalidates stale weekly/audit payloads, gates each task/inbox/resource mutation on its own verified source and renders unavailable cross-source counts as unknown rather than zero.
 - Usage & Limits now invalidates all live provider/integration/storage/backup evidence during refresh or outage, suppresses precise limits and statuses until verified, and automatically rechecks after private runtime recovery.
+- Journal's title-free daily Calendar evidence now reloads after verified recovery with a scoped retry, while OAuth launch and local encrypted token handoff catch transport failures and never claim an unconfirmed result.
 - Unified daily workspace with shared tasks, persistent habits and encrypted journal completion.
 - Real content-free shared-store audit in Knowledge; static activity claims removed.
 - Real shared life-area records for faith, health, finance, relationships and split career; encrypted private fields, honest empty states and reversible archive.

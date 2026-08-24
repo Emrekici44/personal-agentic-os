@@ -1165,13 +1165,25 @@ function Journal({ text, setText, mood, setMood, note, embedded = false }: any) 
   const selectedEntry = entries.find((entry: any) => entry.id === selectedEntryId);
   const openTasks = tasks.filter((task: any) => !task.done).length;
   const completedHabits = habits.filter((habit: any) => Array.isArray(habit.completedOn) && habit.completedOn.includes(today)).length;
-  useEffect(() => {
-    fetch("/api/state/session", { method: "POST" })
-      .then(() => fetch("/api/calendar/today-summary", { cache: "no-store" }))
-      .then((response) => response.json().then((result) => ({ ok: response.ok, result })))
-      .then(({ ok, result }) => setCalendarSummary(ok ? { state: result.connected ? "online" : "unconfigured", ...result } : { state: "error" }))
-      .catch(() => setCalendarSummary({ state: "error" }));
+  const loadCalendarSummary = useCallback(async () => {
+    setCalendarSummary({ state: "loading" });
+    try {
+      const session = await fetch("/api/state/session", { method: "POST" });
+      if (!session.ok) throw new Error();
+      const response = await fetch("/api/calendar/today-summary", { cache: "no-store" });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Kalenderübersicht nicht erreichbar");
+      setCalendarSummary({ state: result.connected ? "online" : "unconfigured", ...result });
+    } catch {
+      setCalendarSummary({ state: "error" });
+    }
   }, []);
+  useEffect(() => {
+    void loadCalendarSummary();
+    const recover = () => void loadCalendarSummary();
+    window.addEventListener("agentic-os:runtime-online", recover);
+    return () => window.removeEventListener("agentic-os:runtime-online", recover);
+  }, [loadCalendarSummary]);
   const insertPrompt = (prompt: string) => {
     const separator = text.trim() ? "\n\n" : "";
     setText(`${text}${separator}${prompt}\n`);
@@ -1262,6 +1274,7 @@ function Journal({ text, setText, mood, setMood, note, embedded = false }: any) 
             </span>
           </div>
           <small className="connectionNote">Kalender: nur heutige Anzahl aus maximal 12 ausgewählten Kalendern, keine Titel und 0 Writes.</small>
+          {calendarSummary.state === "error" && <RetryNotice message="Die inhaltsarme Kalender-Tageszahl ist gerade nicht erreichbar." onRetry={loadCalendarSummary} label="Tageszahl neu laden" />}
         </Card>
         <Card>
           <Tag>VERLAUF</Tag>
@@ -1735,6 +1748,26 @@ function Integrations({ note }: any) {
     void loadCalendarState();
     void loadIntegrationHealth();
   }, [loadCalendarState,loadIntegrationHealth]);
+  const beginCalendarConnect = async () => {
+    try {
+      const session = await fetch("/api/state/session", { method: "POST" });
+      if (!session.ok) throw new Error();
+      window.location.assign("/api/calendar/connect");
+    } catch {
+      note("Private Sitzung ist nicht erreichbar; OAuth wurde nicht geöffnet");
+    }
+  };
+  const shareCalendarSession = async () => {
+    try {
+      const session = await fetch("/api/state/session", { method: "POST" });
+      if (!session.ok) throw new Error();
+      const response = await fetch("/api/calendar/share-local-session", { method: "POST" });
+      if (!response.ok) throw new Error();
+      setCalendarStatus((current: any) => ({ ...current, sharedWithDesktop: true }));
+    } catch {
+      note("Lokale Calendar-Übernahme nicht bestätigt; Status vor erneutem Versuch prüfen");
+    }
+  };
   const readWeek = async () => {
     if (!selectedCalendars.length) return note("Bitte mindestens einen Kalender auswählen");
     setCalendarRead({ state: "loading", events: [] });
@@ -1791,12 +1824,12 @@ function Integrations({ note }: any) {
           </div>
         )}
         {calendarStatus.state === "online" && calendarStatus.configured && !calendarStatus.eventWriteReady && (
-          <button className="btn soft" onClick={async()=>{const session=await fetch("/api/state/session",{method:"POST"});if(!session.ok)return note("Private Sitzung ist nicht erreichbar");window.location.assign("/api/calendar/connect")}}>
+          <button className="btn soft" onClick={beginCalendarConnect}>
             Lesen + kontrollierte Event-Writes freigeben <I.ExternalLink />
           </button>
         )}
         {calendarStatus.state === "online" && calendarStatus.eventWriteReady && !calendarStatus.sharedWithDesktop && (
-          <button className="btn soft" onClick={async () => { const session=await fetch("/api/state/session",{method:"POST"});if(!session.ok)return note("Private Sitzung ist nicht erreichbar");const response = await fetch("/api/calendar/share-local-session", { method: "POST" }); if (response.ok) setCalendarStatus((current: any) => ({ ...current, sharedWithDesktop: true })); else note("Lokale Calendar-Übernahme ist nicht verfügbar"); }}>
+          <button className="btn soft" onClick={shareCalendarSession}>
             Verbindung verschlüsselt für Desktop übernehmen
           </button>
         )}

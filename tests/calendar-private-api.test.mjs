@@ -45,4 +45,8 @@ test("calendar UI creates the private session before protected reads and shows n
   assert.match(page, /calendarStatus\.state === "error" \? "Offline"/);
   assert.doesNotMatch(page, /TESTADAPTER/);
   assert.match(page, /window\.location\.assign\("\/api\/calendar\/connect"\)/);
+  assert.match(page, /OAuth wurde nicht geöffnet/);
+  assert.match(page, /Lokale Calendar-Übernahme nicht bestätigt; Status vor erneutem Versuch prüfen/);
+  assert.match(page, /onClick=\{beginCalendarConnect\}/);
+  assert.match(page, /onClick=\{shareCalendarSession\}/);
 });
