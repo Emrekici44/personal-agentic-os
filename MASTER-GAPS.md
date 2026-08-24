@@ -89,6 +89,7 @@ Die gebündelten Details stehen in `PENDING-DECISIONS.md`. Kein Punkt hier block
 - Der Wissensbereich lädt nach Runtime-Recovery Vault-Metadatenindex, inhaltsarmen Audit und Diffinventar gemeinsam neu. Sitzungstoken/Bestätigung werden davor verworfen; der Callback kann weder Vorschläge erzeugen/freigeben noch den Vault verändern.
 - Der zentrale 30-Sekunden-Healthcheck sendet kein permanentes Recovery-Signal mehr. Nur Offline→Online lädt Quellen einmal neu; offene Entwürfe werden nicht periodisch überschrieben. Backup-/Archiv-Inventar wird danach nur lesend erneuert und eine alte Diagnose verworfen.
 - Die eigenständige Usage-&-Limits-Route wartet nicht mehr auf einen Dashboard-Event, der dort nie erzeugt wurde. Sie prüft den privaten Runtime-Status selbst, verwirft bei Offline alle präzisen Evidenzen und lädt erst nach echter Recovery read-only neu.
+- Zentrale Browseraufrufe für Runtime, Records, Preferences und Usage besitzen nun ein gemeinsames 8-Sekunden-Limit und akzeptieren ausschließlich relative `/api/`-Pfade. Eine hängende lokale Quelle endet im vorhandenen inhaltsarmen Offlinezustand statt in einem endlosen Spinner.
 - Produktmodule enthalten keine eingebetteten Kalender-, Ereignis-, Fokusblock- oder Provider-Mocks mehr; Testverträge prüfen echte Guards ohne sie als Nutzerdatenpfad bereitzuhalten.
 - ChatGPT Pro ist kein API-Zugang. Companion Mode ist ein manueller Übergabepfad.
 - SQLite ist operative Quelle, Obsidian dauerhafte Wissensquelle und Google Calendar externe Ereignisquelle, bis Emre eine andere Migration ausdrücklich freigibt.

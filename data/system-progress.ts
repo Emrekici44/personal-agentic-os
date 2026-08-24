@@ -412,6 +412,13 @@ export const systemProgress = {
       status: "complete",
     },
     {
+      id: "bounded-private-client",
+      label: "Zentrale private Client-Reads zeitlich begrenzen",
+      evidence: "Nur relative /api-Pfade · 8 Sekunden · Runtime/Records/Preferences/Usage enden sicher statt Endlos-Laden",
+      href: "#settings",
+      status: "complete",
+    },
+    {
       id: "ongoing-local-gap-audit",
       label: "Nächste lokale Bedien-/Recovery-Lücke prüfen",
       evidence: "Nur reversible lokale Änderungen · keine externen Writes, Migrationen, Installationen oder Kosten",

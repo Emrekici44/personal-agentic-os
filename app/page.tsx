@@ -3,6 +3,7 @@ import { type MouseEvent, useCallback, useEffect, useRef, useState } from "react
 import * as I from "lucide-react";
 import { systemProgress } from "@/data/system-progress";
 import { runtimeHealthTransition, type RuntimeSourceState } from "@/lib/runtime-recovery";
+import { privateApiFetch } from "@/lib/private-client";
 type View =
   | "home"
   | "agents"
@@ -100,7 +101,7 @@ const store = {
 };
 function useSharedRecords(kind:string){
   const[records,setRecords]=useState<any[]>([]),[state,setState]=useState<'loading'|'online'|'error'>('loading');
-  const load=useCallback(async()=>{setState('loading');try{await fetch('/api/state/session',{method:'POST'});const response=await fetch(`/api/state/records/${kind}`,{cache:'no-store'});if(!response.ok)throw new Error();const data=await response.json();setRecords(data.records||[]);setState('online')}catch{setRecords([]);setState('error')}},[kind]);
+  const load=useCallback(async()=>{setState('loading');try{await privateApiFetch('/api/state/session',{method:'POST'});const response=await privateApiFetch(`/api/state/records/${kind}`,{cache:'no-store'});if(!response.ok)throw new Error();const data=await response.json();setRecords(data.records||[]);setState('online')}catch{setRecords([]);setState('error')}},[kind]);
   useEffect(()=>{void load();const recover=()=>void load();window.addEventListener('agentic-os:runtime-online',recover);return()=>window.removeEventListener('agentic-os:runtime-online',recover)},[load]);
   const request=async(url:string,init:RequestInit,fallback:string)=>{if(state!=='online')throw new Error('Gemeinsamer Datenkern ist nicht schreibbereit');let response:Response;try{response=await fetch(url,init)}catch{setRecords([]);setState('error');throw new Error('Gemeinsamer Datenkern nicht erreichbar')}let result:any;try{result=await response.json()}catch{setRecords([]);setState('error');throw new Error('Ungültige Antwort des gemeinsamen Datenkerns')}if(!response.ok){if(response.status===409)await load();throw new Error(result.error||fallback)}await load();return result};
   const create=async(data:any)=>request(`/api/state/records/${kind}`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(data)},'Speichern fehlgeschlagen');
@@ -128,11 +129,11 @@ export default function App() {
   const loadPreferences = useCallback(async () => {
     setPreferenceState("loading");
     try {
-      const session = await fetch("/api/state/session", { method: "POST" });
+      const session = await privateApiFetch("/api/state/session", { method: "POST" });
       if (!session.ok) throw new Error("Private Sitzung nicht erreichbar");
       const [themeResponse, brandingResponse] = await Promise.all([
-        fetch("/api/state/preferences/theme", { cache: "no-store" }),
-        fetch("/api/state/preferences/branding", { cache: "no-store" }),
+        privateApiFetch("/api/state/preferences/theme", { cache: "no-store" }),
+        privateApiFetch("/api/state/preferences/branding", { cache: "no-store" }),
       ]);
       if (!themeResponse.ok || !brandingResponse.ok) throw new Error("Gemeinsame Darstellung nicht erreichbar");
       const [themePreference, brandingPreference] = await Promise.all([themeResponse.json(), brandingResponse.json()]);
@@ -183,9 +184,9 @@ export default function App() {
   };
   const checkRuntimeHealth = useCallback(async () => {
     try {
-      const session = await fetch("/api/state/session", { method: "POST" });
+      const session = await privateApiFetch("/api/state/session", { method: "POST" });
       if (!session.ok) throw new Error();
-      const response = await fetch("/api/state/status", { cache: "no-store" });
+      const response = await privateApiFetch("/api/state/status", { cache: "no-store" });
       if (!response.ok) throw new Error();
       const result = await response.json();
       const transition = runtimeHealthTransition(runtimeStateRef.current, result.online ? "online" : "offline");

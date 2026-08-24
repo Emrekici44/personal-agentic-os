@@ -98,6 +98,8 @@ Project root: `outputs/agentic-os`. Private source remote: `https://github.com/E
 - Full verification for transition-only recovery: Root 128/128, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed. Online Settings showed no false Backup/Archive Retry and 0 desktop/390×844 overflow; progress rendered 55/58 and no local mutation ran.
 - Usage & Limits now has its own signed private runtime monitor on the standalone route. It clears provider/integration/storage/backup evidence when offline and performs the full read-only refresh only after an actual Offline→Online transition.
 - Full verification for standalone Usage recovery: Root 128/128, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed. Usage showed verified evidence/no error with 0 desktop/390×844 overflow; progress rendered 56/59 and no provider/connector was activated.
+- Foundational client requests now go through a relative-private-API-only 8-second boundary for Runtime, Shared Records, Preferences and Usage. A deterministic hanging-fetch test proves the public result is the generic timeout rather than raw transport detail.
+- Full verification for bounded private clients: Root 131/131, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed. Dashboard rendered 57/60 without Offline banner or desktop/390×844 overflow; the hang proof used only a local fetch stub and left no data.
 
 ## Immediate continuation
 

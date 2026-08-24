@@ -4,6 +4,7 @@ import { ShieldCheck, ExternalLink, Server, HardDrive, Cloud, Database, Triangle
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { runtimeHealthTransition, type RuntimeSourceState } from "@/lib/runtime-recovery";
+import { privateApiFetch } from "@/lib/private-client";
 
 const label: Record<string, string> = { online: "Online", degraded: "Eingeschränkt", offline: "Offline", unconfigured: "Nicht konfiguriert" };
 const costLabel: Record<string, string> = { Free: "Kostenfrei", "Free*": "Kostenfrei*", Included: "Enthalten", "Usage-based": "Nutzungsbasiert", Unknown: "Ungeklärt" };
@@ -14,12 +15,12 @@ export default function Usage() {
   const refresh = useCallback(async () => {
     setState({ loading: true, error: false, openai: null, integrations: [], storage: null, backups: [], checkedAt: null });
     try {
-      const sessionResponse = await fetch("/api/state/session", { method: "POST" });
+      const sessionResponse = await privateApiFetch("/api/state/session", { method: "POST" });
       if (!sessionResponse.ok) throw new Error();
       const [openaiResponse, integrationResponse, backupResponse] = await Promise.all([
-        fetch("/api/openai/status", { cache: "no-store" }),
-        fetch("/api/integrations/health", { cache: "no-store" }),
-        fetch("/api/state/backups", { cache: "no-store" }),
+        privateApiFetch("/api/openai/status", { cache: "no-store" }),
+        privateApiFetch("/api/integrations/health", { cache: "no-store" }),
+        privateApiFetch("/api/state/backups", { cache: "no-store" }),
       ]);
       if (!openaiResponse.ok || !integrationResponse.ok || !backupResponse.ok) throw new Error();
       const [openai, integrations, backups] = await Promise.all([openaiResponse.json(), integrationResponse.json(), backupResponse.json()]);
@@ -32,9 +33,9 @@ export default function Usage() {
   }, []);
   const checkRuntime = useCallback(async () => {
     try {
-      const session = await fetch("/api/state/session", { method: "POST" });
+      const session = await privateApiFetch("/api/state/session", { method: "POST" });
       if (!session.ok) throw new Error();
-      const response = await fetch("/api/state/status", { cache: "no-store" });
+      const response = await privateApiFetch("/api/state/status", { cache: "no-store" });
       if (!response.ok) throw new Error();
       const result = await response.json();
       const transition = runtimeHealthTransition(runtimeStateRef.current, result.online ? "online" : "offline");
