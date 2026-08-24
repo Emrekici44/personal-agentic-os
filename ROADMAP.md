@@ -104,3 +104,5 @@
 6. Review the exact local restore preview only if a recovery is needed; implementing and invoking restore both require a separate exact approval.
 
 The full evidence-based status, locally executable vertical slices and bundled decision boundaries are maintained in `MASTER-GAPS.md` and `PENDING-DECISIONS.md`.
+
+All private browser requests in the main and Usage surfaces now use the shared relative `/api/`-only eight-second boundary. This completes the local hanging-request recovery slice without changing external integrations, user data or approval policy.

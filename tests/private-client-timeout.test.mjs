@@ -31,6 +31,12 @@ test("core shared sources and standalone Usage use the bounded client", async ()
   assert.match(page, /privateApiFetch\(`\/api\/state\/records\/\$\{kind\}`/);
   assert.match(page, /privateApiFetch\("\/api\/state\/preferences\/theme"/);
   assert.match(page, /privateApiFetch\("\/api\/state\/status"/);
+  for (const endpoint of ["/api/agents/workflows", "/api/skills", "/api/planner", "/api/integrations/health", "/api/obsidian/status", "/api/state/backups", "/api/state/archive"]) {
+    assert.match(page, new RegExp(`privateApiFetch\\("${endpoint.replaceAll("/", "\\/")}"`));
+  }
+  assert.doesNotMatch(page, /\bfetch\(/);
+  assert.doesNotMatch(usage, /\bfetch\(/);
+  assert.match(page, /externalWrite\?"Write-Ergebnis ist nicht bestätigt/);
   for (const endpoint of ["/api/openai/status", "/api/integrations/health", "/api/state/backups", "/api/state/status"]) {
     assert.match(usage, new RegExp(`privateApiFetch\\("${endpoint.replaceAll("/", "\\/")}"`));
   }

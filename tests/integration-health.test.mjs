@@ -33,7 +33,7 @@ test("connector catalog exposes cost, scope, privacy, errors and reconnect truth
 test("health UI provides a real refresh and expandable evidence without activation", () => {
   for (const label of ["Health erneut prüfen", "Details & sichere Schritte", "Verifizierte Evidenz anzeigen", "Kostenklasse", "Keine Zugangsdaten", "Nicht konfiguriert", "Eingeschränkt"]) assert.match(ui, new RegExp(label, "i"));
   assert.doesNotMatch(ui, />Details & Wiederverbinden</);
-  assert.match(ui, /fetch\("\/api\/integrations\/health"/);
+  assert.match(ui, /privateApiFetch\("\/api\/integrations\/health"/);
   assert.match(ui, /setSelectedConnectorId/);
   assert.doesNotMatch(ui.slice(ui.indexOf("function Integrations"), ui.indexOf("function Brain")), /Verbindung erfolgreich aktiviert|Plugin installiert|API aktiviert/i);
   for (const term of ["Kostenfrei", "Nutzungsbasiert", "Ungeklärt", "Direkte API", "Lokaler Adapter", "Privates Netzwerk", "Berechtigungen"]) assert.match(ui, new RegExp(term));

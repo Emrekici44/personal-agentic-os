@@ -103,7 +103,7 @@ function useSharedRecords(kind:string){
   const[records,setRecords]=useState<any[]>([]),[state,setState]=useState<'loading'|'online'|'error'>('loading');
   const load=useCallback(async()=>{setState('loading');try{await privateApiFetch('/api/state/session',{method:'POST'});const response=await privateApiFetch(`/api/state/records/${kind}`,{cache:'no-store'});if(!response.ok)throw new Error();const data=await response.json();setRecords(data.records||[]);setState('online')}catch{setRecords([]);setState('error')}},[kind]);
   useEffect(()=>{void load();const recover=()=>void load();window.addEventListener('agentic-os:runtime-online',recover);return()=>window.removeEventListener('agentic-os:runtime-online',recover)},[load]);
-  const request=async(url:string,init:RequestInit,fallback:string)=>{if(state!=='online')throw new Error('Gemeinsamer Datenkern ist nicht schreibbereit');let response:Response;try{response=await fetch(url,init)}catch{setRecords([]);setState('error');throw new Error('Gemeinsamer Datenkern nicht erreichbar')}let result:any;try{result=await response.json()}catch{setRecords([]);setState('error');throw new Error('Ungültige Antwort des gemeinsamen Datenkerns')}if(!response.ok){if(response.status===409)await load();throw new Error(result.error||fallback)}await load();return result};
+  const request=async(url:string,init:RequestInit,fallback:string)=>{if(state!=='online')throw new Error('Gemeinsamer Datenkern ist nicht schreibbereit');let response:Response;try{response=await privateApiFetch(url,init)}catch{setRecords([]);setState('error');throw new Error('Gemeinsamer Datenkern nicht erreichbar')}let result:any;try{result=await response.json()}catch{setRecords([]);setState('error');throw new Error('Ungültige Antwort des gemeinsamen Datenkerns')}if(!response.ok){if(response.status===409)await load();throw new Error(result.error||fallback)}await load();return result};
   const create=async(data:any)=>request(`/api/state/records/${kind}`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(data)},'Speichern fehlgeschlagen');
   const update=async(data:any)=>request(`/api/state/records/${kind}`,{method:'PATCH',headers:{'content-type':'application/json'},body:JSON.stringify(data)},'Aktualisieren fehlgeschlagen');
   const archive=async(id:string)=>{const version=records.find(record=>record.id===id)?.version;return request(`/api/state/records/${kind}?id=${encodeURIComponent(id)}&version=${encodeURIComponent(String(version??""))}`,{method:'DELETE'},'Archivieren fehlgeschlagen')};
@@ -211,8 +211,8 @@ export default function App() {
     const previous = theme;
     setTheme(next);
     try {
-      await fetch("/api/state/session", { method: "POST" });
-      const response = await fetch("/api/state/preferences/theme", {
+      await privateApiFetch("/api/state/session", { method: "POST" });
+      const response = await privateApiFetch("/api/state/preferences/theme", {
         method: "PUT",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ value: next, version: preferenceVersions.current.theme }),
@@ -234,8 +234,8 @@ export default function App() {
   const saveBranding = async (next: { name: string; short: string; accent: string }) => {
     if (preferenceState !== "online") return note("Gemeinsame Darstellung ist noch nicht schreibbereit");
     try {
-      await fetch("/api/state/session", { method: "POST" });
-      const response = await fetch("/api/state/preferences/branding", {
+      await privateApiFetch("/api/state/session", { method: "POST" });
+      const response = await privateApiFetch("/api/state/preferences/branding", {
         method: "PUT",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ value: next, version: preferenceVersions.current.branding }),
@@ -499,11 +499,11 @@ function Home({ go }: any) {
   const [openaiApiState, setOpenaiApiState] = useState("loading");
   const loadHomeSources = useCallback(async () => {
     try {
-      const session = await fetch("/api/state/session", { method: "POST" });
+      const session = await privateApiFetch("/api/state/session", { method: "POST" });
       if (!session.ok) throw new Error();
       const readSource = async (url: string) => {
         try {
-          const response = await fetch(url, { cache: "no-store" });
+          const response = await privateApiFetch(url, { cache: "no-store" });
           const result = await response.json();
           return { ok: response.ok, result };
         } catch {
@@ -970,7 +970,7 @@ function Projects({ note }: any) {
     setWorkspace(null);
     setWorkspaceState("loading");
     try {
-      const response = await fetch(`/api/projects/${encodeURIComponent(selectedId)}/workspace`, { cache: "no-store" });
+      const response = await privateApiFetch(`/api/projects/${encodeURIComponent(selectedId)}/workspace`, { cache: "no-store" });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error);
       setWorkspace(result); setWorkspaceState("online");
@@ -1221,9 +1221,9 @@ function Journal({ text, setText, mood, setMood, note, embedded = false }: any) 
   const loadCalendarSummary = useCallback(async () => {
     setCalendarSummary({ state: "loading" });
     try {
-      const session = await fetch("/api/state/session", { method: "POST" });
+      const session = await privateApiFetch("/api/state/session", { method: "POST" });
       if (!session.ok) throw new Error();
-      const response = await fetch("/api/calendar/today-summary", { cache: "no-store" });
+      const response = await privateApiFetch("/api/calendar/today-summary", { cache: "no-store" });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "Kalenderübersicht nicht erreichbar");
       setCalendarSummary({ state: result.connected ? "online" : "unconfigured", ...result });
@@ -1350,7 +1350,7 @@ function Agents({ note }: any) {
   const emptyAgent = { name: "", purpose: "", areas: [], providerMode: "none", model: "none", status: "metadata_only" };
   const agentAreas = [["faith", "Glaube"], ["career", "Karriere"], ["health", "Gesundheit"], ["finance", "Finanzen"], ["relations", "Beziehungen"], ["projects", "Projekte"]];
   const [editing, setEditing] = useState<any>(null), [agentDraft, setAgentDraft] = useState<any>(emptyAgent), [workflowState, setWorkflowState] = useState<any>({ state: "loading", profiles: [], runs: [] }), [selectedWorkflow, setSelectedWorkflow] = useState("project_coach"), [workflowInput, setWorkflowInput] = useState(""), [projectId, setProjectId] = useState(""), [activeRunId, setActiveRunId] = useState(""), [selectedSuggestions, setSelectedSuggestions] = useState<string[]>([]), [busy, setBusy] = useState(false), [workflowError, setWorkflowError] = useState(""),[agentArchiveArmed,setAgentArchiveArmed]=useState(false);
-  const loadWorkflows = useCallback(async () => { setWorkflowState({ state: "loading", profiles: [], runs: [] }); try { await fetch("/api/state/session", { method: "POST" }); const response = await fetch("/api/agents/workflows", { cache: "no-store" }); const result = await response.json(); if (!response.ok) throw new Error(); setWorkflowState({ state: "online", ...result }); if (!activeRunId && result.runs?.length) setActiveRunId(result.runs[0].id); } catch { setWorkflowState({ state: "error", profiles: [], runs: [] }); setActiveRunId(""); } }, [activeRunId]);
+  const loadWorkflows = useCallback(async () => { setWorkflowState({ state: "loading", profiles: [], runs: [] }); try { await privateApiFetch("/api/state/session", { method: "POST" }); const response = await privateApiFetch("/api/agents/workflows", { cache: "no-store" }); const result = await response.json(); if (!response.ok) throw new Error(); setWorkflowState({ state: "online", ...result }); if (!activeRunId && result.runs?.length) setActiveRunId(result.runs[0].id); } catch { setWorkflowState({ state: "error", profiles: [], runs: [] }); setActiveRunId(""); } }, [activeRunId]);
   useEffect(() => { loadWorkflows(); }, [loadWorkflows]);
   const activeRun = workflowState.runs.find((run: any) => run.id === activeRunId);
   const activeSuggestionKey = JSON.stringify(activeRun?.decision?.selectedSuggestionIds || []);
@@ -1359,7 +1359,7 @@ function Agents({ note }: any) {
   const saveAgent = async () => { try { if (editing?.id) await update({ ...editing, ...agentDraft, title: agentDraft.name }); else await create({ ...agentDraft, title: agentDraft.name }); setEditing(null); note("Agent-Konfiguration gespeichert · keine Ausführung aktiviert"); } catch (error) { note(error instanceof Error ? error.message : "Agent konnte nicht gespeichert werden"); } };
   const archiveAgent=async()=>{if(!editing?.id||!agentArchiveArmed)return;try{await archive(editing.id);setEditing(null);setAgentArchiveArmed(false);note("Agent-Konfiguration reversibel archiviert")}catch(error){setAgentArchiveArmed(false);note(error instanceof Error?error.message:"Agent konnte nicht archiviert werden")}};
   const toggleAgentArea = (area: string) => setAgentDraft((current: any) => ({ ...current, areas: current.areas.includes(area) ? current.areas.filter((value: string) => value !== area) : [...current.areas, area] }));
-  const workflowRequest=async(method:"POST"|"PATCH",body:any)=>{if(workflowState.state!=="online")throw new Error("Private Workflow-Quelle ist nicht schreibbereit");let response:Response;try{response=await fetch("/api/agents/workflows",{method,headers:{"content-type":"application/json"},body:JSON.stringify(body)})}catch{setWorkflowState({state:"error",profiles:[],runs:[]});setActiveRunId("");throw new Error("Private Workflow-Quelle nicht erreichbar")}let result:any;try{result=await response.json()}catch{setWorkflowState({state:"error",profiles:[],runs:[]});setActiveRunId("");throw new Error("Ungültige Antwort der Workflow-Quelle")}if(!response.ok){if(response.status===409)await loadWorkflows();throw new Error(result.error||"Workflow-Anfrage abgelehnt")}return result};
+  const workflowRequest=async(method:"POST"|"PATCH",body:any)=>{if(workflowState.state!=="online")throw new Error("Private Workflow-Quelle ist nicht schreibbereit");let response:Response;try{response=await privateApiFetch("/api/agents/workflows",{method,headers:{"content-type":"application/json"},body:JSON.stringify(body)})}catch{setWorkflowState({state:"error",profiles:[],runs:[]});setActiveRunId("");throw new Error("Private Workflow-Quelle nicht erreichbar")}let result:any;try{result=await response.json()}catch{setWorkflowState({state:"error",profiles:[],runs:[]});setActiveRunId("");throw new Error("Ungültige Antwort der Workflow-Quelle")}if(!response.ok){if(response.status===409)await loadWorkflows();throw new Error(result.error||"Workflow-Anfrage abgelehnt")}return result};
   const generate = async () => { if (workflowInput.trim().length < 2) return note("Bitte einen klaren Arbeitsauftrag eingeben"); setBusy(true); setWorkflowError(""); try { const result = await workflowRequest("POST", { workflowId: selectedWorkflow, input: workflowInput, projectId: selectedWorkflow === "project_coach" ? projectId || undefined : undefined }); await loadWorkflows(); setActiveRunId(result.run.id); setWorkflowInput(""); note("Lokaler Vorschlagslauf gespeichert · 0 externe Aktionen"); } catch (error) { setWorkflowError(error instanceof Error ? error.message : "Workflow fehlgeschlagen"); } finally { setBusy(false); } };
   const transition = async (action: "review" | "pause" | "resume") => { if (!activeRun) return; setBusy(true); setWorkflowError(""); try { const result = await workflowRequest("PATCH", { runId: activeRun.id, version: activeRun.version, action, selectedSuggestionIds: action === "review" ? selectedSuggestions : undefined }); await loadWorkflows(); setActiveRunId(result.run.id); note(action === "review" ? "Review gespeichert · keine Aktion ausgeführt" : action === "pause" ? "Workflow pausiert" : "Workflow zur Review fortgesetzt"); } catch (error) { setWorkflowError(error instanceof Error ? error.message : "Statuswechsel fehlgeschlagen"); } finally { setBusy(false); } };
   const toggleSuggestion = (id: string) => setSelectedSuggestions((current) => current.includes(id) ? current.filter((value) => value !== id) : [...current, id]);
@@ -1391,7 +1391,7 @@ function Skills({ note }: any) {
   const agentNames: Record<string,string> = {project_coach:"Projekt-Coach",faith_reflection:"Glaubensassistent",health_planner:"Gesundheitsplaner",finance_overview:"Finanzassistent",relationship_care:"Beziehungsassistent"};
   const { records: projects, state: projectState } = useSharedRecords("projects");
   const [q,setQ]=useState(""),[category,setCategory]=useState("Alle"),[skillState,setSkillState]=useState<any>({state:"loading",definitions:[],runs:[],catalog:[]}),[selectedSkillId,setSelectedSkillId]=useState(""),[selectedRunId,setSelectedRunId]=useState(""),[editing,setEditing]=useState<any>(null),[draft,setDraft]=useState<any>({}),[runInput,setRunInput]=useState<any>({limit:3}),[busy,setBusy]=useState(false),[error,setError]=useState(""),[archiveArmed,setArchiveArmed]=useState(false);
-  const loadSkills=useCallback(async()=>{setSkillState({state:"loading",definitions:[],runs:[],catalog:[]});try{await fetch("/api/state/session",{method:"POST"});const response=await fetch("/api/skills",{cache:"no-store"}),result=await response.json();if(!response.ok)throw new Error(result.error);setSkillState({state:"online",...result});setSelectedSkillId(current=>current||result.definitions?.[0]?.id||"");setSelectedRunId(current=>current||result.runs?.[0]?.id||"");setError("")}catch(cause){setSkillState({state:"error",definitions:[],runs:[],catalog:[]});setSelectedSkillId("");setSelectedRunId("");setError(cause instanceof Error?cause.message:"Skills sind nicht erreichbar")}},[setError,setSelectedRunId,setSelectedSkillId,setSkillState]);
+  const loadSkills=useCallback(async()=>{setSkillState({state:"loading",definitions:[],runs:[],catalog:[]});try{await privateApiFetch("/api/state/session",{method:"POST"});const response=await privateApiFetch("/api/skills",{cache:"no-store"}),result=await response.json();if(!response.ok)throw new Error(result.error);setSkillState({state:"online",...result});setSelectedSkillId(current=>current||result.definitions?.[0]?.id||"");setSelectedRunId(current=>current||result.runs?.[0]?.id||"");setError("")}catch(cause){setSkillState({state:"error",definitions:[],runs:[],catalog:[]});setSelectedSkillId("");setSelectedRunId("");setError(cause instanceof Error?cause.message:"Skills sind nicht erreichbar")}},[setError,setSelectedRunId,setSelectedSkillId,setSkillState]);
   useEffect(()=>{loadSkills()},[loadSkills]);
   const selectedSkill=skillState.definitions.find((skill:any)=>skill.id===selectedSkillId),selectedRun=skillState.runs.find((run:any)=>run.id===selectedRunId);
   useEffect(()=>{if(!selectedSkill)return;const today=new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Berlin",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());setRunInput(selectedSkill.procedureId==="daily_check"?{date:today,limit:5}:selectedSkill.procedureId==="area_overview"?{area:"faith",limit:5}:selectedSkill.procedureId==="project_snapshot"?{projectId:projects[0]?.id||"",limit:5}:{focus:"",limit:3});const latest=skillState.runs.find((run:any)=>run.skillId===selectedSkill.id);setSelectedRunId(latest?.id||"")},[projects,selectedSkill,skillState.runs]);
@@ -1401,7 +1401,7 @@ function Skills({ note }: any) {
   const beginEdit=(skill:any)=>{setDraft({...skill});setEditing(skill);setArchiveArmed(false);setError("")};
   const selectProcedure=(procedureId:string)=>{const procedure=skillState.catalog.find((item:any)=>item.id===procedureId);setDraft((current:any)=>({...current,procedureId,allowedSources:procedure?.defaultSources||[]}))};
   const toggleDraftValue=(key:string,value:string)=>setDraft((current:any)=>{const values=Array.isArray(current[key])?current[key]:[];return{...current,[key]:values.includes(value)?values.filter((item:string)=>item!==value):[...values,value]}});
-  const skillRequest=async(method:"POST"|"PATCH",body:any)=>{if(skillState.state!=="online")throw new Error("Private Skill-Quelle ist nicht schreibbereit");let response:Response;try{response=await fetch("/api/skills",{method,headers:{"content-type":"application/json"},body:JSON.stringify(body)})}catch{setSkillState({state:"error",definitions:[],runs:[],catalog:[]});setSelectedSkillId("");setSelectedRunId("");throw new Error("Private Skill-Quelle nicht erreichbar")}let result:any;try{result=await response.json()}catch{setSkillState({state:"error",definitions:[],runs:[],catalog:[]});setSelectedSkillId("");setSelectedRunId("");throw new Error("Ungültige Antwort der Skill-Quelle")}if(!response.ok){if(response.status===409)await loadSkills();throw new Error(result.error||"Skill-Anfrage abgelehnt")}return result};
+  const skillRequest=async(method:"POST"|"PATCH",body:any)=>{if(skillState.state!=="online")throw new Error("Private Skill-Quelle ist nicht schreibbereit");let response:Response;try{response=await privateApiFetch("/api/skills",{method,headers:{"content-type":"application/json"},body:JSON.stringify(body)})}catch{setSkillState({state:"error",definitions:[],runs:[],catalog:[]});setSelectedSkillId("");setSelectedRunId("");throw new Error("Private Skill-Quelle nicht erreichbar")}let result:any;try{result=await response.json()}catch{setSkillState({state:"error",definitions:[],runs:[],catalog:[]});setSelectedSkillId("");setSelectedRunId("");throw new Error("Ungültige Antwort der Skill-Quelle")}if(!response.ok){if(response.status===409)await loadSkills();throw new Error(result.error||"Skill-Anfrage abgelehnt")}return result};
   const saveDefinition=async()=>{setBusy(true);setError("");try{const action=editing?.id?"update_definition":"create_definition",method=editing?.id?"PATCH":"POST",result=await skillRequest(method,{action,skillId:editing?.id,definition:draft});await loadSkills();setSelectedSkillId(result.definition.id);setEditing(null);note(editing?.id?"Skill-Version aktualisiert":"Sichere lokale Skill-Definition gespeichert")}catch(cause){setError(cause instanceof Error?cause.message:"Skill konnte nicht gespeichert werden")}finally{setBusy(false)}};
   const archiveDefinition=async()=>{if(!editing?.id)return;setBusy(true);setError("");try{await skillRequest("PATCH",{action:"archive_definition",skillId:editing.id,version:editing.version});setEditing(null);setSelectedSkillId("");await loadSkills();note("Skill reversibel archiviert")}catch(cause){setError(cause instanceof Error?cause.message:"Archivieren fehlgeschlagen")}finally{setBusy(false)}};
   const runPreview=async()=>{if(!selectedSkill)return;setBusy(true);setError("");try{const result=await skillRequest("POST",{action:"run_preview",skillId:selectedSkill.id,input:runInput});await loadSkills();setSelectedRunId(result.run.id);note("Lokale Skill-Vorschau gespeichert · 0 externe Aktionen")}catch(cause){setError(cause instanceof Error?cause.message:"Skill-Vorschau fehlgeschlagen")}finally{setBusy(false)}};
@@ -1634,12 +1634,12 @@ function WeeklyPlanner({ note }: any) {
     setCalendars([]); setPlan(null); setSelectedOutcomes([]); setSelectedBlocks([]); setHistory([]); setApproval(null); setConfirmation("");
     setError("");
     try {
-      const session = await fetch("/api/state/session", { method: "POST" });
+      const session = await privateApiFetch("/api/state/session", { method: "POST" });
       if (!session.ok) throw new Error();
       const [calendarResponse, catalogResponse, planResponse] = await Promise.all([
-        fetch("/api/calendar/status", { cache: "no-store" }),
-        fetch("/api/calendar/calendars", { cache: "no-store" }),
-        fetch("/api/planner", { cache: "no-store" }),
+        privateApiFetch("/api/calendar/status", { cache: "no-store" }),
+        privateApiFetch("/api/calendar/calendars", { cache: "no-store" }),
+        privateApiFetch("/api/planner", { cache: "no-store" }),
       ]);
       const [calendarStatus, catalog, latest] = await Promise.all([calendarResponse.json(), catalogResponse.json(), planResponse.json()]);
       if (!calendarResponse.ok || !catalogResponse.ok || !planResponse.ok) throw new Error();
@@ -1662,7 +1662,7 @@ function WeeklyPlanner({ note }: any) {
 
   useEffect(() => { load(); }, [load]);
 
-  const plannerRequest=async(url:string,init:RequestInit,externalWrite=false)=>{if(status.state!=="ready")throw new Error("Private Planner-Quelle ist nicht schreibbereit");let response:Response;try{response=await fetch(url,init)}catch{setStatus({state:"error",connected:false});setCalendars([]);setPlan(null);setSelectedOutcomes([]);setSelectedBlocks([]);setHistory([]);setApproval(null);setConfirmation("");throw new Error(externalWrite?"Write-Ergebnis ist nicht bestätigt. Kalender vor einem neuen Versuch prüfen.":"Private Planner-Quelle nicht erreichbar")}let result:any;try{result=await response.json()}catch{setStatus({state:"error",connected:false});setCalendars([]);setPlan(null);setSelectedOutcomes([]);setSelectedBlocks([]);setHistory([]);setApproval(null);setConfirmation("");throw new Error(externalWrite?"Write-Ergebnis ist nicht bestätigt. Kalender vor einem neuen Versuch prüfen.":"Ungültige Antwort der Planner-Quelle")}if(!response.ok){if(externalWrite&&result.outcome==="unknown")throw new Error("Write-Ergebnis ist nicht bestätigt. Kalender prüfen und eine neue exakte Vorschau erzeugen.");if(externalWrite&&result.written===true)throw new Error(result.error||"Write wurde bestätigt, aber Rückleseprüfung oder Audit fehlen. Nicht erneut senden.");if(externalWrite&&result.approvalConsumed)throw new Error(result.error||"Freigabe wurde verbraucht. Status prüfen und eine neue exakte Vorschau erzeugen.");if(response.status===409&&url==="/api/planner")await load();throw new Error(result.error||"Planner-Anfrage abgelehnt")}return result};
+  const plannerRequest=async(url:string,init:RequestInit,externalWrite=false)=>{if(status.state!=="ready")throw new Error("Private Planner-Quelle ist nicht schreibbereit");let response:Response;try{response=await privateApiFetch(url,init)}catch{setStatus({state:"error",connected:false});setCalendars([]);setPlan(null);setSelectedOutcomes([]);setSelectedBlocks([]);setHistory([]);setApproval(null);setConfirmation("");throw new Error(externalWrite?"Write-Ergebnis ist nicht bestätigt. Kalender vor einem neuen Versuch prüfen.":"Private Planner-Quelle nicht erreichbar")}let result:any;try{result=await response.json()}catch{setStatus({state:"error",connected:false});setCalendars([]);setPlan(null);setSelectedOutcomes([]);setSelectedBlocks([]);setHistory([]);setApproval(null);setConfirmation("");throw new Error(externalWrite?"Write-Ergebnis ist nicht bestätigt. Kalender vor einem neuen Versuch prüfen.":"Ungültige Antwort der Planner-Quelle")}if(!response.ok){if(externalWrite&&result.outcome==="unknown")throw new Error("Write-Ergebnis ist nicht bestätigt. Kalender prüfen und eine neue exakte Vorschau erzeugen.");if(externalWrite&&result.written===true)throw new Error(result.error||"Write wurde bestätigt, aber Rückleseprüfung oder Audit fehlen. Nicht erneut senden.");if(externalWrite&&result.approvalConsumed)throw new Error(result.error||"Freigabe wurde verbraucht. Status prüfen und eine neue exakte Vorschau erzeugen.");if(response.status===409&&url==="/api/planner")await load();throw new Error(result.error||"Planner-Anfrage abgelehnt")}return result};
 
   const toggleLimited = (id: string, setter: (value: string[]) => void, current: string[]) => {
     if (current.includes(id)) return setter(current.filter((item) => item !== id));
@@ -1796,8 +1796,8 @@ function Integrations({ note }: any) {
       mode: "unavailable",
       catalogState: "loading",
     }),[integrationHealth,setIntegrationHealth]=useState<any>({state:"loading",connectors:[]}),[selectedConnectorId,setSelectedConnectorId]=useState("");
-  const loadIntegrationHealth=useCallback(async()=>{setIntegrationHealth({state:"loading",connectors:[]});setSelectedConnectorId("");try{const session=await fetch("/api/state/session",{method:"POST"});if(!session.ok)throw new Error("Private Sitzung nicht erreichbar");const response=await fetch("/api/integrations/health",{cache:"no-store"}),result=await response.json();if(!response.ok)throw new Error(result.error);setIntegrationHealth({state:"online",...result});setSelectedConnectorId(result.connectors?.[0]?.id||"")}catch(cause){setIntegrationHealth({state:"error",connectors:[],error:cause instanceof Error?cause.message:"Health Center nicht erreichbar"})}},[]);
-  const loadCalendarState=useCallback(async()=>{setCalendarStatus({state:"loading",configured:false,connected:false,mode:"unavailable",catalogState:"loading"});setLiveCalendars([]);setSelectedCalendars([]);setCalendarRead({state:"idle",events:[]});try{const session=await fetch("/api/state/session",{method:"POST"});if(!session.ok)throw new Error();const [statusResponse,calendarsResponse]=await Promise.all([fetch("/api/calendar/status",{cache:"no-store"}),fetch("/api/calendar/calendars",{cache:"no-store"})]);const [statusResult,calendarResult]=await Promise.all([statusResponse.json(),calendarsResponse.json()]);if(!statusResponse.ok)throw new Error();const catalogState=calendarsResponse.ok?"online":statusResult.connected?"error":"unavailable";const calendars=calendarsResponse.ok?(calendarResult.calendars||[]):[];setCalendarStatus({state:"online",...statusResult,catalogState,catalogError:catalogState==="error"?(calendarResult.error||"Kalenderkatalog nicht erreichbar"):""});setLiveCalendars(calendars);setSelectedCalendars(calendars.filter((calendar:any)=>calendar.selected).slice(0,6).map((calendar:any)=>calendar.id))}catch{setCalendarStatus({state:"error",configured:false,connected:false,mode:"unavailable",catalogState:"error"});setLiveCalendars([]);setSelectedCalendars([])}},[]);
+  const loadIntegrationHealth=useCallback(async()=>{setIntegrationHealth({state:"loading",connectors:[]});setSelectedConnectorId("");try{const session=await privateApiFetch("/api/state/session",{method:"POST"});if(!session.ok)throw new Error("Private Sitzung nicht erreichbar");const response=await privateApiFetch("/api/integrations/health",{cache:"no-store"}),result=await response.json();if(!response.ok)throw new Error(result.error);setIntegrationHealth({state:"online",...result});setSelectedConnectorId(result.connectors?.[0]?.id||"")}catch(cause){setIntegrationHealth({state:"error",connectors:[],error:cause instanceof Error?cause.message:"Health Center nicht erreichbar"})}},[]);
+  const loadCalendarState=useCallback(async()=>{setCalendarStatus({state:"loading",configured:false,connected:false,mode:"unavailable",catalogState:"loading"});setLiveCalendars([]);setSelectedCalendars([]);setCalendarRead({state:"idle",events:[]});try{const session=await privateApiFetch("/api/state/session",{method:"POST"});if(!session.ok)throw new Error();const [statusResponse,calendarsResponse]=await Promise.all([privateApiFetch("/api/calendar/status",{cache:"no-store"}),privateApiFetch("/api/calendar/calendars",{cache:"no-store"})]);const [statusResult,calendarResult]=await Promise.all([statusResponse.json(),calendarsResponse.json()]);if(!statusResponse.ok)throw new Error();const catalogState=calendarsResponse.ok?"online":statusResult.connected?"error":"unavailable";const calendars=calendarsResponse.ok?(calendarResult.calendars||[]):[];setCalendarStatus({state:"online",...statusResult,catalogState,catalogError:catalogState==="error"?(calendarResult.error||"Kalenderkatalog nicht erreichbar"):""});setLiveCalendars(calendars);setSelectedCalendars(calendars.filter((calendar:any)=>calendar.selected).slice(0,6).map((calendar:any)=>calendar.id))}catch{setCalendarStatus({state:"error",configured:false,connected:false,mode:"unavailable",catalogState:"error"});setLiveCalendars([]);setSelectedCalendars([])}},[]);
   useEffect(() => {
     void loadCalendarState();
     void loadIntegrationHealth();
@@ -1810,7 +1810,7 @@ function Integrations({ note }: any) {
   }, [loadCalendarState,loadIntegrationHealth]);
   const beginCalendarConnect = async () => {
     try {
-      const session = await fetch("/api/state/session", { method: "POST" });
+      const session = await privateApiFetch("/api/state/session", { method: "POST" });
       if (!session.ok) throw new Error();
       window.location.assign("/api/calendar/connect");
     } catch {
@@ -1819,9 +1819,9 @@ function Integrations({ note }: any) {
   };
   const shareCalendarSession = async () => {
     try {
-      const session = await fetch("/api/state/session", { method: "POST" });
+      const session = await privateApiFetch("/api/state/session", { method: "POST" });
       if (!session.ok) throw new Error();
-      const response = await fetch("/api/calendar/share-local-session", { method: "POST" });
+      const response = await privateApiFetch("/api/calendar/share-local-session", { method: "POST" });
       if (!response.ok) throw new Error();
       setCalendarStatus((current: any) => ({ ...current, sharedWithDesktop: true }));
     } catch {
@@ -1834,7 +1834,7 @@ function Integrations({ note }: any) {
     const query = new URLSearchParams();
     selectedCalendars.forEach((id) => query.append("calendar", id));
     try {
-      const response = await fetch(`/api/calendar/events?${query}`, { cache: "no-store" });
+      const response = await privateApiFetch(`/api/calendar/events?${query}`, { cache: "no-store" });
       const result = await response.json();
       setCalendarRead(response.ok ? { state: "online", ...result } : { state: "error", events: [], error: result.error || "Lesen fehlgeschlagen" });
     } catch {
@@ -1952,9 +1952,9 @@ function Brain() {
   const loadVault = useCallback(async () => {
     setVault({ status: "loading" });
     try {
-      const session = await fetch("/api/state/session", { method: "POST" });
+      const session = await privateApiFetch("/api/state/session", { method: "POST" });
       if (!session.ok) throw new Error();
-      const response = await fetch("/api/obsidian/status", { cache: "no-store" });
+      const response = await privateApiFetch("/api/obsidian/status", { cache: "no-store" });
       if (!response.ok) throw new Error();
       setVault(await response.json());
     } catch {
@@ -1964,9 +1964,9 @@ function Brain() {
   const loadAudit = useCallback(async () => {
     setAudit({ status: "loading", entries: [] });
     try {
-      const session = await fetch("/api/state/session", { method: "POST" });
+      const session = await privateApiFetch("/api/state/session", { method: "POST" });
       if (!session.ok) throw new Error();
-      const response = await fetch("/api/state/audit", { cache: "no-store" });
+      const response = await privateApiFetch("/api/state/audit", { cache: "no-store" });
       if (!response.ok) throw new Error();
       const result = await response.json();
       setAudit({ status: "online", entries: result.entries || [] });
@@ -1974,7 +1974,7 @@ function Brain() {
       setAudit({ status: "error", entries: [] });
     }
   }, []);
-  const loadWriteFlow=useCallback(async()=>{setWriteFlow({state:"loading",proposals:[]});setActiveProposalId("");setApprovalToken("");setConfirmation("");try{const session=await fetch("/api/state/session",{method:"POST"});if(!session.ok)throw new Error();const response=await fetch("/api/obsidian/write-proposals",{cache:"no-store"}),result=await response.json();if(!response.ok)throw new Error(result.error);setWriteFlow({state:"online",...result});setActiveProposalId(result.proposals?.[0]?.id||"");setWriteError("")}catch(cause){setWriteFlow({state:"error",proposals:[]});setWriteError(cause instanceof Error?cause.message:"Vault-Vorschläge sind nicht erreichbar")}},[]);
+  const loadWriteFlow=useCallback(async()=>{setWriteFlow({state:"loading",proposals:[]});setActiveProposalId("");setApprovalToken("");setConfirmation("");try{const session=await privateApiFetch("/api/state/session",{method:"POST"});if(!session.ok)throw new Error();const response=await privateApiFetch("/api/obsidian/write-proposals",{cache:"no-store"}),result=await response.json();if(!response.ok)throw new Error(result.error);setWriteFlow({state:"online",...result});setActiveProposalId(result.proposals?.[0]?.id||"");setWriteError("")}catch(cause){setWriteFlow({state:"error",proposals:[]});setWriteError(cause instanceof Error?cause.message:"Vault-Vorschläge sind nicht erreichbar")}},[]);
   useEffect(() => {
     void loadVault();
     void loadAudit();
@@ -2010,7 +2010,7 @@ function Brain() {
   };
   const activeProposal=writeFlow.proposals.find((proposal:any)=>proposal.id===activeProposalId);
   const invalidateWriteFlow=(message:string)=>{setWriteFlow({state:"error",proposals:[]});setActiveProposalId("");setApprovalToken("");setConfirmation("");setWriteError(message)};
-  const writeProposalRequest=async(method:"POST"|"PATCH",body:any)=>{if(writeFlow.state!=="online"||!connected)throw new Error("Private Vault-Vorschauquelle ist nicht schreibbereit");let response:Response;try{response=await fetch("/api/obsidian/write-proposals",{method,headers:{"content-type":"application/json"},body:JSON.stringify(body)})}catch{invalidateWriteFlow("Private Vault-Vorschauquelle nicht erreichbar");throw new Error("Private Vault-Vorschauquelle nicht erreichbar")}let result:any;try{result=await response.json()}catch{invalidateWriteFlow("Ungültige Antwort der Vault-Vorschauquelle");throw new Error("Ungültige Antwort der Vault-Vorschauquelle")}if(!response.ok)throw new Error(result.error||"Vault-Vorschauanfrage abgelehnt");return result};
+  const writeProposalRequest=async(method:"POST"|"PATCH",body:any)=>{if(writeFlow.state!=="online"||!connected)throw new Error("Private Vault-Vorschauquelle ist nicht schreibbereit");let response:Response;try{response=await privateApiFetch("/api/obsidian/write-proposals",{method,headers:{"content-type":"application/json"},body:JSON.stringify(body)})}catch{invalidateWriteFlow("Private Vault-Vorschauquelle nicht erreichbar");throw new Error("Private Vault-Vorschauquelle nicht erreichbar")}let result:any;try{result=await response.json()}catch{invalidateWriteFlow("Ungültige Antwort der Vault-Vorschauquelle");throw new Error("Ungültige Antwort der Vault-Vorschauquelle")}if(!response.ok)throw new Error(result.error||"Vault-Vorschauanfrage abgelehnt");return result};
   const generateVaultProposal=async()=>{setWriteBusy(true);setWriteError("");setActiveProposalId("");setApprovalToken("");setConfirmation("");try{const result=await writeProposalRequest("POST",{...writeDraft,proposalType:writeMode,expectedNoteCount:vault.noteCount});await loadWriteFlow();setActiveProposalId(result.proposal.id);setApprovalToken(result.approvalToken)}catch(cause){setWriteError(cause instanceof Error?cause.message:"Diff-Vorschau konnte nicht erzeugt werden")}finally{setWriteBusy(false)}};
   const approveVaultPreview=async()=>{if(!activeProposal||confirmation!==activeProposal.approvalPhrase)return;setWriteBusy(true);setWriteError("");try{const result=await writeProposalRequest("PATCH",{action:"approve_preview",proposalId:activeProposal.id,approvalToken,confirmation});await loadWriteFlow();setActiveProposalId(result.proposal.id)}catch(cause){setApprovalToken("");setConfirmation("");setWriteError(cause instanceof Error?cause.message:"Vorschau-Freigabe fehlgeschlagen")}finally{setWriteBusy(false)}};
   const proposalInputValid=connected&&writeFlow.state==="online"&&(writeMode==="new_system_note"?String(writeDraft.title||"").trim().length>=2&&String(writeDraft.body||"").trim().length>=2:Boolean(writeDraft.relativePath));
@@ -2169,9 +2169,9 @@ function Settings({ brand, save, theme, changeTheme, note, preferenceState, relo
     setBackupState({ state: "loading", backups: [], store: null });
     setSelectedBackup(""); setRestorePreview(null);
     try {
-      const session = await fetch("/api/state/session", { method: "POST" });
+      const session = await privateApiFetch("/api/state/session", { method: "POST" });
       if (!session.ok) throw new Error("Private Sitzung nicht erreichbar");
-      const response = await fetch("/api/state/backups", { cache: "no-store" });
+      const response = await privateApiFetch("/api/state/backups", { cache: "no-store" });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "Backup-Status nicht verfügbar");
       setBackupState({ state: "online", ...result });
@@ -2181,7 +2181,7 @@ function Settings({ brand, save, theme, changeTheme, note, preferenceState, relo
       note(error instanceof Error ? error.message : "Backup-Status nicht verfügbar");
     }
   }, [note]);
-  const loadArchive=useCallback(async()=>{setArchiveState({state:"loading",records:[]});setRestoreArchiveArmed("");try{const session=await fetch("/api/state/session",{method:"POST"});if(!session.ok)throw new Error("Private Sitzung nicht erreichbar");const response=await fetch("/api/state/archive",{cache:"no-store"}),result=await response.json();if(!response.ok)throw new Error(result.error);setArchiveState({state:"online",records:result.records||[]})}catch(error){setArchiveState({state:"error",records:[],error:error instanceof Error?error.message:"Archiv nicht erreichbar"})}},[]);
+  const loadArchive=useCallback(async()=>{setArchiveState({state:"loading",records:[]});setRestoreArchiveArmed("");try{const session=await privateApiFetch("/api/state/session",{method:"POST"});if(!session.ok)throw new Error("Private Sitzung nicht erreichbar");const response=await privateApiFetch("/api/state/archive",{cache:"no-store"}),result=await response.json();if(!response.ok)throw new Error(result.error);setArchiveState({state:"online",records:result.records||[]})}catch(error){setArchiveState({state:"error",records:[],error:error instanceof Error?error.message:"Archiv nicht erreichbar"})}},[]);
   useEffect(() => {
     void loadBackups();
     void loadArchive();
@@ -2193,7 +2193,7 @@ function Settings({ brand, save, theme, changeTheme, note, preferenceState, relo
     window.addEventListener("agentic-os:runtime-online", recoverSettings);
     return () => window.removeEventListener("agentic-os:runtime-online", recoverSettings);
   }, [loadArchive,loadBackups]);
-  const backupRequest=async(method:"POST"|"PATCH",body:any)=>{if(backupState.state!=="online")throw new Error("Privates Backup-Inventar ist nicht schreibbereit");let response:Response;try{response=await fetch("/api/state/backups",{method,headers:{"content-type":"application/json"},body:JSON.stringify(body)})}catch{setBackupState({state:"error",backups:[],store:null});setSelectedBackup("");setRestorePreview(null);throw new Error("Backup-Ergebnis nicht bestätigt. Inventar vor erneutem Versuch prüfen.")}let result:any;try{result=await response.json()}catch{setBackupState({state:"error",backups:[],store:null});setSelectedBackup("");setRestorePreview(null);throw new Error("Ungültige Antwort der Backup-Quelle")}if(!response.ok)throw new Error(result.error||"Backup-Anfrage abgelehnt");return result};
+  const backupRequest=async(method:"POST"|"PATCH",body:any)=>{if(backupState.state!=="online")throw new Error("Privates Backup-Inventar ist nicht schreibbereit");let response:Response;try{response=await privateApiFetch("/api/state/backups",{method,headers:{"content-type":"application/json"},body:JSON.stringify(body)})}catch{setBackupState({state:"error",backups:[],store:null});setSelectedBackup("");setRestorePreview(null);throw new Error("Backup-Ergebnis nicht bestätigt. Inventar vor erneutem Versuch prüfen.")}let result:any;try{result=await response.json()}catch{setBackupState({state:"error",backups:[],store:null});setSelectedBackup("");setRestorePreview(null);throw new Error("Ungültige Antwort der Backup-Quelle")}if(!response.ok)throw new Error(result.error||"Backup-Anfrage abgelehnt");return result};
   const createBackup = async () => {
     setBackupBusy(true);
     try {
@@ -2215,8 +2215,8 @@ function Settings({ brand, save, theme, changeTheme, note, preferenceState, relo
       note(error instanceof Error ? error.message : "Restore-Vorschau fehlgeschlagen");
     } finally { setBackupBusy(false); }
   };
-  const runRecoveryCheck=async()=>{setDiagnosis({state:"loading"});try{const session=await fetch("/api/state/session",{method:"POST"});if(!session.ok)throw new Error("Private Sitzung nicht erreichbar");const [storeResponse,healthResponse,backupResponse]=await Promise.all([fetch("/api/state/status",{cache:"no-store"}),fetch("/api/integrations/health",{cache:"no-store"}),fetch("/api/state/backups",{cache:"no-store"})]);const [storeResult,healthResult,backupResult]=await Promise.all([storeResponse.json(),healthResponse.json(),backupResponse.json()]);if(!storeResponse.ok||!healthResponse.ok||!backupResponse.ok)throw new Error("Mindestens eine private Diagnosequelle ist nicht erreichbar");const connectors=healthResult.connectors||[],online=connectors.filter((item:any)=>item.status==="online").length,degraded=connectors.filter((item:any)=>item.status==="degraded"||item.status==="offline").length;setDiagnosis({state:"ready",checkedAt:healthResult.checkedAt,storeOnline:Boolean(storeResult.online),schemaVersion:storeResult.schemaVersion,wal:Boolean(storeResult.wal),connectorCount:connectors.length,onlineConnectors:online,degradedConnectors:degraded,backupCount:backupResult.backups?.length||0,latestBackupAt:backupResult.backups?.[0]?.createdAt||null,externalWritesPerformed:false,restorePerformed:false})}catch(error){setDiagnosis({state:"error",error:error instanceof Error?error.message:"Lokale Diagnose fehlgeschlagen",externalWritesPerformed:false,restorePerformed:false})}};
-  const restoreArchiveRecord=async(record:any)=>{const key=`${record.kind}:${record.id}:${record.version}`;if(restoreArchiveArmed!==key)return;try{const response=await fetch("/api/state/archive",{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({kind:record.kind,id:record.id,version:record.version})}),result=await response.json();if(!response.ok)throw new Error(result.error||"Datensatz konnte nicht wiederhergestellt werden");setRestoreArchiveArmed("");await loadArchive();note("Datensatz aus dem lokalen Archiv wiederhergestellt")}catch(error){setRestoreArchiveArmed("");await loadArchive();note(error instanceof Error?error.message:"Wiederherstellung fehlgeschlagen")}};
+  const runRecoveryCheck=async()=>{setDiagnosis({state:"loading"});try{const session=await privateApiFetch("/api/state/session",{method:"POST"});if(!session.ok)throw new Error("Private Sitzung nicht erreichbar");const [storeResponse,healthResponse,backupResponse]=await Promise.all([privateApiFetch("/api/state/status",{cache:"no-store"}),privateApiFetch("/api/integrations/health",{cache:"no-store"}),privateApiFetch("/api/state/backups",{cache:"no-store"})]);const [storeResult,healthResult,backupResult]=await Promise.all([storeResponse.json(),healthResponse.json(),backupResponse.json()]);if(!storeResponse.ok||!healthResponse.ok||!backupResponse.ok)throw new Error("Mindestens eine private Diagnosequelle ist nicht erreichbar");const connectors=healthResult.connectors||[],online=connectors.filter((item:any)=>item.status==="online").length,degraded=connectors.filter((item:any)=>item.status==="degraded"||item.status==="offline").length;setDiagnosis({state:"ready",checkedAt:healthResult.checkedAt,storeOnline:Boolean(storeResult.online),schemaVersion:storeResult.schemaVersion,wal:Boolean(storeResult.wal),connectorCount:connectors.length,onlineConnectors:online,degradedConnectors:degraded,backupCount:backupResult.backups?.length||0,latestBackupAt:backupResult.backups?.[0]?.createdAt||null,externalWritesPerformed:false,restorePerformed:false})}catch(error){setDiagnosis({state:"error",error:error instanceof Error?error.message:"Lokale Diagnose fehlgeschlagen",externalWritesPerformed:false,restorePerformed:false})}};
+  const restoreArchiveRecord=async(record:any)=>{const key=`${record.kind}:${record.id}:${record.version}`;if(restoreArchiveArmed!==key)return;try{const response=await privateApiFetch("/api/state/archive",{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({kind:record.kind,id:record.id,version:record.version})}),result=await response.json();if(!response.ok)throw new Error(result.error||"Datensatz konnte nicht wiederhergestellt werden");setRestoreArchiveArmed("");await loadArchive();note("Datensatz aus dem lokalen Archiv wiederhergestellt")}catch(error){setRestoreArchiveArmed("");await loadArchive();note(error instanceof Error?error.message:"Wiederherstellung fehlgeschlagen")}};
   const brandingValid = d.name.trim().length >= 2 && /^[A-ZÄÖÜ0-9]{1,3}$/i.test(d.short.trim()) && /^#[0-9a-f]{6}$/i.test(d.accent);
   return (
     <>

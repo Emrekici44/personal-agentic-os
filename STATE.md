@@ -162,6 +162,8 @@ Last verified: 25.08.2026, Europe/Berlin.
 - Übergangsbasierte Runtime-Recovery: Root 128/128, Lint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export und isolierter Produktionsbuild sind grün. Online zeigt Settings keine falschen Backup-/Archiv-Retries, Desktop/390×844 bleiben ohne Überlauf; Dashboard 55/58. Keine lokale Mutation wurde ausgeführt.
 - Eigenständige Usage-Recovery: Die vollständige Matrix bleibt Root 128/128 plus Lint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export und isolierter Produktionsbuild grün. Usage zeigte den verifizierten Status ohne Fehler, mit funktionalem Live-Read und 0 Desktop/390×844-Überlauf; Dashboard 56/59. Es wurde nichts aktiviert oder geschrieben.
 - Begrenzter privater Client: Root 131/131, Lint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export und isolierter Produktionsbuild sind grün. Dashboard 57/60, keine Offline-Warnung und 0 Desktop/390×844-Überlauf. Die Hängeprobe nutzte nur einen lokalen Fetch-Stub und hinterließ keine Daten.
+- Vollständige private UI-Request-Grenze: Die Hauptoberfläche und Usage enthalten keine rohen Browser-`fetch`-Aufrufe mehr. Planner, Projekte, Agenten, Skills, Integrationen, Knowledge, Backup und Archiv teilen den relativen 8-Sekunden-Client; unbestätigte Calendar-Writes werden weiterhin niemals automatisch wiederholt.
+- Abschlussprüfung dieser Grenze: Root 131/131, Lint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export und isolierter Produktionsbuild sind grün. Dashboard 58/61, 0 Desktop-/390×844-Überlauf; mobile `Woche`-Navigation öffnete die echte Wochenplanung. Secret-/Inhaltsaudit: 0 konkrete Secretmuster, 0 absolute Vault-Pfade außerhalb Dokumentation und 0 getrackte private Env-/DB-/WAL-/SHM-Dateien.
 
 ## User boundaries
 
