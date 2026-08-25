@@ -110,6 +110,8 @@ Project root: `outputs/agentic-os`. Private source remote: `https://github.com/E
 - Full verification for bounded private inputs: Root 140/140, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed. Dashboard rendered 61/64 with 0 desktop/390×844 overflow and all five mobile primary destinations enabled; the input proofs used only artificial Request streams.
 - Preferences, Agent workflows, Skills, Planner, Vault previews and Backup now treat private 401/403/5xx mutation responses as source failures, clear stale active controls and wait for verified reload. Agent/Skill project sources and transparent Skill references have scoped read-only retries.
 - Full verification for mutation HTTP truth: Root 141/141, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed. Progress rendered 62/65; Agents on desktop and Skills at 390×844 were online with no false Retry and no horizontal overflow.
+- Local session signatures now include a server-validated issuance timestamp and expire after 24 hours with a 60-second future-clock allowance. Legacy, expired, excessively future-dated and tampered values are rejected; the normal private session POST replaces them on the next source load.
+- Full verification for server-side session expiry: Root 142/142, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed. Live progress rendered 63/66; dashboard and 390×844 had no live alert or horizontal overflow. The runtime check used only normal local session renewal and did not inspect or print cookie values.
 
 ## Immediate continuation
 

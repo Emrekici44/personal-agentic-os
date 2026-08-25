@@ -114,3 +114,5 @@ The bounded private client now buffers each full API response inside the same de
 Every active private JSON mutation route now shares a bounded server-side body reader. Invalid, oversized or incomplete input is rejected before business logic, storage or external transport.
 
 Stateful mutation clients now treat private 401/403/5xx responses as source failures, clear stale controls and require a verified reload. Agent and Skill cross-source references expose their own read-only retries.
+
+Local session signatures now include a server-validated issuance time and expire after 24 hours independently of the browser cookie. Normal private session bootstrapping refreshes rejected legacy or expired sessions.

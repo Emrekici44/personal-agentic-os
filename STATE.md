@@ -172,6 +172,8 @@ Last verified: 25.08.2026, Europe/Berlin.
 - Verifikation der privaten Eingabegrenze: Root 140/140, Lint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export und isolierter Produktionsbuild sind grün. Dashboard 61/64, 0 Desktop-/390×844-Überlauf, alle fünf mobilen Hauptziele aktiv; Unit-Proben verwendeten ausschließlich künstliche Request-Streams.
 - Nicht erfolgreiche Mutationsantworten sind jetzt genauso fail-closed wie Transportfehler: Preferences, Agenten, Skills, Planner, Vault-Vorschau und Backup verwerfen bei 401/403/5xx aktive Altstände und sperren Folgecontrols. Projekt-/Skill-Quellen in Agenten und Skills haben eigene sichtbare Retries.
 - Verifikation der Mutations-HTTP-Wahrheit: Root 141/141, Lint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export und isolierter Produktionsbuild sind grün. Fortschritt 62/65; Agenten auf Desktop und Skills bei 390×844 renderten online ohne falschen Retry und ohne horizontalen Überlauf.
+- Lokale Sitzungen sind zusätzlich zur Browser-Cookie-Frist serverseitig 24 Stunden gültig. Der signierte Ausgabezeitpunkt erlaubt 60 Sekunden Uhrtoleranz; Legacy-, abgelaufene, zu weit zukünftige oder manipulierte Sitzungen werden abgewiesen und beim nächsten normalen privaten Session-Aufbau ersetzt.
+- Verifikation der serverseitigen Sitzungsfrist: Root 142/142, Lint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export und isolierter Produktionsbuild sind grün. Fortschritt 63/66; Dashboard und 390×844 renderten ohne Live-Fehler oder horizontalen Überlauf. Der Laufzeitcheck erneuerte nur die normale lokale Sitzung und gab keinen Cookie-Wert aus.
 
 ## User boundaries
 

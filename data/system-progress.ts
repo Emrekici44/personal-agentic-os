@@ -454,6 +454,13 @@ export const systemProgress = {
       status: "complete",
     },
     {
+      id: "server-session-expiry",
+      label: "Private Sitzung serverseitig befristen",
+      evidence: "Signierter Ausgabezeitpunkt · 24 Stunden · 60 Sekunden Uhrtoleranz · Legacy/alt/zukünftig abgewiesen",
+      href: "#settings",
+      status: "complete",
+    },
+    {
       id: "ongoing-local-gap-audit",
       label: "Nächste lokale Bedien-/Recovery-Lücke prüfen",
       evidence: "Nur reversible lokale Änderungen · keine externen Writes, Migrationen, Installationen oder Kosten",
