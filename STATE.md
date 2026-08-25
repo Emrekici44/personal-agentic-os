@@ -207,3 +207,10 @@ Last verified: 25.08.2026, Europe/Berlin.
 - Do not create a cloud database/account or migrate SQLite without inventory, mapping, conflict preview, backup/restore proof and explicit approval.
 - Do not install/run Graphify or send Vault content to a model without a separate pilot proposal and approval.
 - Do not perform another Calendar write without a new exact proposal and action-time confirmation.
+# Runtime execution update (2026-08-25)
+
+- Deterministic skills are now actually executed through the shared local procedure catalog.
+- Skills invoke fixed, bounded read-only tools and persist content-light skill/tool run steps.
+- `project_coach` executes `project_snapshot` against real project-scoped projects, tasks, inbox, and latest weekly-plan data.
+- Runtime flags remain `modelUsed: false`, `externalActionsPerformed: false`, and `backgroundActions: false`.
+- Model planning, autonomous selection, external mutation tools, and automatic memory extraction do not exist.

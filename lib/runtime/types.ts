@@ -28,6 +28,7 @@ export interface AgentDefinition {
   allowedSkills: string[];
   allowedTools: string[];
   allowedSources: RuntimeSource[];
+  defaultSkillId: string;
   plannerPolicy: PlannerPolicy;
   memoryPolicy: MemoryPolicy;
   permissionPolicy: PermissionPolicy;
@@ -97,6 +98,57 @@ export interface PlannerResult {
   modelUsed: false;
   externalActionsPerformed: false;
   evidence: SafeSourceEvidence[];
+  skillInvocations: PlannedSkillInvocation[];
+}
+
+export interface PlannedSkillInvocation {
+  skillId: string;
+  input: Record<string, unknown>;
+  requestedBy: "planner" | "agent_default" | "user_explicit";
+}
+
+export interface SkillInvocation extends PlannedSkillInvocation {
+  id: string;
+  createdAt: string;
+}
+
+export interface ToolInvocation {
+  id: string;
+  toolId: string;
+  capability: "read";
+  input: Record<string, unknown>;
+  requestedBySkillId?: string;
+  createdAt: string;
+}
+
+export interface ToolExecutionResult {
+  invocationId: string;
+  toolId: string;
+  status: "completed" | "blocked" | "failed";
+  recordCount: number;
+  evidence: { verified: boolean; source: RuntimeSource; filtersApplied: number };
+  externalActionsPerformed: false;
+  modelUsed: false;
+  networkCalls: false;
+  fileWrites: false;
+}
+
+export interface SkillExecutionResult {
+  invocationId: string;
+  skillId: string;
+  status: "completed" | "blocked" | "failed";
+  summary: string;
+  items: Array<{ id: string; source: string; sourceId: string; title: string; rationale: string; type: "proposal"; externalAction: false }>;
+  toolInvocations: ToolInvocation[];
+  toolResults: ToolExecutionResult[];
+  deterministicSteps: string[];
+  sourceEvidence: Record<string, number>;
+  input: Record<string, unknown>;
+  externalActionsPerformed: false;
+  modelUsed: false;
+  networkCalls: false;
+  fileWrites: false;
+  backgroundActions: false;
 }
 
 export interface RunStep {

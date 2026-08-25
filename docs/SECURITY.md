@@ -45,3 +45,6 @@
 - Archived local records are summarized without encrypted content. Restore requires the exact current archive version, validates project/agent dependencies, updates status plus audit in one transaction and has no delete/external branch. This record-level restore is separate from the still-disabled database backup restore.
 - Shared CRUD updates and archives use optimistic concurrency from structured SQLite row versions. A stale desktop/iPhone version returns HTTP 409 and reloads current data; JSON payload metadata can never override the authoritative row ID/version/timestamp. The global runtime check shows an explicit offline banner and never creates a silent per-device fallback copy.
 - Graphify is not installed. Any pilot must pin a version, exclude sensitive Vault areas, inspect scope first and avoid semantic/provider transmission until separately approved.
+# Executing Runtime Boundary (August 2026)
+
+Runtime tool IDs resolve only through a fixed registry, inputs accept bounded named filters, and agent allowlists plus read-risk policy are checked before execution. Model-assisted skills and planners, direct tool requests, mutation tools, network calls, shell/code execution, file writes, and background chains remain fail-closed. Ordinary runs no longer create automatic memory candidates; policy memory still requires the dedicated user review boundary.

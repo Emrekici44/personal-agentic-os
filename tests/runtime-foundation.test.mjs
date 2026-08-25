@@ -52,9 +52,12 @@ test("runtime persists bounded context, steps, encrypted memory and no actions",
     const result = await runAgent({ agentId: "project_coach", input: "Bitte Projektstand sicher prüfen", projectId: project.id });
     if (!result.proposalOnly || result.modelUsed || result.externalActionsPerformed || result.backgroundActions) throw new Error("unsafe runtime result");
     if (result.context.sources.find((entry) => entry.source === "tasks").recordCount !== 1) throw new Error("project context leaked foreign task");
-    if (result.run.steps.length !== 5 || result.run.steps.some((step) => step.status !== "completed")) throw new Error("run steps missing");
-    if (!result.memoryCandidate || result.memoryCandidate.status !== "candidate") throw new Error("candidate auto-activated or missing");
-    const activated = store.withStoreTransaction(() => memory.reviewMemory(result.memoryCandidate.id, "activate", result.memoryCandidate.version, "user"));
+    if (result.run.steps.length < 9 || result.run.steps.some((step) => step.status !== "completed")) throw new Error("run steps missing");
+    if (!result.skillExecutions.length || result.run.steps.some((step) => step.evidence?.validationOnly)) throw new Error("skill was not executed");
+    if (result.toolExecutions.length !== 4 || result.toolExecutions.some((item) => item.externalActionsPerformed)) throw new Error("read tools missing or unsafe");
+    if (result.memoryCandidate !== null) throw new Error("ordinary run polluted memory");
+    const candidate = store.withStoreTransaction(() => memory.createMemoryCandidate({ kind: "observation", scope: "agent", scopeId: "project_coach", content: "Reviewed runtime observation", sourceType: "user_input", sourceId: result.run.id }, "user"));
+    const activated = store.withStoreTransaction(() => memory.reviewMemory(candidate.id, "activate", candidate.version, "user"));
     if (activated.status !== "active" || activated.sourceId !== result.run.id) throw new Error("memory activation/provenance failed");
     const rejectedCandidate = store.withStoreTransaction(() => memory.createMemoryCandidate({ kind: "preference", scope: "project", scopeId: project.id, content: "Kurze Vorschläge", sourceType: "user_input", sourceId: "manual" }, "user"));
     const rejected = store.withStoreTransaction(() => memory.reviewMemory(rejectedCandidate.id, "reject", rejectedCandidate.version, "user"));
@@ -73,7 +76,7 @@ test("runtime persists bounded context, steps, encrypted memory and no actions",
     if (superseded.status !== "superseded") throw new Error("memory supersede failed");
     try { memory.supersedeMemory(otherProjectCandidate.id, 2, "agent"); throw new Error("agent supersede accepted"); } catch (error) { if (!String(error.message).includes("Nutzerentscheidung")) throw error; }
     const persisted = runtime.listRuntimeRuns().find((run) => run.id === result.run.id);
-    if (!persisted || persisted.steps.length !== 5 || persisted.steps.some((step, index) => step.index !== index + 1)) throw new Error("runtime persistence or step ordering failed");
+    if (!persisted || persisted.steps.length < 9 || persisted.steps.some((step, index) => step.index !== index + 1)) throw new Error("runtime persistence or step ordering failed");
     const { DatabaseSync } = await import("node:sqlite");
     const pathModule = await import("node:path");
     const database = new DatabaseSync(pathModule.join(process.cwd(), "local-state", "agentic-os.sqlite"));
@@ -90,7 +93,7 @@ test("runtime persists bounded context, steps, encrypted memory and no actions",
 });
 
 test("runtime and local skills contain no model, network, shell or file execution path", () => {
-  const files = ["lib/runtime/service.ts", "lib/runtime/planning/planner.ts", "lib/runtime/context/builder.ts", "lib/runtime/skills/registry.ts", "lib/runtime/tools/registry.ts", "lib/local-skills.mjs"].map((file) => readFileSync(file, "utf8")).join("\n");
+  const files = ["lib/runtime/service.ts", "lib/runtime/planning/planner.ts", "lib/runtime/context/builder.ts", "lib/runtime/skills/registry.ts", "lib/runtime/skills/service.ts", "lib/runtime/tools/registry.ts", "lib/runtime/tools/service.ts", "lib/local-skills.mjs"].map((file) => readFileSync(file, "utf8")).join("\n");
   assert.doesNotMatch(files, /child_process|execSync|spawnSync|\bfetch\s*\(|writeFile|appendFile|responses\.create|chat\.completions/);
   assert.doesNotMatch(files, /new\s+Function|\beval\s*\(|import\s*\([^)]/);
   assert.match(files, /externalActionsPerformed: false/);

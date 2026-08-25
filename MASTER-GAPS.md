@@ -116,3 +116,9 @@ Die gebündelten Details stehen in `PENDING-DECISIONS.md`. Kein Punkt hier block
 - ChatGPT Pro ist kein API-Zugang. Companion Mode ist ein manueller Übergabepfad.
 - SQLite ist operative Quelle, Obsidian dauerhafte Wissensquelle und Google Calendar externe Ereignisquelle, bis Emre eine andere Migration ausdrücklich freigibt.
 - Keine kostenpflichtige oder öffentliche Fähigkeit wird still aktiviert.
+# Remaining runtime gaps
+
+- No model-driven planner or autonomous tool selection.
+- No external mutation tools or background execution.
+- No automatic memory extraction; candidates remain deliberate and reviewable.
+- Standalone skill previews retain their existing safe local execution path; runtime agents add structured invocation and tool evidence around the same local procedure catalog.

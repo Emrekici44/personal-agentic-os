@@ -146,3 +146,9 @@ Archive restore now distinguishes an unconfirmed result from a known rejection. 
 The standalone Usage & Limits surface now renders backup and live-check evidence explicitly in Europe/Berlin from unchanged UTC timestamps, matching desktop and iPhone views.
 
 The shared private browser client now enforces a 2 MiB response boundary for both declared length and streamed bodies. Oversized local responses abort without fallback data, retries or mutations.
+# Runtime next slices
+
+- Next: memory review UI and deliberate memory extraction.
+- Later: model-assisted planning only behind an explicit provider and cost boundary.
+- Later: Weekly Planner → Calendar through the existing exact proposal/approval contract.
+- External write tools and background execution remain out of scope.
