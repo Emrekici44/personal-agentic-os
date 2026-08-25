@@ -8,6 +8,8 @@ import { privateApiFetch } from "@/lib/private-client";
 
 const label: Record<string, string> = { online: "Online", degraded: "Eingeschränkt", offline: "Offline", unconfigured: "Nicht konfiguriert" };
 const costLabel: Record<string, string> = { Free: "Kostenfrei", "Free*": "Kostenfrei*", Included: "Enthalten", "Usage-based": "Nutzungsbasiert", Unknown: "Ungeklärt" };
+const berlinDateTime = new Intl.DateTimeFormat("de-DE", { dateStyle: "short", timeStyle: "short", timeZone: "Europe/Berlin" });
+const berlinTime = new Intl.DateTimeFormat("de-DE", { timeStyle: "medium", timeZone: "Europe/Berlin" });
 
 export default function Usage() {
   const [state, setState] = useState<any>({ loading: true, error: false, openai: null, integrations: [], storage: null, backups: [], checkedAt: null });
@@ -112,9 +114,9 @@ export default function Usage() {
         ))}
       </section>
       <section className="usageEvidence">
-        <article><b>Lokale Backups</b><strong>{verified ? state.backups.length : "—"}</strong><small>{!verified ? state.loading ? "Inventar wird geprüft" : "Inventar nicht erreichbar" : lastBackup ? `Zuletzt ${new Intl.DateTimeFormat("de-DE", { dateStyle: "short", timeStyle: "short" }).format(new Date(lastBackup.createdAt))}` : "Noch keines erstellt"}</small></article>
+        <article><b>Lokale Backups</b><strong>{verified ? state.backups.length : "—"}</strong><small>{!verified ? state.loading ? "Inventar wird geprüft" : "Inventar nicht erreichbar" : lastBackup ? `Zuletzt ${berlinDateTime.format(new Date(lastBackup.createdAt))}` : "Noch keines erstellt"}</small></article>
         <article><b>Speicherschutz</b><strong>{verified ? state.storage?.sensitiveFieldEncryption || "Nicht geprüft" : "—"}</strong><small>Feldverschlüsselung; keine Behauptung über Festplattenverschlüsselung</small></article>
-        <article><b>Letzte Live-Prüfung</b><strong>{state.checkedAt ? new Intl.DateTimeFormat("de-DE", { timeStyle: "medium" }).format(new Date(state.checkedAt)) : "—"}</strong><small>Nur nicht sensible Health-Evidenz</small></article>
+        <article><b>Letzte Live-Prüfung</b><strong>{state.checkedAt ? berlinTime.format(new Date(state.checkedAt)) : "—"}</strong><small>Europe/Berlin · nur nicht sensible Health-Evidenz</small></article>
       </section>
       <aside><ShieldCheck /><p><b>Kostenschutz:</b> Keine bezahlte API wird still aktiviert. Ein späterer API-Modus benötigt sichtbare Preisart, Tages-/Monatsgrenzen, Warnschwelle und ausdrückliche Freigabe.</p></aside>
     </main>

@@ -128,3 +128,5 @@ Web, Electron web content and the Expo WebView now receive one restrictive brows
 Backup, recovery-diagnosis and archive timestamps now render consistently in Europe/Berlin on desktop and iPhone while preserving their UTC source values.
 
 Archive restore now distinguishes an unconfirmed result from a known rejection. Unconfirmed outcomes clear stale state and require an explicit read-only inventory refresh; double submission and automatic mutation retry remain disabled.
+
+The standalone Usage & Limits surface now renders backup and live-check evidence explicitly in Europe/Berlin from unchanged UTC timestamps, matching desktop and iPhone views.

@@ -187,6 +187,8 @@ Last verified: 25.08.2026, Europe/Berlin.
 - Backup-, Recovery-Diagnose- und Archivzeitpunkte nutzen nun eine gemeinsame Europe/Berlin-Anzeige, sodass Desktop und iPhone unabhängig von der Gerätezeitzone denselben operativen Zeitpunkt zeigen; UTC-Speicherwerte bleiben unverändert.
 - Verifikation der gerätegleichen Zeitdarstellung: Root 152/152, Lint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export und isolierter Produktionsbuild sind grün. Einstellungen mit Backup/Recovery/Archiv renderten ohne Alert oder Überlauf auf Desktop/390×844; Dashboard 68/71. Es wurde weder Backup noch Restore/Archiv-Aktion ausgelöst.
 - Archiv-Recovery ist fail-closed: unklarer Transport oder eine unvollständige Erfolgsantwort verwirft das Inventar, sperrt Folgecontrols und fordert eine neue reine Statusprüfung. Die lokale Mutation wird nie automatisch wiederholt.
+- Usage & Limits verwendet für Backup- und Live-Prüfzeit dieselbe Europe/Berlin-Anzeige wie die Hauptoberfläche; die gespeicherten UTC-Zeitpunkte bleiben unverändert.
+- Verifikation der Usage-Zeitwahrheit: Root 152/152, Lint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export und isolierter Produktionsbuild sind grün. Usage rendert die Berlin-Evidenz auf Desktop/390×844 ohne Alert, Console-Warnung oder horizontalen Überlauf; Fortschritt 70/73. Es wurde keine Statusquelle verändert.
 
 ## User boundaries
 

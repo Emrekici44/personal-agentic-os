@@ -503,6 +503,13 @@ export const systemProgress = {
       status: "complete",
     },
     {
+      id: "usage-berlin-time",
+      label: "Usage-Evidenz gerätegleich anzeigen",
+      evidence: "Backup und letzte Live-Prüfung · unveränderte UTC-Quelle · Europe/Berlin auf Desktop und iPhone",
+      href: "/usage",
+      status: "complete",
+    },
+    {
       id: "ongoing-local-gap-audit",
       label: "Nächste lokale Bedien-/Recovery-Lücke prüfen",
       evidence: "Nur reversible lokale Änderungen · keine externen Writes, Migrationen, Installationen oder Kosten",

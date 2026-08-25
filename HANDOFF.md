@@ -125,6 +125,8 @@ Project root: `outputs/agentic-os`. Private source remote: `https://github.com/E
 - Backup, recovery-diagnosis and archive timestamps now share one Europe/Berlin formatter so desktop and iPhone show the same operational time independently of device timezone; stored UTC values are unchanged.
 - Full verification for device-independent time display: Root 152/152, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed. Settings with Backup/Recovery/Archive rendered without alert or desktop/390×844 overflow; dashboard progress 68/71. No backup, restore or archive action ran.
 - Archive restore recovery now fails closed on interrupted or malformed responses: stale inventory and the armed confirmation are cleared, duplicate clicks are blocked while pending, and only a new read-only inventory check can resume the flow. No archive mutation was executed during verification.
+- Usage & Limits now shares the Europe/Berlin display contract for backup and last-live-check timestamps; UTC source values remain unchanged and no provider or connector action is involved.
+- Full verification for Usage timestamp consistency: Root 152/152, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed. Desktop/390×844 Usage showed the Berlin evidence with no alert, console warning or overflow; no status source was mutated.
 
 ## Immediate continuation
 
