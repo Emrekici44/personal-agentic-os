@@ -176,6 +176,8 @@ Last verified: 25.08.2026, Europe/Berlin.
 - Verifikation der serverseitigen Sitzungsfrist: Root 142/142, Lint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export und isolierter Produktionsbuild sind grün. Fortschritt 63/66; Dashboard und 390×844 renderten ohne Live-Fehler oder horizontalen Überlauf. Der Laufzeitcheck erneuerte nur die normale lokale Sitzung und gab keinen Cookie-Wert aus.
 - Private Mutationen prüfen jetzt zusätzlich Same-Origin für localhost, LAN und den privaten Tailscale-Proxy. Cross-Site-, fremde und opaque Origins werden vor Body, Store oder Calendar-Transport mit 403 abgewiesen; lokale nicht-browserbasierte Werkzeuge ohne Origin bleiben kompatibel.
 - Verifikation der Mutationsherkunft: Root 145/145, Lint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export und isolierter Produktionsbuild sind grün. Laufzeitprobe: fremde Origin 403, echte lokale Same-Origin 200; Fortschritt 64/67 und 0 Live-Alerts/Überlauf auf Desktop sowie 390×844. Es wurde kein fachlicher Datensatz und kein externer Write erzeugt.
+- Journalentwürfe werden nicht mehr als Klartext in Browser-/WebView-Storage geschrieben. Ein Altentwurf bleibt bis zur sichtbaren Übernahme oder zweistufigen Verwerfung unangetastet; nach Übernahme wird seine lokale Kopie erst nach erfolgreichem verschlüsseltem Shared-Store-Abschluss entfernt.
+- Verifikation der Journal-Draft-Grenze: Root 147/147, Lint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export und isolierter Produktionsbuild sind grün. Die reale Journalansicht zeigte die Sitzung-/Nicht-Autospeichern-Wahrheit ohne Altinhalte auszulesen; Desktop und 390×844 hatten 0 Alerts/Überlauf. Fortschritt 65/68, keine Testdaten oder Speicherlöschung.
 
 ## User boundaries
 

@@ -468,6 +468,13 @@ export const systemProgress = {
       status: "complete",
     },
     {
+      id: "journal-session-draft",
+      label: "Journalentwürfe ohne Klartext-Browserkopie halten",
+      evidence: "Neue Entwürfe nur Sitzung · Altentwurf bleibt bis Übernahme/zweistufigem Verwerfen unangetastet · gemeinsamer Abschluss verschlüsselt",
+      href: "#journal",
+      status: "complete",
+    },
+    {
       id: "ongoing-local-gap-audit",
       label: "Nächste lokale Bedien-/Recovery-Lücke prüfen",
       evidence: "Nur reversible lokale Änderungen · keine externen Writes, Migrationen, Installationen oder Kosten",

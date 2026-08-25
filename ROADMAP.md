@@ -118,3 +118,5 @@ Stateful mutation clients now treat private 401/403/5xx responses as source fail
 Local session signatures now include a server-validated issuance time and expire after 24 hours independently of the browser cookie. Normal private session bootstrapping refreshes rejected legacy or expired sessions.
 
 Private state and proposal mutations now require a same-origin browser request on localhost, LAN or the private Tailscale proxy. Cross-site, mismatched and opaque origins stop before body parsing, persistence or Google transport; non-browser local tooling without Origin remains supported.
+
+Journal drafts no longer create plaintext browser-storage copies. New drafts live only in the open session; any legacy copy remains untouched behind explicit import or two-stage discard, and imported legacy content is cleared only after a successful encrypted shared-store journal save.

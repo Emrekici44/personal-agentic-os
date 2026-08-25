@@ -118,6 +118,8 @@ export default function App() {
     [theme, setTheme] = useState<"dark" | "light">("dark"),
     [preferenceState, setPreferenceState] = useState<"loading" | "online" | "error">("loading"),
     [journal, setJournal] = useState(""),
+    [legacyJournalDraftAvailable, setLegacyJournalDraftAvailable] = useState(false),
+    [legacyJournalDraftLoaded, setLegacyJournalDraftLoaded] = useState(false),
     [mood, setMood] = useState("ruhig"),
     [runtimeHealth, setRuntimeHealth] = useState<any>({ state: "checking", checkedAt: null }),
     [brand, setBrand] = useState({
@@ -152,7 +154,9 @@ export default function App() {
     }
   }, []);
   useEffect(() => {
-    setJournal(store.get("journal", ""));
+    setLegacyJournalDraftAvailable(
+      localStorage.getItem("aos:journal") !== null || localStorage.getItem("ns:journal") !== null,
+    );
     const savedBrand = store.get("brand", {
       name: "Agentic OS",
       short: "AOS",
@@ -170,6 +174,26 @@ export default function App() {
     window.addEventListener("agentic-os:runtime-online", recoverPreferences);
     return () => window.removeEventListener("agentic-os:runtime-online", recoverPreferences);
   }, [loadPreferences]);
+  const importLegacyJournalDraft = () => {
+    const legacy = store.get("journal", "");
+    setJournal(typeof legacy === "string" ? legacy : "");
+    setLegacyJournalDraftLoaded(true);
+    setLegacyJournalDraftAvailable(false);
+    note("Alter Entwurf nur in diese Sitzung übernommen · noch nicht gemeinsam gespeichert");
+  };
+  const discardLegacyJournalDraft = () => {
+    localStorage.removeItem("aos:journal");
+    localStorage.removeItem("ns:journal");
+    setLegacyJournalDraftAvailable(false);
+    setLegacyJournalDraftLoaded(false);
+    note("Alte lokale Entwurfskopie verworfen");
+  };
+  const clearImportedJournalDraft = () => {
+    if (!legacyJournalDraftLoaded) return;
+    localStorage.removeItem("aos:journal");
+    localStorage.removeItem("ns:journal");
+    setLegacyJournalDraftLoaded(false);
+  };
   useEffect(() => {
     const mobileBridge = (
       window as Window & {
@@ -418,12 +442,14 @@ export default function App() {
             <DailyArea
               initialTab={v === "habits" ? "tasks" : "journal"}
               text={journal}
-              setText={(x: string) => {
-                setJournal(x);
-                store.set("journal", x);
-              }}
+              setText={setJournal}
               mood={mood}
               setMood={setMood}
+              legacyDraftAvailable={legacyJournalDraftAvailable}
+              legacyDraftLoaded={legacyJournalDraftLoaded}
+              importLegacyDraft={importLegacyJournalDraft}
+              discardLegacyDraft={discardLegacyJournalDraft}
+              onSharedJournalSaved={clearImportedJournalDraft}
               note={note}
             />
           )}{" "}
@@ -1022,7 +1048,7 @@ function Projects({ note }: any) {
   );
 }
 function ProjectEditor({ draft, setDraft, onSave, onCancel, title }: any) { return <Card className="projectEditor"><div className="row"><div><Tag>GEMEINSAMER DATENSATZ</Tag><h3>{title}</h3></div><button aria-label="Editor schließen" onClick={onCancel}><I.X/></button></div><div className="projectEditorFields"><label>Projektname<input value={draft.title} onChange={event=>setDraft({...draft,title:event.target.value})} placeholder="Klarer Projektname"/></label><label>Status<select value={draft.status} onChange={event=>setDraft({...draft,status:event.target.value})}><option value="planned">Geplant</option><option value="active">Aktiv</option><option value="paused">Pausiert</option><option value="completed">Abgeschlossen</option></select></label><label className="wide">Ziel<textarea value={draft.goal} onChange={event=>setDraft({...draft,goal:event.target.value})} placeholder="Woran erkennst du, dass dieses Projekt gelungen ist?"/></label><label className="wide">Nächste Aktion<input value={draft.nextAction} onChange={event=>setDraft({...draft,nextAction:event.target.value})} placeholder="Der kleinste konkrete nächste Schritt"/></label><label>Zieldatum (optional)<input type="date" value={draft.dueDate} onChange={event=>setDraft({...draft,dueDate:event.target.value})}/></label><label className="wide">Beschreibung (optional)<textarea value={draft.description} onChange={event=>setDraft({...draft,description:event.target.value})} placeholder="Kontext, Grenzen oder gewünschtes Ergebnis"/></label></div><div className="editorActions"><Btn onClick={draft.title.trim().length>=2?onSave:undefined}>Speichern</Btn><button onClick={onCancel}>Abbrechen</button></div></Card>; }
-function DailyArea({ initialTab, text, setText, mood, setMood, note }: any) {
+function DailyArea({ initialTab, text, setText, mood, setMood, legacyDraftAvailable, legacyDraftLoaded, importLegacyDraft, discardLegacyDraft, onSharedJournalSaved, note }: any) {
   const [tab, setTab] = useState<"tasks" | "journal">(initialTab);
   useEffect(() => setTab(initialTab), [initialTab]);
   return (
@@ -1068,6 +1094,11 @@ function DailyArea({ initialTab, text, setText, mood, setMood, note }: any) {
           setMood={setMood}
           setText={setText}
           text={text}
+          legacyDraftAvailable={legacyDraftAvailable}
+          legacyDraftLoaded={legacyDraftLoaded}
+          importLegacyDraft={importLegacyDraft}
+          discardLegacyDraft={discardLegacyDraft}
+          onSharedJournalSaved={onSharedJournalSaved}
         />
       )}
     </>
@@ -1213,13 +1244,14 @@ function Habits({ embedded = false }: { embedded?: boolean }) {
     </>
   );
 }
-function Journal({ text, setText, mood, setMood, note, embedded = false }: any) {
+function Journal({ text, setText, mood, setMood, legacyDraftAvailable, legacyDraftLoaded, importLegacyDraft, discardLegacyDraft, onSharedJournalSaved, note, embedded = false }: any) {
   const { records: entries, state: journalState, create, archive, reload: reloadJournal } = useSharedRecords("journal_metadata");
   const { records: tasks, state: taskState, reload: reloadTasks } = useSharedRecords("tasks");
   const { records: habits, state: habitState, reload: reloadHabits } = useSharedRecords("habits");
   const [energy, setEnergy] = useState(3);
   const [selectedEntryId, setSelectedEntryId] = useState("");
   const [journalArchiveArmed, setJournalArchiveArmed] = useState(false);
+  const [legacyDiscardArmed, setLegacyDiscardArmed] = useState(false);
   const [calendarSummary, setCalendarSummary] = useState<any>({ state: "loading" });
   const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Berlin" }).format(new Date());
   const selectedEntry = entries.find((entry: any) => entry.id === selectedEntryId);
@@ -1264,6 +1296,7 @@ function Journal({ text, setText, mood, setMood, note, embedded = false }: any) 
     try {
       await create({ title: `Journal ${today}`, entryDate: today, mood, energy, text, status: "active" });
       setText("");
+      onSharedJournalSaved?.();
       note("Journal gemeinsam gespeichert · Textfeld nur verschlüsselt");
     } catch (error) {
       note(error instanceof Error ? error.message : "Journal konnte nicht gespeichert werden");
@@ -1280,8 +1313,10 @@ function Journal({ text, setText, mood, setMood, note, embedded = false }: any) 
         <Card className="editor">
           <div className="row">
             <Tag>REFLEXION</Tag>
-            <span>Entwurf auf diesem Gerät · Abschluss verschlüsselt im gemeinsamen Store</span>
+            <span>Entwurf nur in dieser Sitzung · Abschluss verschlüsselt im gemeinsamen Store</span>
           </div>
+          {legacyDraftAvailable && <div className="legacyDraftReview"><I.ShieldAlert/><span><b>Alte lokale Entwurfskopie gefunden</b><small>Sie bleibt unangetastet, bis du sie bewusst übernimmst oder zweistufig verwirfst. Ihr Inhalt wird nicht protokolliert.</small></span><div><button onClick={()=>{importLegacyDraft();setLegacyDiscardArmed(false)}} type="button">Alten Entwurf übernehmen</button>{!legacyDiscardArmed?<button onClick={()=>setLegacyDiscardArmed(true)} type="button">Lokale Kopie verwerfen …</button>:<button className="dangerQuiet" onClick={()=>{discardLegacyDraft();setLegacyDiscardArmed(false)}} type="button">Lokale Kopie endgültig verwerfen</button>}</div></div>}
+          {legacyDraftLoaded && <p className="sourceLine"><I.ShieldCheck/>Alter Entwurf wurde nur in diese geöffnete Sitzung übernommen. Die lokale Alt-Kopie wird erst nach dem erfolgreichen gemeinsamen Abschluss entfernt.</p>}
           <h3>Was hat heute Bedeutung gehabt?</h3>
           <textarea
             value={text}
@@ -1296,6 +1331,7 @@ function Journal({ text, setText, mood, setMood, note, embedded = false }: any) 
           <Btn onClick={journalState === "online" ? completeJournal : undefined}>
             Eintrag abschließen
           </Btn>
+          <small className="connectionNote">Nicht abgeschlossene Änderungen werden nicht automatisch in Browser- oder Gerätespeicher geschrieben.</small>
           {journalState === "loading" && <p role="status">Journalquelle wird geladen …</p>}
           {journalState === "error" && <RetryNotice message="Der Entwurf bleibt auf diesem Gerät; der gemeinsame Abschluss ist bis zur Wiederverbindung gesperrt." onRetry={reloadJournal} label="Journal neu laden"/>}
         </Card>
