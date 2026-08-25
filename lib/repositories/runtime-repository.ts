@@ -2,11 +2,12 @@ import crypto from "node:crypto";
 import { operationalDatabase } from "../store/database.ts";
 import { decryptSensitive, encryptSensitive } from "../store/encryption.ts";
 import type { PlannerResult, RunStep, RuntimeContextSnapshot } from "../runtime/types.ts";
+import { listExecutionReceipts } from "./execution-receipt-repository.ts";
 
 export function persistContextSnapshot(snapshot: RuntimeContextSnapshot) {
   const safeScope = JSON.stringify({ area: snapshot.scope?.area || null });
   const evidence = JSON.stringify(snapshot.sources);
-  operationalDatabase().prepare("INSERT INTO runtime_context_snapshots(id,agent_id,project_id,scope_json,source_evidence_json,snapshot_enc,created_at) VALUES(?,?,?,?,?,?,?)").run(snapshot.id, snapshot.agentId, snapshot.projectId || null, safeScope, evidence, encryptSensitive({ records: snapshot.records, memoryIds: snapshot.memories.map((item) => item.id) }), snapshot.createdAt);
+  operationalDatabase().prepare("INSERT INTO runtime_context_snapshots(id,agent_id,project_id,scope_json,source_evidence_json,snapshot_enc,created_at) VALUES(?,?,?,?,?,?,?)").run(snapshot.id, snapshot.agentId, snapshot.projectId || null, safeScope, evidence, encryptSensitive({ records: snapshot.records, memoryIds: snapshot.memories.map((item) => item.id), versions: snapshot.versions }), snapshot.createdAt);
   return { id: snapshot.id, agentId: snapshot.agentId, projectId: snapshot.projectId, sources: snapshot.sources, memoryCount: snapshot.memories.length, createdAt: snapshot.createdAt };
 }
 
@@ -29,5 +30,5 @@ export function listRunSteps(runId: string): RunStep[] {
 export function listRuntimeRuns(limit = 20) {
   const safe = Math.min(50, Math.max(1, Math.trunc(limit) || 20));
   const rows = operationalDatabase().prepare("SELECT * FROM agent_workflow_runs WHERE status<>'archived' ORDER BY updated_at DESC LIMIT ?").all(safe) as Array<Record<string, unknown>>;
-  return rows.map((row) => { const input = decryptSensitive(String(row.input_enc)) as { input: string }, output = decryptSensitive(String(row.output_enc)) as Record<string, unknown>; return { id: String(row.id), workflowId: String(row.workflow_id), status: String(row.status), currentStep: String(row.current_step), input: input.input, output, sourceEvidence: JSON.parse(String(row.source_json || "{}")), decision: JSON.parse(String(row.decision_json || "{}")), version: Number(row.version), createdAt: String(row.created_at), updatedAt: String(row.updated_at), steps: listRunSteps(String(row.id)) }; });
+  return rows.map((row) => { const input = decryptSensitive(String(row.input_enc)) as { input: string }, output = decryptSensitive(String(row.output_enc)) as Record<string, unknown>; return { id: String(row.id), workflowId: String(row.workflow_id), status: String(row.status), currentStep: String(row.current_step), input: input.input, output, sourceEvidence: JSON.parse(String(row.source_json || "{}")), decision: JSON.parse(String(row.decision_json || "{}")), version: Number(row.version), createdAt: String(row.created_at), updatedAt: String(row.updated_at), steps: listRunSteps(String(row.id)), receipts: listExecutionReceipts(String(row.id)) }; });
 }

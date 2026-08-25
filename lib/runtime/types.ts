@@ -2,6 +2,24 @@ export type RuntimeSource = "projects" | "tasks" | "inbox" | "habits" | "journal
 export type RiskClass = "read" | "local_mutation" | "external_mutation";
 export type RuntimeStatus = "created" | "context_built" | "planning" | "proposal_ready" | "waiting_for_review" | "approved" | "rejected" | "completed" | "failed";
 export type RunStepType = "context" | "planner" | "skill" | "tool" | "policy" | "approval" | "result";
+export type ExecutionStatus = "not_started" | "blocked" | "started" | "confirmed" | "failed" | "unknown";
+export type RetryPolicy = "safe" | "new_approval_required" | "manual_verification_required" | "not_retryable";
+
+export interface ExecutionReceipt {
+  id: string;
+  runId?: string;
+  invocationId: string;
+  actionType: string;
+  targetType: "skill" | "tool" | "calendar" | "vault" | "local_mutation";
+  targetId?: string;
+  status: ExecutionStatus;
+  external: boolean;
+  startedAt?: string;
+  finishedAt?: string;
+  retryPolicy: RetryPolicy;
+  evidence: Record<string, string | number | boolean>;
+  version: number;
+}
 
 export interface PermissionPolicy {
   allowedRiskClasses: readonly RiskClass[];
@@ -18,6 +36,17 @@ export interface MemoryPolicy {
   automaticActivation: false;
 }
 
+export type ContextPriority = "P0" | "P1" | "P2";
+export interface ContextPolicy {
+  maxRecordsPerSource: number;
+  sourcePriorities: Partial<Record<RuntimeSource, ContextPriority>>;
+  includeMemoryKinds: readonly RuntimeMemory["kind"][];
+  includeScopes: readonly RuntimeMemory["scope"][];
+  maxMemories: number;
+  requireProjectScope?: boolean;
+  maxAgeDays?: number;
+}
+
 export interface AgentDefinition {
   id: string;
   name: string;
@@ -32,6 +61,7 @@ export interface AgentDefinition {
   plannerPolicy: PlannerPolicy;
   memoryPolicy: MemoryPolicy;
   permissionPolicy: PermissionPolicy;
+  contextPolicy: ContextPolicy;
   status: "active" | "paused";
   version: number;
 }
@@ -62,6 +92,10 @@ export interface SafeSourceEvidence {
   source: RuntimeSource;
   recordCount: number;
   verified: boolean;
+  includedCount?: number;
+  excludedCount?: number;
+  priority?: ContextPriority;
+  reason?: string;
 }
 
 export interface RuntimeMemory {
@@ -77,6 +111,8 @@ export interface RuntimeMemory {
   createdAt: string;
   lastConfirmedAt?: string;
   expiresAt?: string;
+  supersedesId?: string;
+  retention?: "standard" | "until_expiry" | "manual_review";
   version: number;
 }
 
@@ -89,6 +125,7 @@ export interface RuntimeContextSnapshot {
   memories: RuntimeMemory[];
   projectId?: string;
   scope?: { area?: string };
+  versions: { agentDefinition: number; contextPolicy: number; memories: Array<{ id: string; version: number }> };
 }
 
 export interface PlannerResult {
@@ -99,6 +136,9 @@ export interface PlannerResult {
   externalActionsPerformed: false;
   evidence: SafeSourceEvidence[];
   skillInvocations: PlannedSkillInvocation[];
+  toolIntents: Array<{ toolId: string; input: Record<string, unknown>; requestedBySkillId?: string }>;
+  memorySuggestions: Array<{ kind: RuntimeMemory["kind"]; scope: RuntimeMemory["scope"]; reason: string }>;
+  approvalRequirements: Array<{ approvalClass: string; riskClass: RiskClass; reason: string }>;
 }
 
 export interface PlannedSkillInvocation {

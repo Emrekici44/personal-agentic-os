@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
   if (!trustedPrivateMutationOrigin(request)) return respond({ error: "Anfrageherkunft nicht zulässig", externalActionsPerformed: false }, { status: 403 });
   try {
     const body = await readPrivateJson(request);
-    const result = await runAgent({ agentId: String(body.workflowId || ""), input: String(body.input || ""), projectId: body.projectId ? String(body.projectId) : undefined, requestedSkillId: body.skillId ? String(body.skillId) : undefined, requestedToolId: body.toolId ? String(body.toolId) : undefined, createMemoryCandidate: body.createMemoryCandidate !== false });
+    const result = await runAgent({ agentId: String(body.workflowId || ""), input: String(body.input || ""), projectId: body.projectId ? String(body.projectId) : undefined, requestedSkillId: body.skillId ? String(body.skillId) : undefined, requestedToolId: body.toolId ? String(body.toolId) : undefined, createMemoryCandidate: body.createMemoryCandidate === true });
     return respond({ ...result, paidApiUsed: false }, { status: 201 });
   } catch (error) {
     const fallback = "Workflow-Vorschlag konnte lokal nicht sicher erzeugt werden", message = publicApiError(error, fallback), retrySafe = message === fallback;

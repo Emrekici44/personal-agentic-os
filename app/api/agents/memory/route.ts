@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createMemoryCandidate, listMemoryCandidates, reviewMemory, supersedeMemory } from "@/lib/repositories/memory-repository";
+import { createMemoryCandidate, listMemoriesForReview, reviewMemory, supersedeMemory } from "@/lib/repositories/memory-repository";
 import { publicApiError, publicConflict } from "@/lib/public-api-error";
 import { readPrivateJson, trustedPrivateMutationOrigin } from "@/lib/private-request";
 import { verifyLocalSession, withStoreTransaction } from "@/lib/shared-store";
@@ -10,8 +10,8 @@ const authorized = (request: NextRequest) => verifyLocalSession(request.cookies.
 
 export async function GET(request: NextRequest) {
   if (!authorized(request)) return respond({ error: "Lokale Sitzung erforderlich" }, { status: 401 });
-  try { return respond({ candidates: listMemoryCandidates(), inventoryVerified: true }); }
-  catch { return respond({ error: "Memory Candidates sind vorübergehend nicht erreichbar", candidates: [], inventoryVerified: false, retrySafe: true }, { status: 503 }); }
+  try { const memories = listMemoriesForReview(); return respond({ memories, candidates: memories.filter((item) => item.status === "candidate"), inventoryVerified: true }); }
+  catch { return respond({ error: "Memory Candidates sind vorübergehend nicht erreichbar", memories: [], candidates: [], inventoryVerified: false, retrySafe: true }, { status: 503 }); }
 }
 
 export async function POST(request: NextRequest) {

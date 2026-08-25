@@ -1,0 +1,6 @@
+export const runTransitions = { created: ["context_ready", "blocked", "failed"], context_ready: ["planned", "blocked", "failed"], planned: ["executing", "waiting_for_approval", "blocked", "failed"], executing: ["completed", "waiting_for_approval", "failed", "unknown"], waiting_for_approval: ["executing", "blocked", "failed"], completed: [], blocked: [], failed: [], unknown: ["completed", "failed"] } as const;
+export type RuntimeRunState = keyof typeof runTransitions;
+export function assertRunTransition(from: RuntimeRunState, to: RuntimeRunState) { if (!(runTransitions[from] as readonly string[]).includes(to)) throw new Error("Ungültiger Runtime-Statusübergang"); return to; }
+export const invocationTransitions = { planned: ["validated", "blocked"], validated: ["started", "blocked"], started: ["completed", "failed", "unknown"], completed: [], blocked: [], failed: [], unknown: ["completed", "failed"] } as const;
+export type InvocationState = keyof typeof invocationTransitions;
+export function assertInvocationTransition(from: InvocationState, to: InvocationState) { if (!(invocationTransitions[from] as readonly string[]).includes(to)) throw new Error("Ungültiger Invocation-Statusübergang"); return to; }

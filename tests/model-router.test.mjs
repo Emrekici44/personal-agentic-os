@@ -1,0 +1,6 @@
+import assert from "node:assert/strict"; import test from "node:test"; import crypto from "node:crypto";
+import { createFakeModelProvider } from "../lib/runtime/models/fake-provider.ts"; import { createModelRouter, productionModelRouter } from "../lib/runtime/models/router.ts"; import { createOpenAIProviderBoundary } from "../lib/runtime/models/openai-provider.ts";
+const request = { id: crypto.randomUUID(), purpose: "planner", schemaId: "planner-proposal-v1", policy: { reasoning: "high", latency: "flexible", structuredOutput: true, privacy: "test_fixture", toolPlanning: true, costClass: "zero" }, input: { fixture: true } };
+test("production model router fails closed", async()=>assert.rejects(()=>productionModelRouter.execute(request),/nicht aktiviert/));
+test("fake provider is deterministic, test-only and zero cost",async()=>{const router=createModelRouter([createFakeModelProvider({skillInvocations:[]})],true),result=await router.execute(request);assert.equal(result.testOnly,true);assert.equal(result.cost.estimatedCost,0);assert.deepEqual(result.output,{skillInvocations:[]})});
+test("OpenAI boundary requires every explicit gate and never transports",async()=>{const provider=createOpenAIProviderBoundary({OPENAI_MODE:"disabled"});assert.equal(provider.status,"disabled");await assert.rejects(()=>provider.execute(request),/disabled/)});

@@ -14,7 +14,7 @@ export const deterministicLocalPlanner: Planner = {
     const skillId = requestedSkillId || agent.defaultSkillId;
     const selectedProjectId = projectId || String((records.projects?.[0] as { id?: string } | undefined)?.id || "");
     const skillInput = skillId === "project_snapshot" ? { projectId: selectedProjectId, limit: 5 } : skillId === "priority_review" ? { focus: userInput, limit: 3 } : skillId === "daily_check" ? { date: new Date().toISOString().slice(0, 10), limit: 5 } : { area: agent.area, limit: 5 };
-    return { summary: result.summary, proposedSteps: result.suggestions.map((step) => ({ id: step.id, title: step.title, rationale: step.rationale, type: "proposal" as const, externalAction: false as const, requiresSeparateApproval: true as const })), requiresApproval: true, modelUsed: false, externalActionsPerformed: false, evidence: context.sources, skillInvocations: [{ skillId, input: skillInput, requestedBy: requestedSkillId ? "user_explicit" : "agent_default" }] };
+    return { summary: result.summary, proposedSteps: result.suggestions.map((step) => ({ id: step.id, title: step.title, rationale: step.rationale, type: "proposal" as const, externalAction: false as const, requiresSeparateApproval: true as const })), requiresApproval: true, modelUsed: false, externalActionsPerformed: false, evidence: context.sources, skillInvocations: [{ skillId, input: skillInput, requestedBy: requestedSkillId ? "user_explicit" : "agent_default" }], toolIntents: [], memorySuggestions: [], approvalRequirements: [] };
   },
 };
 

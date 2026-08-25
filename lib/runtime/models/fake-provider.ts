@@ -1,0 +1,2 @@
+import type { ModelProvider } from "./types.ts";
+export function createFakeModelProvider(output: Record<string, unknown>): ModelProvider { return { id: "fake-test", status: "test_only", capabilities: ["structured_output", "reasoning", "tool_planning"], async execute() { return { providerId: "fake-test", modelId: "deterministic-fixture", output, usage: { estimatedInputUnits: 0, estimatedOutputUnits: 0 }, cost: { currency: "EUR", estimatedCost: 0, dailyUsage: 0, monthlyUsage: 0, dailyLimit: 0, monthlyLimit: 0 }, testOnly: true }; } }; }

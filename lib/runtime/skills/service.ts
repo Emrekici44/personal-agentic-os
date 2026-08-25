@@ -41,7 +41,7 @@ export function executeStandaloneSkill(skill: StoredSkillDefinition, input: Reco
   const principal: AgentDefinition = {
     id: "standalone_skill", name: "Standalone Skill", description: "Expliziter lokaler Skill-Lauf", objective: skill.purpose, area: "standalone", boundary: "Nur lokale Read-Proposals",
     allowedSkills: [procedure.id], allowedTools: toolIds, allowedSources: skill.allowedSources.map((source) => source === "inbox_items" ? "inbox" : source) as AgentDefinition["allowedSources"], defaultSkillId: procedure.id,
-    plannerPolicy: { plannerId: "deterministic-local" }, memoryPolicy: { readScopes: [], candidateKinds: [], automaticActivation: false }, permissionPolicy: { allowedRiskClasses: ["read"], requiresApprovalFor: ["local_mutation", "external_mutation"] }, status: "active", version: 1,
+    plannerPolicy: { plannerId: "deterministic-local" }, memoryPolicy: { readScopes: [], candidateKinds: [], automaticActivation: false }, permissionPolicy: { allowedRiskClasses: ["read"], requiresApprovalFor: ["local_mutation", "external_mutation"] }, contextPolicy: { maxRecordsPerSource: 50, sourcePriorities: {}, includeMemoryKinds: [], includeScopes: [], maxMemories: 0 }, status: "active", version: 1,
   };
   return executeValidatedSkill(principal, procedure.id, input, undefined, skill);
 }

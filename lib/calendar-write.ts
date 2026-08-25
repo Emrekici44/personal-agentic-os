@@ -3,7 +3,7 @@ import { appendFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { assertBoundedWindow } from './calendar-core.mjs';
 import { open, seal } from './google-calendar';
-import { consumeExternalApproval, registerExternalApproval } from './shared-store';
+import { consumeApprovalArtifact, createApprovalArtifact } from './repositories/approval-repository';
 
 export type CalendarChange = {
   action: 'create' | 'update';
@@ -32,17 +32,17 @@ export function createApproval(change: CalendarChange, selectedCalendarIds: stri
   const expiresAt = Date.now() + 15 * 60_000;
   const approvalId = crypto.randomUUID();
   const expiresAtIso = new Date(expiresAt).toISOString();
-  registerExternalApproval(approvalId, `calendar_event_${exact.action}`, exact, expiresAtIso);
+  createApprovalArtifact({ id: approvalId, actionType: `calendar_event_${exact.action}`, approvalClass: 'external_calendar_write', exactPayload: exact, expiresAt: expiresAtIso });
   return { approvalToken: seal(JSON.stringify({ approvalId, change: exact, expiresAt, nonce: crypto.randomUUID() })), expiresAt: expiresAtIso };
 }
 
-export function consumeApproval(token: string, confirmation: string) {
+export function consumeApproval(token: string, confirmation: string): CalendarChange & { approvalId: string } {
   if (confirmation !== 'DIESEN_TERMIN_JETZT_SCHREIBEN') throw new Error('Exakte Einzelbestätigung fehlt');
   const payload = JSON.parse(open(token));
   if (!payload.expiresAt || payload.expiresAt < Date.now()) throw new Error('Vorschlag ist abgelaufen');
   const exact = validateCalendarChange(payload.change);
-  consumeExternalApproval(String(payload.approvalId || ''), `calendar_event_${exact.action}`, exact);
-  return exact;
+  consumeApprovalArtifact({ id: String(payload.approvalId || ''), actionType: `calendar_event_${exact.action}`, approvalClass: 'external_calendar_write', exactPayload: exact });
+  return { ...exact, approvalId: String(payload.approvalId) };
 }
 
 export async function auditCalendarWrite(entry: Record<string, unknown>) {

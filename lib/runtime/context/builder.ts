@@ -19,8 +19,10 @@ export function buildRuntimeContext(agent: AgentDefinition, input: { userInput: 
     if (input.projectId && source === "projects") values = values.filter((item) => (item as { id?: string }).id === input.projectId);
     if (input.projectId && ["tasks", "inbox"].includes(source)) values = values.filter((item) => (item as { projectId?: string }).projectId === input.projectId);
     if (input.scope?.area && source === "area_records") values = values.filter((item) => (item as { area?: string }).area === input.scope?.area);
-    records[source] = values; sources.push({ source, recordCount: values.length, verified: true });
+    const total = values.length, included = values.slice(0, agent.contextPolicy.maxRecordsPerSource);
+    records[source] = included; sources.push({ source, recordCount: included.length, includedCount: included.length, excludedCount: total - included.length, verified: true, priority: agent.contextPolicy.sourcePriorities[source] || "P2", reason: total > included.length ? "context_budget" : "allowed_and_in_scope" });
   }
   if (input.projectId && !(records.projects || []).length) throw new Error("Ausgewähltes Projekt wurde nicht gefunden");
-  return { id: crypto.randomUUID(), agentId: agent.id, createdAt: new Date().toISOString(), sources, records, memories: retrieveActiveMemories(agent, input.projectId, input.scope?.area || agent.area), projectId: input.projectId, scope: input.scope };
+  const memories = retrieveActiveMemories(agent, input.projectId, input.scope?.area || agent.area).filter((item) => agent.contextPolicy.includeMemoryKinds.includes(item.kind) && agent.contextPolicy.includeScopes.includes(item.scope)).slice(0, agent.contextPolicy.maxMemories);
+  return { id: crypto.randomUUID(), agentId: agent.id, createdAt: new Date().toISOString(), sources, records, memories, projectId: input.projectId, scope: input.scope, versions: { agentDefinition: agent.version, contextPolicy: 1, memories: memories.map((item) => ({ id: item.id, version: item.version })) } };
 }
