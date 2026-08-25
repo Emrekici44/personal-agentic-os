@@ -48,7 +48,7 @@ test("provider status remains signed, private and never exposes a key", async ()
   assert.match(route, /verifyLocalSession/);
   assert.match(route, /no-store, private/);
   assert.match(route, /keyExposed: false/);
-  assert.match(route, /usageSource: 'unavailable'/);
+  assert.match(route, /usageSource: 'local-content-light-ledger'/);
 });
 
 test("settings expose local backup and restore preview without an apply action", () => {

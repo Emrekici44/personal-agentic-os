@@ -36,7 +36,7 @@ test("generic approvals and receipts are exact, single-use and content-light", (
     receipts.createExecutionReceipt({ invocationId, actionType: "read_tasks", targetType: "tool", status: "confirmed", external: false, retryPolicy: "safe", evidence: { recordCount: 2, content: "must-not-persist", token: "secret" } });
     const { DatabaseSync } = await import("node:sqlite"); const db = new DatabaseSync("local-state/agentic-os.sqlite");
     const row = db.prepare("SELECT evidence_json FROM execution_receipts WHERE invocation_id=?").get(invocationId); if (row.evidence_json.includes("must-not-persist") || row.evidence_json.includes("secret")) throw new Error("receipt leaked content");
-    if (db.prepare("SELECT MAX(version) version FROM schema_migrations").get().version !== 14) throw new Error("latest migration missing"); db.close();
+    if (db.prepare("SELECT MAX(version) version FROM schema_migrations").get().version !== 15) throw new Error("latest migration missing"); db.close();
   `;
   try { const result = spawnSync(process.execPath, ["--input-type=module", "--eval", script], { cwd: root, encoding: "utf8", env: { ...process.env, AUTH_SECRET: "receipt-test-secret" } }); assert.equal(result.status, 0, result.stderr || result.stdout); }
   finally { rmSync(root, { recursive: true, force: true }); }

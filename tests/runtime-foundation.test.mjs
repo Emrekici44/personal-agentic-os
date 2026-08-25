@@ -9,7 +9,7 @@ import { agentDefinitions, getAgentDefinition } from "../lib/runtime/agents/regi
 import { assertAgentRunnable, assertAreaScopeAllowed, assertRiskAllowed, assertSkillAllowed, assertSourceAllowed, assertToolAllowed, RuntimePolicyError } from "../lib/runtime/policies/evaluator.ts";
 import { assertExecutableSkill, getRuntimeSkill } from "../lib/runtime/skills/registry.ts";
 import { executeReadTool, getToolDefinition, toolDefinitions } from "../lib/runtime/tools/registry.ts";
-import { modelAssistedPlanner } from "../lib/runtime/planning/planner.ts";
+import { createOpenAIProviderBoundary } from "../lib/runtime/models/openai-provider.ts";
 
 test("agent definitions and policy evaluator fail closed", async () => {
   assert.equal(agentDefinitions.length, 6);
@@ -22,7 +22,8 @@ test("agent definitions and policy evaluator fail closed", async () => {
   assert.throws(() => assertAreaScopeAllowed(getAgentDefinition("health_planner"), "finance"), /nicht erlaubt/);
   assert.throws(() => assertExecutableSkill({ ...getRuntimeSkill("daily_check"), status: "paused" }), /pausiert/);
   assert.throws(() => assertExecutableSkill({ ...getRuntimeSkill("daily_check"), executionMode: "model-assisted" }), /nicht aktiviert/);
-  await assert.rejects(() => modelAssistedPlanner.plan({}), /nicht aktiviert/);
+  assert.equal(getAgentDefinition("project_coach").plannerPolicy.plannerId,"model-assisted");
+  assert.equal(createOpenAIProviderBoundary({}).status,"disabled");
 });
 
 test("tool registry is a fixed read-only allowlist", () => {

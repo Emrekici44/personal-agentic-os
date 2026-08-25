@@ -42,7 +42,7 @@ test("workflow persistence is encrypted, resumable, audited and private", async 
   assert.match(route, /verifyLocalSession/);
   assert.match(route, /runAgent/);
   assert.match(route, /listRuntimeRuns/);
-  assert.match(route, /paidApiUsed: false/);
+  assert.match(route, /paidApiUsed: result\.modelUsed&&result\.provider==="openai"/);
   const runtime = await readFile(new URL("../lib/runtime/service.ts", import.meta.url), "utf8");
   const context = await readFile(new URL("../lib/runtime/context/builder.ts", import.meta.url), "utf8");
   assert.match(context, /listRecords\("projects"\)|listRecords\(source\)/);

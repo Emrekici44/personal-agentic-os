@@ -9,7 +9,6 @@ export class RuntimePolicyError extends Error {
 
 export function assertAgentRunnable(agent: AgentDefinition) {
   if (agent.status !== "active") throw new RuntimePolicyError("agent_paused", "Agent ist pausiert");
-  if (agent.plannerPolicy.plannerId === "model-assisted") throw new RuntimePolicyError("model_disabled", "Model Planner ist nicht aktiviert");
 }
 
 export function assertSourceAllowed(agent: AgentDefinition, source: RuntimeSource) {

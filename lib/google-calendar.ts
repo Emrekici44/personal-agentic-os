@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
-import { googleRequestSignal } from './google-transport';
+import { googleRequestSignal } from './google-transport.ts';
 export const calendarScopes=[
   'https://www.googleapis.com/auth/calendar.calendarlist.readonly',
   'https://www.googleapis.com/auth/calendar.events',

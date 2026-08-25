@@ -1,5 +1,12 @@
 # Roadmap
 
+## Intelligent planning and connector actions (2026-08-25)
+
+- Implemented: guarded model-assisted planning for `project_coach`, structured-output and prompt-injection boundaries, content-light usage evidence, exact connector proposals and per-action receipts.
+- Implemented and locally verified with fake transports/temp vaults: Calendar, Google Tasks and Obsidian create/update/delete contracts, drift checks, destructive-action approvals and unknown-outcome recovery.
+- Prepared but gated: real OpenAI execution (all cost/provider gates required) and Google Tasks account access (explicit Tasks OAuth consent required).
+- Still excluded: autonomous execution, bulk deletes, model-created approvals, scheduled destructive actions, silent cross-provider synchronization and automatic Memory promotion.
+
 ## Completed: deterministic runtime foundation
 
 - First-class versioned Agent, Skill and Tool contracts with shared permission/risk policy.

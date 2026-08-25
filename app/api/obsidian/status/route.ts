@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 export async function GET(request: NextRequest) {
   if (!verifyLocalSession(request.cookies.get("agentic_os_local_session")?.value)) {
     return NextResponse.json(
-      { error: "Lokale Sitzung erforderlich", readOnly: true, writesEnabled: false },
+      { error: "Lokale Sitzung erforderlich", readOnly: true, writesEnabled: false, controlledActionsAvailable: false },
       { headers: { "cache-control": "no-store, private" }, status: 401 },
     );
   }
@@ -20,6 +20,7 @@ export async function GET(request: NextRequest) {
         readOnly: true,
         status: "unconfigured",
         writesEnabled: false,
+        controlledActionsAvailable: false,
       },
       { headers: { "cache-control": "no-store, private" } },
     );
@@ -28,7 +29,7 @@ export async function GET(request: NextRequest) {
   try {
     const preview = await readVaultPreview();
     return NextResponse.json(
-      { ...preview, configured: true },
+      { ...preview, configured: true, controlledActionsAvailable: true, directWritesEnabled: false },
       { headers: { "cache-control": "no-store, private" } },
     );
   } catch {
@@ -40,6 +41,7 @@ export async function GET(request: NextRequest) {
         readOnly: true,
         status: "degraded",
         writesEnabled: false,
+        controlledActionsAvailable: false,
       },
       { headers: { "cache-control": "no-store, private" }, status: 503 },
     );

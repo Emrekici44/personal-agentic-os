@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
     const body = await readPrivateJson(req);
     const change = validateCalendarChange(body.change);
     const approval = createApproval(change, body.selectedCalendarIds || []);
-    return NextResponse.json({ proposalOnly: true, writesPerformed: false, deletesEnabled: false, exactChange: change, ...approval, expiresInSeconds: 900 },{headers});
+    return NextResponse.json({ proposalOnly: true, writesPerformed: false, deletesEnabled: true, destructive:change.action==='delete', exactChange: change, ...approval, expiresInSeconds: 900 },{headers});
   } catch (error) {
     return NextResponse.json({ error: publicApiError(error, 'Kalendervorschlag konnte nicht sicher geprüft werden'), proposalOnly: true, writesPerformed: false }, { status: 400, headers });
   }

@@ -1,5 +1,8 @@
 import { buildAgentWorkflowProposal } from "../../agent-workflows.ts";
 import type { AgentDefinition, PlannerResult, RuntimeContextSnapshot } from "../types.ts";
+import crypto from "node:crypto";import {buildModelContextEnvelope} from "../models/context-envelope.ts";import {productionModelRouter} from "../models/router.ts";import {parseStructuredPlannerOutput} from "../models/structured-output.ts";
+import type {ModelRequest,ModelResponse} from "../models/types.ts";
+import {appendRuntimeAudit} from "../../repositories/audit-repository.ts";
 
 export interface Planner { id: "deterministic-local" | "model-assisted"; plan(input: { agent: AgentDefinition; userInput: string; context: RuntimeContextSnapshot; projectId?: string; requestedSkillId?: string; plannerInput?: Record<string, unknown> }): Promise<PlannerResult>; }
 
@@ -23,6 +26,8 @@ export const deterministicLocalPlanner: Planner = {
   },
 };
 
-export const modelAssistedPlanner: Planner = { id: "model-assisted", async plan() { throw new Error("Model Planner ist nicht aktiviert"); } };
+export type ModelRouterLike={execute(request:ModelRequest):Promise<ModelResponse>};
+export function createModelAssistedPlanner(router:ModelRouterLike=productionModelRouter):Planner{return{id:"model-assisted",async plan({agent,userInput,context}){const requestId=crypto.randomUUID();appendRuntimeAudit("model.request.started","runtime_context",context.id,{agentId:agent.id,schemaVersion:1});try{const response=await router.execute({id:requestId,purpose:"planner",policy:{reasoning:"high",latency:"flexible",structuredOutput:true,privacy:"private",toolPlanning:true,costClass:"bounded"},input:buildModelContextEnvelope(agent,userInput,context),schemaId:"agentic_os_planner_v1",maxOutputUnits:1200});const parsed=parseStructuredPlannerOutput(agent,response.output,context.sources);appendRuntimeAudit("model.request.completed","runtime_context",context.id,{agentId:agent.id,provider:response.providerId,model:response.modelId||"unknown",schemaVersion:1});return{...parsed,providerEvidence:{provider:response.providerId,model:response.modelId,usage:{inputUnits:response.usage.estimatedInputUnits,outputUnits:response.usage.estimatedOutputUnits},estimatedCost:response.cost.estimatedCost,schemaVersion:1}}}catch(error){appendRuntimeAudit("model.request.blocked","runtime_context",context.id,{agentId:agent.id,category:(error as any)?.code||"provider_failure"});throw error}}}}
+export const modelAssistedPlanner=createModelAssistedPlanner();
 
-export function getPlanner(id: AgentDefinition["plannerPolicy"]["plannerId"]) { return id === "deterministic-local" ? deterministicLocalPlanner : modelAssistedPlanner; }
+export function getPlanner(id:AgentDefinition["plannerPolicy"]["plannerId"],router?:ModelRouterLike){return id==="deterministic-local"?deterministicLocalPlanner:createModelAssistedPlanner(router)}

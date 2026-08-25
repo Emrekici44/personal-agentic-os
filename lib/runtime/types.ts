@@ -1,6 +1,6 @@
 export type RuntimeSource = "projects" | "tasks" | "inbox" | "habits" | "journal_metadata" | "area_records" | "weekly_plans" | "calendar_catalog" | "calendar_events";
-export type RiskClass = "read" | "local_mutation" | "external_mutation";
-export type RuntimeStatus = "created" | "context_ready" | "planned" | "executing" | "waiting_for_approval" | "waiting_for_review" | "completed" | "blocked" | "failed" | "unknown" | "rejected";
+export type RiskClass = "read" | "local_mutation" | "external_mutation" | "external_read" | "external_create" | "external_update" | "external_delete";
+export type RuntimeStatus = "created" | "context_ready" | "planned" | "executing" | "waiting_for_approval" | "waiting_for_review" | "completed" | "partially_completed" | "blocked" | "failed" | "unknown" | "rejected";
 export type RunStepType = "context" | "planner" | "skill" | "tool" | "policy" | "approval" | "result";
 export type ExecutionStatus = "not_started" | "blocked" | "started" | "confirmed" | "failed" | "unknown";
 export type RetryPolicy = "safe" | "new_approval_required" | "manual_verification_required" | "not_retryable";
@@ -10,7 +10,7 @@ export interface ExecutionReceipt {
   runId?: string;
   invocationId: string;
   actionType: string;
-  targetType: "skill" | "tool" | "calendar" | "vault" | "local_mutation";
+  targetType: "skill" | "tool" | "calendar" | "google_task" | "vault" | "local_mutation";
   targetId?: string;
   status: ExecutionStatus;
   external: boolean;
@@ -28,6 +28,8 @@ export interface PermissionPolicy {
 
 export interface PlannerPolicy {
   plannerId: "deterministic-local" | "model-assisted";
+  fallback?: "none" | "deterministic-local";
+  policyVersion?: number;
 }
 
 export interface MemoryPolicy {
@@ -57,6 +59,11 @@ export interface AgentDefinition {
   allowedSkills: string[];
   allowedTools: string[];
   allowedSources: RuntimeSource[];
+  allowedConnectors?: string[];
+  allowedExternalReadTools?: string[];
+  allowedExternalCreateTools?: string[];
+  allowedExternalUpdateTools?: string[];
+  allowedExternalDeleteTools?: string[];
   defaultSkillId: string;
   plannerPolicy: PlannerPolicy;
   memoryPolicy: MemoryPolicy;
@@ -134,13 +141,14 @@ export interface PlannerResult {
   summary: string;
   proposedSteps: Array<{ id: string; title: string; rationale: string; type: "proposal"; externalAction: false; requiresSeparateApproval: true }>;
   requiresApproval: boolean;
-  modelUsed: false;
+  modelUsed: boolean;
   externalActionsPerformed: false;
   evidence: SafeSourceEvidence[];
   skillInvocations: PlannedSkillInvocation[];
   toolIntents: Array<{ toolId: string; input: Record<string, unknown>; requestedBySkillId?: string }>;
   memorySuggestions: Array<{ kind: RuntimeMemory["kind"]; scope: RuntimeMemory["scope"]; reason: string }>;
   approvalRequirements: Array<{ approvalClass: string; riskClass: RiskClass; reason: string }>;
+  providerEvidence?: { provider: string; model: string | null; usage: { inputUnits: number | null; outputUnits: number | null }; estimatedCost: number | null; schemaVersion: number };
 }
 
 export interface PlannedSkillInvocation {

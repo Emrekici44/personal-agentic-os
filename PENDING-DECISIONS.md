@@ -2,9 +2,16 @@
 
 Stand: 24.08.2026, Europe/Berlin. Diese Punkte blockieren nicht die übrige lokale, reversible Arbeit.
 
-Die deterministische Agent Runtime benötigt aktuell keine Provider-, Kosten- oder Autonomieentscheidung. Modellgestützte Planung, Background Agents, beliebige Tools, externe Aktionen und automatische Policy-Memory-Promotion bleiben technisch deaktiviert und wären jeweils ein späterer eigener Freigabeschritt.
+Die Agent Runtime besitzt nun einen echten, strukturierten model-assisted Planner für `project_coach`. Der reale OpenAI-Transport bleibt jedoch deaktiviert, bis API-Modus, Provider-Freigabe, serverseitiger Key, ausgeschalteter Kill Switch sowie positive Tages-, Monats- und Pro-Lauf-Grenzen ausdrücklich gesetzt sind. ChatGPT-Abonnement und OpenAI-API-Guthaben bleiben getrennte Produkte.
 
-Die lokale Vorbereitung ist vollständig genug, dass keine Entscheidung für Contracts oder Tests nötig ist: Provider Router und OpenAI Boundary transportieren nichts, Scheduler-Auswertung ist manuell/proposal-only, Calendar bleibt Einzelapproval, Vault bleibt Vorschau. Eine echte Aktivierung dieser Grenzen bleibt ausdrücklich eine neue Nutzer-/Providerentscheidung.
+Die lokale Vorbereitung ist vollständig genug, dass keine Entscheidung für Contracts oder Tests nötig ist: Fake-Provider und Connector-Transporte bleiben isolierte Tests, Scheduler-Auswertung ist manuell/proposal-only und externe Aktionen bleiben Einzelapproval. Reale OpenAI-Nutzung, die zusätzliche Google-Tasks-OAuth-Einwilligung und jede reale Connector-Abnahme sind getrennte Nutzerentscheidungen.
+
+## Google Tasks OAuth
+
+- Benötigte Entscheidung: Den offiziellen Scope `https://www.googleapis.com/auth/tasks` separat im Google-Consent freigeben.
+- Grund: Der bestehende Calendar-Consent wird nicht still erweitert und reicht nicht für Google Tasks.
+- Auswirkung: Erst danach können die vorbereiteten bounded Read- und exakten Create/Update/Delete-Pfade gegen das reale Konto verifiziert werden.
+- Sicherer nächster Schritt: Scope-Inventar in Integration Health prüfen, anschließend bewusst neu autorisieren; keine Testaufgabe wird automatisch erzeugt.
 
 ## Obsidian-Schreibfreigabe
 

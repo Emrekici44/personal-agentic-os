@@ -41,6 +41,7 @@ export async function POST(request: NextRequest) {
   }
 
   const base = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(change.calendarId)}/events`;
+  if(change.action!=="create")try{const currentUrl=new URL(`${base}/${encodeURIComponent(change.eventId!)}`);currentUrl.searchParams.set("fields","id,etag,summary,start,end");const current=await fetch(currentUrl,{headers:{authorization:`Bearer ${access}`},cache:"no-store",signal:googleRequestSignal()});if(!current.ok)throw new Error();const remote=await current.json();if(remote.etag!==change.expectedEtag){const executionReceipt=receipt(change,"not_started",{remoteDrift:true});return respond({error:"Kalenderereignis wurde extern geändert; neue exakte Vorschau erforderlich",written:false,outcome:"not_started",approvalConsumed:true,remoteDrift:true,retryAllowed:false,executionReceipt},{status:409})}}catch(error){if(error instanceof Response)return error;const executionReceipt=receipt(change,"not_started",{remoteStateVerified:false});return respond({error:"Aktueller Remote-Stand konnte nicht bestätigt werden",written:false,outcome:"not_started",approvalConsumed:true,newApprovalRequired:true,retryAllowed:false,executionReceipt},{status:502})}
   if (change.action === "create") {
     try {
       const duplicate = new URL(base);
@@ -61,6 +62,7 @@ export async function POST(request: NextRequest) {
     }
   }
 
+  if(change.action==="delete"){try{const response=await fetch(`${base}/${encodeURIComponent(change.eventId!)}`,{method:"DELETE",headers:{authorization:`Bearer ${access}`,"if-match":change.expectedEtag!},cache:"no-store",signal:googleRequestSignal()});if(!response.ok){const executionReceipt=receipt(change,"rejected");return respond({error:"Google hat das Löschen abgelehnt",written:false,outcome:"rejected",approvalConsumed:true,retryAllowed:false,executionReceipt},{status:502})}}catch{const executionReceipt=receipt(change,"unknown");return respond({error:"Löschstatus ist unklar; manuell im Kalender prüfen",written:null,outcome:"unknown",approvalConsumed:true,verificationRequired:true,retryAllowed:false,executionReceipt},{status:502})}let absent=false;try{const check=await fetch(`${base}/${encodeURIComponent(change.eventId!)}`,{headers:{authorization:`Bearer ${access}`},cache:"no-store",signal:googleRequestSignal()});absent=check.status===404||check.status===410}catch{}const auditId=crypto.randomUUID();await auditCalendarWrite({auditId,action:"delete",calendarId:change.calendarId,eventId:change.eventId,approved:true,readBackVerified:absent});const executionReceipt=receipt(change,absent?"written_verified":"written_unverified",{verified:absent,destructive:true});return respond({written:absent?true:null,deleted:absent,verified:absent,outcome:absent?"written_verified":"written_unverified",approvalConsumed:true,auditId,executionReceipt,retryAllowed:false},{status:absent?200:502})}
   const url = change.action === "update" ? `${base}/${encodeURIComponent(change.eventId!)}` : base;
   const event = { summary: change.title, description: change.description, location: change.location, start: { dateTime: change.start }, end: { dateTime: change.end }, extendedProperties: { private: { agenticOsIdempotencyKey: change.idempotencyKey } } };
   let result: any;
@@ -100,8 +102,4 @@ export async function POST(request: NextRequest) {
   }
 
   const executionReceipt = receipt(change, "written_verified", { verified: true, auditRecorded: true }); return respond({ written: true, verified: true, outcome: "written_verified", action: change.action, eventId: result.id, auditId, approvalConsumed: true, auditRecorded: true, executionReceipt, deletesEnabled: false });
-}
-
-export async function DELETE() {
-  return NextResponse.json({ error: "Kalender-Löschungen sind deaktiviert" }, { status: 405, headers: { ...headers, Allow: "POST" } });
 }

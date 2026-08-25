@@ -118,7 +118,7 @@ Die gebündelten Details stehen in `PENDING-DECISIONS.md`. Kein Punkt hier block
 - Keine kostenpflichtige oder öffentliche Fähigkeit wird still aktiviert.
 # Remaining runtime gaps
 
-- No model-driven planner or autonomous tool selection.
-- No external mutation tools or background execution.
+- A model-assisted planner now exists for `project_coach`, but the real provider is disabled until every explicit server-side enablement and positive cost gate is satisfied. Autonomous tool selection remains absent.
+- Narrow external connector mutation tools exist behind exact approval/receipt boundaries. Real Google Tasks access still needs explicit OAuth scope consent; no background external execution exists.
 - No automatic memory extraction; candidates remain deliberate and reviewable.
 - Standalone skill previews retain their existing safe local execution path; runtime agents add structured invocation and tool evidence around the same local procedure catalog.

@@ -6,7 +6,7 @@ import { open, seal } from './google-calendar';
 import { consumeApprovalArtifact, createApprovalArtifact } from './repositories/approval-repository';
 
 export type CalendarChange = {
-  action: 'create' | 'update';
+  action: 'create' | 'update' | 'delete';
   calendarId: string;
   eventId?: string;
   title: string;
@@ -15,12 +15,13 @@ export type CalendarChange = {
   description?: string;
   location?: string;
   idempotencyKey: string;
+  expectedEtag?: string;
 };
 
 export function validateCalendarChange(change: CalendarChange) {
-  if (!change || !['create', 'update'].includes(change.action)) throw new Error('Nur Erstellen oder Aktualisieren ist erlaubt');
+  if (!change || !['create', 'update','delete'].includes(change.action)) throw new Error('Nur Erstellen, Aktualisieren oder Löschen ist erlaubt');
   if (!change.calendarId || !change.title || !change.start || !change.end) throw new Error('Kalender, Titel, Start und Ende sind erforderlich');
-  if (change.action === 'update' && !change.eventId) throw new Error('Event-ID für Aktualisierung fehlt');
+  if (change.action !== 'create' && (!change.eventId||!change.expectedEtag)) throw new Error('Event-ID und Remote-Version fehlen');
   if (!/^[a-zA-Z0-9._:-]{12,160}$/.test(change.idempotencyKey || '')) throw new Error('Ungültiger Duplikatschutz');
   assertBoundedWindow(change.start, change.end);
   return change;
@@ -32,16 +33,16 @@ export function createApproval(change: CalendarChange, selectedCalendarIds: stri
   const expiresAt = Date.now() + 15 * 60_000;
   const approvalId = crypto.randomUUID();
   const expiresAtIso = new Date(expiresAt).toISOString();
-  createApprovalArtifact({ id: approvalId, actionType: `calendar_event_${exact.action}`, approvalClass: 'external_calendar_write', exactPayload: exact, expiresAt: expiresAtIso });
+  createApprovalArtifact({ id: approvalId, actionType: `calendar_event_${exact.action}`, approvalClass: `google_calendar_${exact.action}`, exactPayload: exact, expiresAt: expiresAtIso });
   return { approvalToken: seal(JSON.stringify({ approvalId, change: exact, expiresAt, nonce: crypto.randomUUID() })), expiresAt: expiresAtIso };
 }
 
 export function consumeApproval(token: string, confirmation: string): CalendarChange & { approvalId: string } {
-  if (confirmation !== 'DIESEN_TERMIN_JETZT_SCHREIBEN') throw new Error('Exakte Einzelbestätigung fehlt');
   const payload = JSON.parse(open(token));
+  const required=payload?.change?.action==='delete'?'DIESEN_TERMIN_JETZT_LOESCHEN':'DIESEN_TERMIN_JETZT_SCHREIBEN';if (confirmation !== required) throw new Error('Exakte Einzelbestätigung fehlt');
   if (!payload.expiresAt || payload.expiresAt < Date.now()) throw new Error('Vorschlag ist abgelaufen');
   const exact = validateCalendarChange(payload.change);
-  consumeApprovalArtifact({ id: String(payload.approvalId || ''), actionType: `calendar_event_${exact.action}`, approvalClass: 'external_calendar_write', exactPayload: exact });
+  consumeApprovalArtifact({ id: String(payload.approvalId || ''), actionType: `calendar_event_${exact.action}`, approvalClass: `google_calendar_${exact.action}`, exactPayload: exact });
   return { ...exact, approvalId: String(payload.approvalId) };
 }
 

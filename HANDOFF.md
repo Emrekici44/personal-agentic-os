@@ -1,5 +1,12 @@
 # Resume handoff
 
+## Guarded model planning and connectors (2026-08-25)
+
+- `project_coach` is the first model-assisted-capable agent. Its planner accepts only bounded structured proposals and revalidates every referenced Skill, Tool, source and risk class. Untrusted Calendar/Tasks/Vault text is data, never instruction or authority.
+- The OpenAI Responses adapter is real but remains disabled under committed settings. It requires explicit provider enablement, API mode, a server-only key, kill-switch off, positive daily/monthly/per-run limits and remaining budget. No request or cost was incurred.
+- Calendar, Google Tasks and Obsidian have explicit single-target create/update/delete proposal paths with exact approvals and receipts. Updates verify ETag/hash drift; deletes require action-time confirmation and unknown results require manual verification rather than retry.
+- Google Tasks real access remains at the explicit OAuth-consent boundary because the existing Calendar consent is not silently widened. Obsidian tests used only a temporary vault; no personal Vault or live Google record was changed.
+
 ## Deterministic Runtime consolidation (2026-08-25)
 
 - Agent and standalone Skill entrypoints share one deterministic Skill service and local Procedure catalog. Six built-in agents, including Weekly Planner, use declared sources/skills/tools/context/risk policies.
