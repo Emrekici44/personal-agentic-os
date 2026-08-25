@@ -116,6 +116,7 @@ Project root: `outputs/agentic-os`. Private source remote: `https://github.com/E
 - Full verification for private mutation origin: Root 145/145, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed. Runtime session probe returned 403 for a foreign Origin and 200 for local same-origin without retaining or printing a cookie. Progress rendered 64/67 with no live alert or desktop/390×844 overflow; no operational record or external write was created.
 - New Journal drafts are session-memory only and no longer written as plaintext browser/WebView storage. A legacy draft, if present, is left untouched behind explicit import or two-stage discard; after import its old local copy is removed only after the encrypted shared-store Journal create succeeds.
 - Full verification for Journal draft privacy: Root 147/147, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed. The live Journal rendered its session-only/no-autosave truth with no legacy content inspection; desktop and 390×844 had no alert or overflow. Progress rendered 65/68; no sample data or storage deletion occurred.
+- The method-level origin audit corrected guard placement for Skill update/archive/review and Vault review: both PATCH paths now stop before body parsing, while Vault GET remains a signed read. The stronger contract inventories every active mutation method separately; the full Root 147/147, Electron, Expo and production-build matrix remains green.
 
 ## Immediate continuation
 

@@ -80,6 +80,7 @@ export async function POST(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   if (!authorized(request)) return reject(new Error("Lokale Sitzung erforderlich"), 401);
+  if (!trustedPrivateMutationOrigin(request)) return NextResponse.json({ error: "Anfrageherkunft nicht zulässig", writesPerformed: false }, { status: 403, headers: responseHeaders });
   try {
     const body = await readPrivateJson(request);
     if (body.action === "update_definition") return NextResponse.json({ definition: withStoreTransaction(() => updateSkillDefinition(String(body.skillId || ""), body.definition)), externalActionsPerformed: false }, { headers: responseHeaders });

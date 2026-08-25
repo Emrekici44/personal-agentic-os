@@ -12,7 +12,6 @@ const errorResponse = (error: unknown, status = 400) => { const fallback = "Vaul
 
 export async function GET(request: NextRequest) {
   if (!authorized(request)) return errorResponse(new Error("Lokale Sitzung erforderlich"), 401);
-  if (!trustedPrivateMutationOrigin(request)) return NextResponse.json({ error: "Anfrageherkunft nicht zulässig", applyAvailable: false, writesPerformed: false, existingNotesModified: 0 }, { status: 403, headers });
   return NextResponse.json({ proposals: listVaultWriteProposals(), applyAvailable: false, writesPerformed: false, existingNotesModified: 0 }, { headers });
 }
 
@@ -30,6 +29,7 @@ export async function POST(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   if (!authorized(request)) return errorResponse(new Error("Lokale Sitzung erforderlich"), 401);
+  if (!trustedPrivateMutationOrigin(request)) return NextResponse.json({ error: "Anfrageherkunft nicht zulässig", applyAvailable: false, writesPerformed: false, existingNotesModified: 0 }, { status: 403, headers });
   try {
     const body = await readPrivateJson(request);
     if (body.action !== "approve_preview") throw new Error("Apply ist gesperrt; nur die Vorschau-Freigabe ist verfügbar");

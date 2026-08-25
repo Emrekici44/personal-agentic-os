@@ -28,24 +28,34 @@ test("private mutation origin rejects cross-site, mismatched and opaque origins"
 });
 
 test("every active private mutation route checks origin before body or external work", () => {
-  const routes = [
-    "app/api/state/session/route.ts",
-    "app/api/state/records/[kind]/route.ts",
-    "app/api/state/preferences/[id]/route.ts",
-    "app/api/state/backups/route.ts",
-    "app/api/state/archive/route.ts",
-    "app/api/state/migration-preview/route.ts",
-    "app/api/agents/workflows/route.ts",
-    "app/api/skills/route.ts",
-    "app/api/planner/route.ts",
-    "app/api/obsidian/write-proposals/route.ts",
-    "app/api/calendar/share-local-session/route.ts",
-    "app/api/calendar/write-proposal/route.ts",
-    "app/api/calendar/write/route.ts",
-  ];
-  for (const route of routes) {
+  const routes = new Map([
+    ["app/api/state/session/route.ts", ["POST"]],
+    ["app/api/state/records/[kind]/route.ts", ["POST", "PATCH", "DELETE"]],
+    ["app/api/state/preferences/[id]/route.ts", ["PUT"]],
+    ["app/api/state/backups/route.ts", ["POST", "PATCH"]],
+    ["app/api/state/archive/route.ts", ["PATCH"]],
+    ["app/api/state/migration-preview/route.ts", ["POST"]],
+    ["app/api/agents/workflows/route.ts", ["POST", "PATCH"]],
+    ["app/api/skills/route.ts", ["POST", "PATCH"]],
+    ["app/api/planner/route.ts", ["POST", "PATCH"]],
+    ["app/api/obsidian/write-proposals/route.ts", ["POST", "PATCH"]],
+    ["app/api/calendar/share-local-session/route.ts", ["POST"]],
+    ["app/api/calendar/write-proposal/route.ts", ["POST"]],
+    ["app/api/calendar/write/route.ts", ["POST"]],
+  ]);
+  for (const [route, methods] of routes) {
     const source = fs.readFileSync(path.join(root, route), "utf8");
-    assert.match(source, /trustedPrivateMutationOrigin/);
+    for (const method of methods) {
+      const marker = `export async function ${method}`;
+      const start = source.indexOf(marker);
+      assert.notEqual(start, -1, `${route} ${method} exists`);
+      const next = source.indexOf("export async function ", start + marker.length);
+      const block = source.slice(start, next < 0 ? source.length : next);
+      assert.match(block, /trustedPrivateMutationOrigin/, `${route} ${method} checks origin`);
+      const originIndex = block.indexOf("trustedPrivateMutationOrigin");
+      const bodyIndex = block.indexOf("readPrivateJson");
+      if (bodyIndex >= 0) assert.ok(originIndex < bodyIndex, `${route} ${method} checks origin before body`);
+    }
   }
   const calendarWrite = fs.readFileSync(path.join(root, "app/api/calendar/write/route.ts"), "utf8");
   assert.ok(calendarWrite.indexOf("trustedPrivateMutationOrigin(request)") < calendarWrite.indexOf("await refreshedAccessToken"));
