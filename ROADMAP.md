@@ -112,3 +112,5 @@ Core Shared Store screens now expose scoped read-only retries and error-only foc
 The bounded private client now buffers each full API response inside the same deadline. Partial response streams and authenticated/server mutation failures therefore fail closed without leaving stale controls active.
 
 Every active private JSON mutation route now shares a bounded server-side body reader. Invalid, oversized or incomplete input is rejected before business logic, storage or external transport.
+
+Stateful mutation clients now treat private 401/403/5xx responses as source failures, clear stale controls and require a verified reload. Agent and Skill cross-source references expose their own read-only retries.

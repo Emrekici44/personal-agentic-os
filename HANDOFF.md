@@ -108,6 +108,8 @@ Project root: `outputs/agentic-os`. Private source remote: `https://github.com/E
 - Full verification for complete response deadlines: Root 136/136, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed. Dashboard rendered 60/63 with no Offline banner and 0 desktop/390×844 overflow; the hanging-body proof used only a local stream stub.
 - All eleven active private JSON mutation routes use one server-side input boundary: object-only JSON, 64 KiB maximum and five-second body deadline. Invalid/oversized/incomplete bodies fail before business logic, storage or Calendar transport and expose no raw detail.
 - Full verification for bounded private inputs: Root 140/140, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed. Dashboard rendered 61/64 with 0 desktop/390×844 overflow and all five mobile primary destinations enabled; the input proofs used only artificial Request streams.
+- Preferences, Agent workflows, Skills, Planner, Vault previews and Backup now treat private 401/403/5xx mutation responses as source failures, clear stale active controls and wait for verified reload. Agent/Skill project sources and transparent Skill references have scoped read-only retries.
+- Full verification for mutation HTTP truth: Root 141/141, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed. Progress rendered 62/65; Agents on desktop and Skills at 390×844 were online with no false Retry and no horizontal overflow.
 
 ## Immediate continuation
 

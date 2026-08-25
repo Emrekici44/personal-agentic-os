@@ -170,6 +170,8 @@ Last verified: 25.08.2026, Europe/Berlin.
 - Verifikation der vollständigen Antwortgrenze: Root 136/136, Lint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export und isolierter Produktionsbuild sind grün. Dashboard 60/63, keine Offline-Warnung und 0 Desktop-/390×844-Überlauf; der Hänge-Body-Test nutzte ausschließlich einen lokalen Stream-Stub.
 - Private Mutationseingaben sind zentral begrenzt: alle elf aktiven JSON-Routen verlangen ein JSON-Objekt, höchstens 64 KiB und vollständiges Lesen innerhalb von fünf Sekunden. Die Ablehnung geschieht vor Fachlogik, Store oder externem Calendar-Transport und gibt keine Rohdetails aus.
 - Verifikation der privaten Eingabegrenze: Root 140/140, Lint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export und isolierter Produktionsbuild sind grün. Dashboard 61/64, 0 Desktop-/390×844-Überlauf, alle fünf mobilen Hauptziele aktiv; Unit-Proben verwendeten ausschließlich künstliche Request-Streams.
+- Nicht erfolgreiche Mutationsantworten sind jetzt genauso fail-closed wie Transportfehler: Preferences, Agenten, Skills, Planner, Vault-Vorschau und Backup verwerfen bei 401/403/5xx aktive Altstände und sperren Folgecontrols. Projekt-/Skill-Quellen in Agenten und Skills haben eigene sichtbare Retries.
+- Verifikation der Mutations-HTTP-Wahrheit: Root 141/141, Lint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export und isolierter Produktionsbuild sind grün. Fortschritt 62/65; Agenten auf Desktop und Skills bei 390×844 renderten online ohne falschen Retry und ohne horizontalen Überlauf.
 
 ## User boundaries
 
