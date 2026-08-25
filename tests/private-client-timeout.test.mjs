@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-import { privateApiFetch } from "../lib/private-client.ts";
+import { PRIVATE_RESPONSE_LIMIT_BYTES, privateApiFetch } from "../lib/private-client.ts";
 
 test("private client accepts only bounded relative API requests", async () => {
   await assert.rejects(privateApiFetch("https://example.com/api/status"), /Nur relative private API-Pfade/);
@@ -45,6 +45,32 @@ test("private client returns a buffered same-origin response", async () => {
     assert.equal(response.status, 200);
     assert.equal(response.headers.get("cache-control"), "no-store");
     assert.deepEqual(await response.json(), { online: true });
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("private client rejects a declared response above the local size boundary", async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = () => Promise.resolve(new Response(null, { headers: { "content-length": String(PRIVATE_RESPONSE_LIMIT_BYTES + 1) } }));
+  try {
+    await assert.rejects(privateApiFetch("/api/state/status", {}, 100), /Private Antwort überschreitet das Größenlimit/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("private client stops an undeclared oversized response while streaming", async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = () => Promise.resolve(new Response(new ReadableStream({
+    start(controller) {
+      controller.enqueue(new Uint8Array(PRIVATE_RESPONSE_LIMIT_BYTES));
+      controller.enqueue(new Uint8Array(1));
+      controller.close();
+    },
+  })));
+  try {
+    await assert.rejects(privateApiFetch("/api/state/status", {}, 500), /Private Antwort überschreitet das Größenlimit/);
   } finally {
     globalThis.fetch = originalFetch;
   }

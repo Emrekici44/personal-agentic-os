@@ -130,3 +130,5 @@ Backup, recovery-diagnosis and archive timestamps now render consistently in Eur
 Archive restore now distinguishes an unconfirmed result from a known rejection. Unconfirmed outcomes clear stale state and require an explicit read-only inventory refresh; double submission and automatic mutation retry remain disabled.
 
 The standalone Usage & Limits surface now renders backup and live-check evidence explicitly in Europe/Berlin from unchanged UTC timestamps, matching desktop and iPhone views.
+
+The shared private browser client now enforces a 2 MiB response boundary for both declared length and streamed bodies. Oversized local responses abort without fallback data, retries or mutations.

@@ -510,6 +510,13 @@ export const systemProgress = {
       status: "complete",
     },
     {
+      id: "bounded-private-response-size",
+      label: "Private Antworten auch nach Größe begrenzen",
+      evidence: "2 MiB · Content-Length und laufender Stream · Abbruch statt Speicherblockade · normale Quellen unverändert",
+      href: "#settings",
+      status: "complete",
+    },
+    {
       id: "ongoing-local-gap-audit",
       label: "Nächste lokale Bedien-/Recovery-Lücke prüfen",
       evidence: "Nur reversible lokale Änderungen · keine externen Writes, Migrationen, Installationen oder Kosten",

@@ -127,6 +127,8 @@ Project root: `outputs/agentic-os`. Private source remote: `https://github.com/E
 - Archive restore recovery now fails closed on interrupted or malformed responses: stale inventory and the armed confirmation are cleared, duplicate clicks are blocked while pending, and only a new read-only inventory check can resume the flow. No archive mutation was executed during verification.
 - Usage & Limits now shares the Europe/Berlin display contract for backup and last-live-check timestamps; UTC source values remain unchanged and no provider or connector action is involved.
 - Full verification for Usage timestamp consistency: Root 152/152, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed. Desktop/390×844 Usage showed the Berlin evidence with no alert, console warning or overflow; no status source was mutated.
+- Private API responses now have a fixed 2 MiB client-side boundary in addition to the existing relative-path and eight-second rules. Declared and streamed oversize proofs are deterministic local stubs and never touch user data.
+- Full verification for bounded response size: Root 154/154, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed. Normal live sources rendered without an Offline banner, alert, console warning or desktop/390×844 overflow; progress 71/74.
 
 ## Immediate continuation
 

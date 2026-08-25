@@ -1,4 +1,36 @@
 const DEFAULT_PRIVATE_TIMEOUT_MS = 8_000;
+export const PRIVATE_RESPONSE_LIMIT_BYTES = 2 * 1024 * 1024;
+
+async function bufferPrivateResponse(response: Response, controller: AbortController) {
+  const declaredLength = Number(response.headers.get("content-length") || 0);
+  if (Number.isFinite(declaredLength) && declaredLength > PRIVATE_RESPONSE_LIMIT_BYTES) {
+    controller.abort();
+    throw new Error("Private Antwort überschreitet das Größenlimit");
+  }
+  const reader = response.body?.getReader();
+  if (!reader) return null;
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    total += value.byteLength;
+    if (total > PRIVATE_RESPONSE_LIMIT_BYTES) {
+      await reader.cancel();
+      controller.abort();
+      throw new Error("Private Antwort überschreitet das Größenlimit");
+    }
+    chunks.push(value);
+  }
+  if (!total) return null;
+  const body = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    body.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return body;
+}
 
 export async function privateApiFetch(
   input: string,
@@ -25,8 +57,8 @@ export async function privateApiFetch(
   try {
     return await Promise.race([
       fetch(input, { ...init, signal: controller.signal }).then(async (response) => {
-        const body = await response.arrayBuffer();
-        return new Response(body.byteLength ? body : null, {
+        const body = await bufferPrivateResponse(response, controller);
+        return new Response(body, {
           headers: response.headers,
           status: response.status,
           statusText: response.statusText,

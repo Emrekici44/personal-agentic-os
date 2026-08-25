@@ -189,6 +189,8 @@ Last verified: 25.08.2026, Europe/Berlin.
 - Archiv-Recovery ist fail-closed: unklarer Transport oder eine unvollständige Erfolgsantwort verwirft das Inventar, sperrt Folgecontrols und fordert eine neue reine Statusprüfung. Die lokale Mutation wird nie automatisch wiederholt.
 - Usage & Limits verwendet für Backup- und Live-Prüfzeit dieselbe Europe/Berlin-Anzeige wie die Hauptoberfläche; die gespeicherten UTC-Zeitpunkte bleiben unverändert.
 - Verifikation der Usage-Zeitwahrheit: Root 152/152, Lint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export und isolierter Produktionsbuild sind grün. Usage rendert die Berlin-Evidenz auf Desktop/390×844 ohne Alert, Console-Warnung oder horizontalen Überlauf; Fortschritt 70/73. Es wurde keine Statusquelle verändert.
+- Private API-Antworten sind nun neben Herkunft und Zeit auch auf 2 MiB begrenzt. Der Client prüft Content-Length und zählt laufende Stream-Chunks; Übergröße endet mit einer inhaltsarmen lokalen Fehlerklasse.
+- Verifikation der Antwortgrößengrenze: Root 154/154, Lint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export und isolierter Produktionsbuild sind grün. Normale Live-Quellen renderten auf Desktop/390×844 ohne Offlinebanner, Alert, Console-Warnung oder Überlauf; Fortschritt 71/74. Die Übergrößenbelege nutzten nur lokale künstliche Streams.
 
 ## User boundaries
 

@@ -104,6 +104,8 @@ Die gebündelten Details stehen in `PENDING-DECISIONS.md`. Kein Punkt hier block
 - Eine unterbrochene lokale Archiv-Wiederherstellung wird nicht als sicher fehlgeschlagen dargestellt und nie automatisch wiederholt. Die Oberfläche verwirft das alte Inventar, sperrt Doppelbestätigung und verlangt vor einem neuen Versuch eine reine Statusprüfung.
 - Auch die eigenständige Usage-&-Limits-Route rendert Backup- und Live-Prüfzeit aus der unveränderten UTC-Quelle explizit in Europe/Berlin; Gerätezeitzonen können die gemeinsame Evidenz nicht mehr auseinanderziehen.
 - Der Zeitdarstellungs-Schnitt ist vollständig geprüft: Root 152/152 plus Desktop/Expo/Produktionsbuild; Usage bleibt auf Desktop und 390×844 ohne Alert, Console-Warnung oder horizontalen Überlauf. Die Prüfung war rein lesend.
+- Der gemeinsame private Browserclient begrenzt Antworten zusätzlich auf 2 MiB. Sowohl eine zu große angekündigte Länge als auch ein ohne Länge wachsender Stream werden abgebrochen; es entsteht weder ein stiller Ersatzstand noch eine automatische Aktion.
+- Die Größenbegrenzung ist mit Root 154/154 sowie Desktop-, Expo- und Produktionsbuild geprüft. Normale Live-Quellen blieben auf Desktop/390×844 ohne Offlinebanner, Alert, Console-Warnung oder Überlauf; Übergrößenproben waren ausschließlich künstliche lokale Streams.
 - Produktmodule enthalten keine eingebetteten Kalender-, Ereignis-, Fokusblock- oder Provider-Mocks mehr; Testverträge prüfen echte Guards ohne sie als Nutzerdatenpfad bereitzuhalten.
 - ChatGPT Pro ist kein API-Zugang. Companion Mode ist ein manueller Übergabepfad.
 - SQLite ist operative Quelle, Obsidian dauerhafte Wissensquelle und Google Calendar externe Ereignisquelle, bis Emre eine andere Migration ausdrücklich freigibt.
