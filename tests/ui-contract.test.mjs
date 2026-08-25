@@ -238,6 +238,8 @@ test("backup and archive recovery never render unavailable inventory as empty", 
   assert.match(page, /backupState\.state === "online" \? backupState\.backups\.length : backupState\.state === "loading" \? "Wird geprüft" : "Nicht erreichbar"/);
   assert.match(page, /backupState\.state === "online" && restorePreview/);
   assert.match(page, /archiveState\.state === "online" && archiveState\.records\.map/);
+  assert.match(page, /invalidateArchiveSource\(message\)/);
+  assert.match(page, /Archivstatus prüfen und nicht erneut bestätigen/);
 });
 
 test("integration health clears stale catalogs and exposes real calendar retry states", async () => {

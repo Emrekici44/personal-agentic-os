@@ -496,6 +496,13 @@ export const systemProgress = {
       status: "complete",
     },
     {
+      id: "archive-ambiguous-recovery",
+      label: "Unklares Archiv-Ergebnis sicher auflösen",
+      evidence: "Keine automatische Wiederholung · alte Auswahl verworfen · neue Statusprüfung erforderlich · Doppelaufruf gesperrt",
+      href: "#settings",
+      status: "complete",
+    },
+    {
       id: "ongoing-local-gap-audit",
       label: "Nächste lokale Bedien-/Recovery-Lücke prüfen",
       evidence: "Nur reversible lokale Änderungen · keine externen Writes, Migrationen, Installationen oder Kosten",

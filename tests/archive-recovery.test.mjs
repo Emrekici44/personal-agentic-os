@@ -63,7 +63,11 @@ test("settings expose real archive recovery without claiming a database restore"
   assert.match(page, /privateApiFetch\("\/api\/state\/archive"/);
   assert.match(page, /method:"PATCH"/);
   assert.match(page, /restoreArchiveArmed!==key/);
+  assert.match(page, /archiveState\.state!=="online"\|\|archiveBusy/);
   assert.match(page, /Wiederherstellung bestätigen/);
+  assert.match(page, /Wiederherstellungsergebnis nicht bestätigt\. Archivstatus prüfen und nicht erneut bestätigen\./);
+  assert.match(page, /result\.restored!==true/);
+  assert.match(page, /disabled=\{archiveBusy\}/);
   assert.match(page, /setRestoreArchiveArmed\(""\)/);
   assert.match(css, /\.archiveRecords/);
   assert.match(css, /\.archiveRestoreActions/);

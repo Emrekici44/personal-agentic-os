@@ -126,3 +126,5 @@ The Expo shell now performs one private WebView reload only when iOS resumes fro
 Web, Electron web content and the Expo WebView now receive one restrictive browser-security header set: same-origin CSP, frame/object denial, disabled camera/microphone/location/payment/USB plus no-referrer/nosniff. HSTS is intentionally omitted so the verified local LAN HTTP development path remains usable.
 
 Backup, recovery-diagnosis and archive timestamps now render consistently in Europe/Berlin on desktop and iPhone while preserving their UTC source values.
+
+Archive restore now distinguishes an unconfirmed result from a known rejection. Unconfirmed outcomes clear stale state and require an explicit read-only inventory refresh; double submission and automatic mutation retry remain disabled.
