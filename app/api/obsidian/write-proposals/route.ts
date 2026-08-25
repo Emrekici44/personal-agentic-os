@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { buildVaultWriteProposal, revalidateVaultWriteProposal } from "@/lib/obsidian-write-proposal";
 import { publicApiError } from "@/lib/public-api-error";
 import { readPrivateJson, trustedPrivateMutationOrigin } from "@/lib/private-request";
+import { createExecutionReceipt } from "@/lib/repositories/execution-receipt-repository";
 import { approveVaultWriteProposal, listVaultWriteProposals, saveVaultWriteProposal, verifyLocalSession, withStoreTransaction } from "@/lib/shared-store";
 
 const headers = { "Cache-Control": "no-store, private" };
@@ -36,7 +37,8 @@ export async function PATCH(request: NextRequest) {
     const proposal = listVaultWriteProposals(20).find((item) => item.id === String(body.proposalId || ""));
     if (!proposal) throw new Error("Vault-Vorschlag nicht gefunden");
     const revalidation = await revalidateVaultWriteProposal(proposal);
-    return NextResponse.json({ proposal: withStoreTransaction(() => approveVaultWriteProposal(proposal.id, String(body.approvalToken || ""), String(body.confirmation || ""), revalidation)), applyAvailable: false, writesPerformed: false, existingNotesModified: 0 }, { headers });
+    const reviewed=withStoreTransaction(()=>{const approved=approveVaultWriteProposal(proposal.id,String(body.approvalToken||""),String(body.confirmation||""),revalidation);const executionReceipt=createExecutionReceipt({invocationId:proposal.id,actionType:"vault_apply_preparation",targetType:"vault",status:"not_started",external:false,startedAt:new Date().toISOString(),finishedAt:new Date().toISOString(),retryPolicy:"new_approval_required",evidence:{previewApproved:true,applyAvailable:false,writesPerformed:false}});return{approved,executionReceipt}});
+    return NextResponse.json({ proposal:reviewed.approved,executionReceipt:reviewed.executionReceipt,applyAvailable: false, writesPerformed: false, existingNotesModified: 0 }, { headers });
   } catch (error) {
     return errorResponse(error);
   }

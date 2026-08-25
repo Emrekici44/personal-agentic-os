@@ -3,6 +3,7 @@ import { operationalDatabase } from "../store/database.ts";
 import { decryptSensitive, encryptSensitive } from "../store/encryption.ts";
 import type { PlannerResult, RunStep, RuntimeContextSnapshot } from "../runtime/types.ts";
 import { listExecutionReceipts } from "./execution-receipt-repository.ts";
+import { listInvocationEvents } from "./invocation-repository.ts";
 
 export function persistContextSnapshot(snapshot: RuntimeContextSnapshot) {
   const safeScope = JSON.stringify({ area: snapshot.scope?.area || null });
@@ -18,6 +19,8 @@ export function createRuntimeRun(agentId: string, input: string, context: Runtim
   return { id, workflowId: agentId, status: "proposal", currentStep: "review", input, output, sourceEvidence: Object.fromEntries(context.sources.map((item) => [item.source, item.recordCount])), decision: { selectedSuggestionIds: [], reviewed: false, externalActionApproved: false }, version: 1, createdAt: now, updatedAt: now };
 }
 
+export function createFailedRuntimeRun(agentId:string,input:string,category:string){const id=crypto.randomUUID(),now=new Date().toISOString(),output={summary:"Runtime-Lauf sicher fehlgeschlagen",provider:"local-rules",model:"none",modelUsed:false,externalActionsPerformed:false,backgroundActions:false,errorCategory:category};operationalDatabase().prepare("INSERT INTO agent_workflow_runs(id,workflow_id,status,runtime_status,current_step,input_enc,output_enc,source_json,decision_json,resume_enc,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)").run(id,agentId,"failed","failed","result",encryptSensitive({input}),encryptSensitive(output),"{}",JSON.stringify({selectedSuggestionIds:[],reviewed:false,externalActionApproved:false}),encryptSensitive({currentStep:"result",runtimeStatus:"failed"}),now,now);persistRunSteps(id,[{index:1,type:"result",status:"failed",startedAt:now,completedAt:now,evidence:{errorCategory:category,externalActionsPerformed:false}}]);return{id,workflowId:agentId,status:"failed",runtimeStatus:"failed",currentStep:"result",version:1,createdAt:now,updatedAt:now}}
+
 export function persistRunSteps(runId: string, steps: Array<Omit<RunStep, "id" | "runId">>) {
   const statement = operationalDatabase().prepare("INSERT INTO runtime_run_steps(id,run_id,step_index,step_type,status,evidence_json,started_at,completed_at) VALUES(?,?,?,?,?,?,?,?)");
   return steps.map((step) => { const id = crypto.randomUUID(); statement.run(id, runId, step.index, step.type, step.status, JSON.stringify(step.evidence || {}), step.startedAt || null, step.completedAt || null); return { ...step, id, runId }; });
@@ -30,5 +33,5 @@ export function listRunSteps(runId: string): RunStep[] {
 export function listRuntimeRuns(limit = 20) {
   const safe = Math.min(50, Math.max(1, Math.trunc(limit) || 20));
   const rows = operationalDatabase().prepare("SELECT * FROM agent_workflow_runs WHERE status<>'archived' ORDER BY updated_at DESC LIMIT ?").all(safe) as Array<Record<string, unknown>>;
-  return rows.map((row) => { const input = decryptSensitive(String(row.input_enc)) as { input: string }, output = decryptSensitive(String(row.output_enc)) as Record<string, unknown>; return { id: String(row.id), workflowId: String(row.workflow_id), status: String(row.status), runtimeStatus: String(row.runtime_status||"waiting_for_review"), currentStep: String(row.current_step), inputPreview: input.input.slice(0,160), inputLength: input.input.length, output, sourceEvidence: JSON.parse(String(row.source_json || "{}")), decision: JSON.parse(String(row.decision_json || "{}")), version: Number(row.version), createdAt: String(row.created_at), updatedAt: String(row.updated_at), steps: listRunSteps(String(row.id)), receipts: listExecutionReceipts(String(row.id)) }; });
+  return rows.map((row) => { const input = decryptSensitive(String(row.input_enc)) as { input: string }, output = decryptSensitive(String(row.output_enc)) as Record<string, unknown>; return { id: String(row.id), workflowId: String(row.workflow_id), status: String(row.status), runtimeStatus: String(row.runtime_status||"waiting_for_review"), currentStep: String(row.current_step), inputPreview: input.input.slice(0,160), inputLength: input.input.length, output, sourceEvidence: JSON.parse(String(row.source_json || "{}")), decision: JSON.parse(String(row.decision_json || "{}")), version: Number(row.version), createdAt: String(row.created_at), updatedAt: String(row.updated_at), steps: listRunSteps(String(row.id)), invocationEvents:listInvocationEvents(String(row.id)),receipts: listExecutionReceipts(String(row.id)) }; });
 }

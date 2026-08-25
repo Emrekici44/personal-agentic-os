@@ -56,6 +56,7 @@ test("runtime persists bounded context, steps, encrypted memory and no actions",
     if (result.context.sources.find((entry) => entry.source === "tasks").recordCount !== 1) throw new Error("project context leaked foreign task");
     if (result.run.steps.length < 9 || result.run.steps.some((step) => step.status !== "completed")) throw new Error("run steps missing");
     if (!result.skillExecutions.length || result.run.steps.some((step) => step.evidence?.validationOnly)) throw new Error("skill was not executed");
+    if (!result.run.invocationEvents.length || result.run.invocationEvents.some((event) => !["planned","validated","started","completed"].includes(event.status))) throw new Error("invocation lifecycle missing");
     if (result.toolExecutions.length !== 4 || result.toolExecutions.some((item) => item.externalActionsPerformed)) throw new Error("read tools missing or unsafe");
     if (result.memoryCandidate !== null) throw new Error("ordinary run polluted memory");
     const candidate = store.withStoreTransaction(() => memory.createMemoryCandidate({ kind: "observation", scope: "agent", scopeId: "project_coach", content: "Reviewed runtime observation", sourceType: "user_input", sourceId: result.run.id }, "user"));
@@ -78,7 +79,9 @@ test("runtime persists bounded context, steps, encrypted memory and no actions",
     if (superseded.status !== "superseded") throw new Error("memory supersede failed");
     try { memory.supersedeMemory(otherProjectCandidate.id, 2, "agent"); throw new Error("agent supersede accepted"); } catch (error) { if (!String(error.message).includes("Nutzerentscheidung")) throw error; }
     const persisted = runtime.listRuntimeRuns().find((run) => run.id === result.run.id);
-    if (!persisted || persisted.steps.length < 9 || persisted.steps.some((step, index) => step.index !== index + 1)) throw new Error("runtime persistence or step ordering failed");
+    if (!persisted || persisted.steps.length < 9 || persisted.steps.some((step, index) => step.index !== index + 1) || persisted.invocationEvents.length !== result.run.invocationEvents.length) throw new Error("runtime persistence or step ordering failed");
+    try { await runAgent({ agentId: "project_coach", input: "Nicht erlaubten Skill prüfen", projectId: project.id, requestedSkillId: "area_overview" }); throw new Error("disallowed skill ran"); } catch (error) { if (!String(error.message).includes("nicht erlaubt")) throw error; }
+    const failed = runtime.listRuntimeRuns().find((entry) => entry.runtimeStatus === "failed"); if (!failed || failed.steps[0]?.status !== "failed" || failed.output.errorCategory !== "policy") throw new Error("failed run was not persisted safely");
     const { DatabaseSync } = await import("node:sqlite");
     const pathModule = await import("node:path");
     const database = new DatabaseSync(pathModule.join(process.cwd(), "local-state", "agentic-os.sqlite"));

@@ -216,7 +216,7 @@ Last verified: 25.08.2026, Europe/Berlin.
 
 ## Runtime consolidation update (2026-08-25)
 
-- Schema 13 persists execution receipts, Memory lifecycle metadata, proposal-only schedules and Runtime status in the existing SQLite/WAL database.
+- Schema 14 persists execution receipts, Memory lifecycle metadata, proposal-only schedules, Runtime status and ordered Skill/Tool invocation events in the existing SQLite/WAL database. Known policy/execution failures create content-light failed runs instead of disappearing from history.
 - Calendar exact approvals use the general approval repository without weakening the exact diff, expiry, single-use, pre-transport consumption, idempotency or read-back boundary.
 - Memory Review is a real signed surface with Loading/Offline/verified-empty/409 recovery, candidate activation/rejection, supersession and a two-step Policy warning. Identical candidates are rejected deterministically and activating a replacement supersedes only a compatible active Memory.
 - Run inspection, Approval Center and Execution History show only real persisted evidence. There is no Approve All; the center can safely reject pending artifacts while execution remains in the dedicated exact action flow.
