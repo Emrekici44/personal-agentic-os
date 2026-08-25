@@ -1,5 +1,11 @@
 # Security notes
 
+- The persistent agent runtime is proposal-only: every result states `modelUsed=false`, `externalActionsPerformed=false`, and `backgroundActions=false` and persists the evidence as ordered run steps.
+- Runtime agents, skills, sources and tools are allowlisted. Paused/unknown definitions, undeclared capabilities, model-assisted execution and mutating tools fail closed before planning.
+- Context construction reads only sources declared by the selected agent and filters project-linked tasks/inbox to the selected project. Context bodies and memory references are encrypted; audit stores only counts, IDs/classes and booleans.
+- Runtime memory is structured, encrypted, versioned and provenance-bearing. Automatic observations remain candidates. No agent can create policy memory or activate/reject memory; activation and rejection require the signed private API, trusted mutation origin and exact current version.
+- No runtime module contains a provider call, network request, filesystem write, dynamic code, shell execution or generic tool-dispatch endpoint. Existing Calendar and Vault approval contracts are not delegated to or weakened by the runtime.
+
 - Never commit `.env*`, OAuth secrets, refresh tokens, financial credentials, or health exports.
 - Google requests only `calendar.calendarlist.readonly` and `calendar.events` after the user's explicit enablement. Calendar ACL/sharing, settings, deletes, broad administration, and background writes remain disabled.
 - Tokens are encrypted in HTTP-only, SameSite cookies and never returned to client code. OAuth state is random, encrypted, short-lived, and verified.

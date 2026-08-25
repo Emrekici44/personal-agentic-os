@@ -2,6 +2,15 @@
 
 Last verified: 25.08.2026, Europe/Berlin.
 
+## Agent Runtime Foundation
+
+- The five existing local workflows now run through a persistent deterministic runtime with first-class agent definitions, allowlisted skill/tool registries, a structured context builder, a planner interface and central permission/policy evaluation.
+- Context snapshots persist encrypted record evidence and memory references. Runtime runs persist five ordered steps for policy, context, skill-path validation, deterministic planning and proposal result.
+- Structured memory supports policy, preference, fact, observation and summary across global, agent, project and area scopes. Candidates are encrypted and provenance-bearing; only an authenticated version-checked user decision can activate or reject them. Agent-created policy memory is blocked.
+- The workflow API remains compatible and adds provider/model, verified context-source count, ordered steps, memory candidate and zero-action evidence. The UI shows only real run evidence and retains an honest empty state.
+- Schema version 9 adds `runtime_context_snapshots`, `runtime_run_steps`, `memory_items` and `memory_events` to the existing SQLite source of truth.
+- Still absent: autonomous LLM agents, paid/model execution, background agents, ChatGPT-history access, arbitrary tools/code, automatic external writes and automatic policy-memory promotion.
+
 ## Operational
 
 - Electron remains the primary desktop UI; the verified window loads the current Next.js app.

@@ -2,6 +2,8 @@
 
 Stand: 24.08.2026, Europe/Berlin. Diese Punkte blockieren nicht die übrige lokale, reversible Arbeit.
 
+Die deterministische Agent Runtime benötigt aktuell keine Provider-, Kosten- oder Autonomieentscheidung. Modellgestützte Planung, Background Agents, beliebige Tools, externe Aktionen und automatische Policy-Memory-Promotion bleiben technisch deaktiviert und wären jeweils ein späterer eigener Freigabeschritt.
+
 ## Obsidian-Schreibfreigabe
 
 - Benötigte Entscheidung: Eine später erzeugte exakte Markdown-Diffvorschau ausdrücklich freigeben oder verwerfen.

@@ -22,3 +22,7 @@ This directory is the complete normal source project: application code, tests, d
 Next.js and React remain the single UI and server source of truth. A hardened Electron shell supplies the dedicated Windows laptop window, while an Expo Go WebView shell supplies the no-cost iPhone development path without duplicating screens. The first operational mode is local-first so the system is useful before credentials exist. Every consequential connector follows preview → approval → write → audit. External secrets belong in environment variables or a managed secret store, never source files or chat.
 
 See `docs/SETUP.md`, `docs/DESKTOP.md`, `docs/MOBILE.md`, `docs/REMOTE-ACCESS.md`, `docs/ARCHITECTURE.md`, `docs/SECURITY.md`, `ROADMAP.md`, and `STATE.md`.
+
+## Deterministic runtime boundary
+
+The five built-in workflows use a persistent deterministic runtime with formal agent definitions, a fixed skill registry, read-only allowlisted tools, source-bounded context, structured scoped memory, policy enforcement, persistent run steps and content-light audit. It produces proposals only. It is not an autonomous LLM-agent system and provides no model-driven planning, OpenAI runtime usage, background agents, automatic ChatGPT-history access, arbitrary tools, shell/code execution, automatic external writes or automatic policy-memory promotion.

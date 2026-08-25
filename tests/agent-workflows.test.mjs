@@ -40,8 +40,14 @@ test("workflow persistence is encrypted, resumable, audited and private", async 
   assert.match(store, /agent_workflow\.\$\{action\}/);
   assert.match(store, /externalActionApproved:false/);
   assert.match(route, /verifyLocalSession/);
-  assert.match(route, /listRecords\("projects"\)/);
-  assert.match(route, /proposalOnly: true, paidApiUsed: false, externalActionsPerformed: false/);
+  assert.match(route, /runAgent/);
+  assert.match(route, /listRuntimeRuns/);
+  assert.match(route, /paidApiUsed: false/);
+  const runtime = await readFile(new URL("../lib/runtime/service.ts", import.meta.url), "utf8");
+  const context = await readFile(new URL("../lib/runtime/context/builder.ts", import.meta.url), "utf8");
+  assert.match(context, /listRecords\("projects"\)|listRecords\(source\)/);
+  assert.match(runtime, /proposalOnly: true/);
+  assert.match(runtime, /externalActionsPerformed: false/);
   assert.doesNotMatch(route, /api\.openai|responses\.create|chat\.completions/);
   for (const label of ["Review speichern", "Pausieren", "Workflow fortsetzen", "Vorschlag lokal erzeugen", "Lokale Regeln"]) assert.match(page, new RegExp(label));
   assert.match(page, /keine Folgeaktion ausgeführt/i);

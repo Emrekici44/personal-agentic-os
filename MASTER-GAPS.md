@@ -1,5 +1,11 @@
 # Restlücken gegen Emres vollständigen Masterauftrag
 
+## Runtime Foundation
+
+Lokal geschlossen: persistente deterministische Agent Runtime, formale Definitionen, allowlist-basierte Read Tools, strukturierter quellenbegrenzter Context, Planner-Grenze, Runtime-Policy-Auswertung, verschlüsselte Context Snapshots, persistente Run Steps, strukturiertes Scope-Memory, Candidate-Review und inhaltsarmes Audit.
+
+Bewusst offen: keine autonomen oder modellgestützten Agenten, kein Background Scheduler, kein ChatGPT-History-Zugriff, keine bezahlten OpenAI-Aufrufe, keine beliebige Tool-/Code-Ausführung, keine automatischen Calendar-/Vault-/Datei-/Nachrichten-/Finanzaktionen und keine automatische Policy-Memory-Promotion. Die Memory-Review-API existiert; eine eigene Review-UI ist der nächste kleine Vertikalschnitt. Ältere Domain-Repositories nutzen weiterhin die Shared-Store-Kompatibilitätsfassade und werden später schrittweise statt über einen zweiten Store extrahiert.
+
 Stand: 24.08.2026, Europe/Berlin. Diese Liste verwendet nur diskrete Zustände. Sie ist kein Prozentwert und kein Versprechen über ungeprüfte Funktionen.
 
 ## Verifiziert nutzbar

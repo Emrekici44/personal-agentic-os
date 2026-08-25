@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { agentWorkflowProfiles, buildAgentWorkflowProposal, isAgentWorkflowId } from "@/lib/agent-workflows";
+import { agentDefinitions } from "@/lib/runtime/agents/registry";
+import { runAgent } from "@/lib/runtime/service";
+import { listRuntimeRuns } from "@/lib/repositories/runtime-repository";
 import { publicApiError, publicConflict } from "@/lib/public-api-error";
 import { readPrivateJson, trustedPrivateMutationOrigin } from "@/lib/private-request";
-import { latestWeeklyPlan, listAgentWorkflowRuns, listRecords, saveAgentWorkflowRun, transitionAgentWorkflowRun, verifyLocalSession, withStoreTransaction } from "@/lib/shared-store";
+import { transitionAgentWorkflowRun, verifyLocalSession, withStoreTransaction } from "@/lib/shared-store";
 
 const authorized = (request: NextRequest) => verifyLocalSession(request.cookies.get("agentic_os_local_session")?.value);
 const headers = { "Cache-Control": "no-store, private" };
@@ -11,7 +13,8 @@ const respond = (body: unknown, init: ResponseInit = {}) => NextResponse.json(bo
 export async function GET(request: NextRequest) {
   if (!authorized(request)) return respond({ error: "Lokale Sitzung erforderlich" }, { status: 401 });
   try {
-    return respond({ profiles: agentWorkflowProfiles, runs: listAgentWorkflowRuns(), inventoryVerified: true, provider: "local-rules", model: "none", paidApiEnabled: false, externalActionsEnabled: false });
+    const profiles = agentDefinitions.map(({ plannerPolicy, memoryPolicy, permissionPolicy, allowedSkills, allowedTools, allowedSources, ...profile }) => ({ ...profile, purpose: profile.objective, sources: allowedSources, plannerPolicy, memoryPolicy, permissionPolicy, allowedSkills, allowedTools }));
+    return respond({ profiles, runs: listRuntimeRuns(), inventoryVerified: true, provider: "local-rules", model: "none", paidApiEnabled: false, externalActionsEnabled: false, runtime: { persistentSteps: true, structuredContext: true, firstClassMemory: true } });
   } catch {
     return respond({ error: "Agentenläufe sind vorübergehend nicht erreichbar", profiles: [], runs: [], inventoryVerified: false, retrySafe: true, provider: "local-rules", model: "none", paidApiEnabled: false, externalActionsEnabled: false }, { status: 503 });
   }
@@ -22,10 +25,8 @@ export async function POST(request: NextRequest) {
   if (!trustedPrivateMutationOrigin(request)) return respond({ error: "Anfrageherkunft nicht zulässig", externalActionsPerformed: false }, { status: 403 });
   try {
     const body = await readPrivateJson(request);
-    if (!isAgentWorkflowId(body.workflowId)) throw new Error("Unbekannter Agenten-Workflow");
-    const sources = { projects: listRecords("projects"), tasks: listRecords("tasks"), inbox: listRecords("inbox_items"), habits: listRecords("habits"), journal: listRecords("journal_metadata"), areas: listRecords("area_records"), weeklyPlan: latestWeeklyPlan() };
-    const proposal = buildAgentWorkflowProposal(body.workflowId, String(body.input || ""), sources, body.projectId ? String(body.projectId) : undefined);
-    return respond({ run: withStoreTransaction(() => saveAgentWorkflowRun(proposal)), proposalOnly: true, paidApiUsed: false, externalActionsPerformed: false }, { status: 201 });
+    const result = await runAgent({ agentId: String(body.workflowId || ""), input: String(body.input || ""), projectId: body.projectId ? String(body.projectId) : undefined, requestedSkillId: body.skillId ? String(body.skillId) : undefined, requestedToolId: body.toolId ? String(body.toolId) : undefined, createMemoryCandidate: body.createMemoryCandidate !== false });
+    return respond({ ...result, paidApiUsed: false }, { status: 201 });
   } catch (error) {
     const fallback = "Workflow-Vorschlag konnte lokal nicht sicher erzeugt werden", message = publicApiError(error, fallback), retrySafe = message === fallback;
     return respond({ error: message, retrySafe, externalActionsPerformed: false }, { status: retrySafe ? 503 : 400 });

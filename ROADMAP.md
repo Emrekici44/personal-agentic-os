@@ -1,5 +1,19 @@
 # Roadmap
 
+## Completed: deterministic runtime foundation
+
+- First-class versioned Agent, Skill and Tool contracts with shared permission/risk policy.
+- Allowlisted read-only internal tools and source-bounded Context Builder.
+- Deterministic planner interface using the established local workflow logic; model-assisted mode is represented but technically disabled.
+- Persistent encrypted context snapshots, ordered run steps and compatible workflow API/UI evidence.
+- First-class structured Memory with candidate, activation/rejection, provenance, optimistic concurrency and deterministic scope retrieval.
+- Content-light runtime/memory audit and fail-closed policy errors.
+
+## Next runtime vertical slice
+
+- Add a dedicated Memory review surface to the existing Agents screen using the signed `/api/agents/memory` contract. Keep activation a deliberate user action; do not add background extraction or model-generated summaries.
+- After that, migrate the remaining legacy skill preview orchestration behind the same runtime service while preserving its current deterministic procedures and review history.
+
 ## Complete and verified
 
 - Web/PWA, hardened Electron shell, Expo Go companion and private Tailscale Serve foundation.
