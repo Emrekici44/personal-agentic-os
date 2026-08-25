@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { executeLocalSkill, skillProcedureCatalog, skillSafetyContract } from "@/lib/local-skills.mjs";
 import { publicApiError, publicConflict } from "@/lib/public-api-error";
-import { readPrivateJson } from "@/lib/private-request";
+import { readPrivateJson, trustedPrivateMutationOrigin } from "@/lib/private-request";
 import {
   archiveSkillDefinition,
   createSkillDefinition,
@@ -39,6 +39,7 @@ function loadAllowedSources(allowedSources: string[]) {
 
 export async function GET(request: NextRequest) {
   if (!authorized(request)) return reject(new Error("Lokale Sitzung erforderlich"), 401);
+  if (!trustedPrivateMutationOrigin(request)) return NextResponse.json({ error: "Anfrageherkunft nicht zulässig", writesPerformed: false }, { status: 403, headers: responseHeaders });
   try {
     const definitions = listSkillDefinitions();
     return NextResponse.json({
@@ -59,6 +60,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   if (!authorized(request)) return reject(new Error("Lokale Sitzung erforderlich"), 401);
+  if (!trustedPrivateMutationOrigin(request)) return NextResponse.json({ error: "Anfrageherkunft nicht zulässig", writesPerformed: false }, { status: 403, headers: responseHeaders });
   try {
     const body = await readPrivateJson(request);
     if (body.action === "create_definition") {

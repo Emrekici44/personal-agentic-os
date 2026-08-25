@@ -3,7 +3,7 @@ import { refreshedAccessToken } from "@/lib/google-calendar";
 import { readCalendarCatalog, readGoogleCalendarWindow } from "@/lib/google-calendar-read";
 import { buildWeeklyPlan, weeklyWindow } from "@/lib/weekly-planner";
 import { publicApiError, publicConflict } from "@/lib/public-api-error";
-import { readPrivateJson } from "@/lib/private-request";
+import { readPrivateJson, trustedPrivateMutationOrigin } from "@/lib/private-request";
 import { latestWeeklyPlan, listRecords, listWeeklyPlanSummaries, reviewWeeklyPlan, saveWeeklyPlan, verifyLocalSession, withStoreTransaction } from "@/lib/shared-store";
 
 const headers = { "Cache-Control": "no-store, private" };
@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   if (!authenticated(request)) return respond({ error: "Lokale Sitzung erforderlich", writesPerformed: false }, { status: 401 });
+  if (!trustedPrivateMutationOrigin(request)) return respond({ error: "Anfrageherkunft nicht zulässig", writesPerformed: false }, { status: 403 });
   let access: string | null;
   try {
     access = await refreshedAccessToken(request.cookies.get("agentic_os_google_token")?.value);
@@ -70,6 +71,7 @@ export async function POST(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     if (!authenticated(request)) return respond({ error: "Lokale Sitzung erforderlich", writesPerformed: false }, { status: 401 });
+    if (!trustedPrivateMutationOrigin(request)) return respond({ error: "Anfrageherkunft nicht zulässig", writesPerformed: false }, { status: 403 });
     const body = await readPrivateJson(request);
     const plan = withStoreTransaction(() => reviewWeeklyPlan(String(body.planId || ""), body));
     return respond({ plan, history: listWeeklyPlanSummaries(), calendarWritesPrepared: false, writesPerformed: false });

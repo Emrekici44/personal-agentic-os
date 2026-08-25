@@ -174,6 +174,8 @@ Last verified: 25.08.2026, Europe/Berlin.
 - Verifikation der Mutations-HTTP-Wahrheit: Root 141/141, Lint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export und isolierter Produktionsbuild sind grün. Fortschritt 62/65; Agenten auf Desktop und Skills bei 390×844 renderten online ohne falschen Retry und ohne horizontalen Überlauf.
 - Lokale Sitzungen sind zusätzlich zur Browser-Cookie-Frist serverseitig 24 Stunden gültig. Der signierte Ausgabezeitpunkt erlaubt 60 Sekunden Uhrtoleranz; Legacy-, abgelaufene, zu weit zukünftige oder manipulierte Sitzungen werden abgewiesen und beim nächsten normalen privaten Session-Aufbau ersetzt.
 - Verifikation der serverseitigen Sitzungsfrist: Root 142/142, Lint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export und isolierter Produktionsbuild sind grün. Fortschritt 63/66; Dashboard und 390×844 renderten ohne Live-Fehler oder horizontalen Überlauf. Der Laufzeitcheck erneuerte nur die normale lokale Sitzung und gab keinen Cookie-Wert aus.
+- Private Mutationen prüfen jetzt zusätzlich Same-Origin für localhost, LAN und den privaten Tailscale-Proxy. Cross-Site-, fremde und opaque Origins werden vor Body, Store oder Calendar-Transport mit 403 abgewiesen; lokale nicht-browserbasierte Werkzeuge ohne Origin bleiben kompatibel.
+- Verifikation der Mutationsherkunft: Root 145/145, Lint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export und isolierter Produktionsbuild sind grün. Laufzeitprobe: fremde Origin 403, echte lokale Same-Origin 200; Fortschritt 64/67 und 0 Live-Alerts/Überlauf auf Desktop sowie 390×844. Es wurde kein fachlicher Datensatz und kein externer Write erzeugt.
 
 ## User boundaries
 

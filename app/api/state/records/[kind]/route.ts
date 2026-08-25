@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { publicApiError, publicConflict } from "@/lib/public-api-error";
-import { readPrivateJson } from "@/lib/private-request";
+import { readPrivateJson, trustedPrivateMutationOrigin } from "@/lib/private-request";
 import {
   archiveRecord,
   createRecord,
@@ -31,6 +31,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const { kind } = await params;
   try {
     if (!auth(request)) return NextResponse.json({ error: "Lokale Sitzung erforderlich" }, { status: 401, headers });
+    if (!trustedPrivateMutationOrigin(request)) return NextResponse.json({ error: "Anfrageherkunft nicht zulässig" }, { status: 403, headers });
     if (!isCrudKind(kind)) throw new Error("Unbekannter Datentyp");
     const body = await readPrivateJson(request);
     return NextResponse.json(withStoreTransaction(() => createRecord(kind, kind === "agents" ? validateAgentConfig(body) : body)), { status: 201, headers });
@@ -44,6 +45,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   const { kind } = await params;
   try {
     if (!auth(request)) return NextResponse.json({ error: "Lokale Sitzung erforderlich" }, { status: 401, headers });
+    if (!trustedPrivateMutationOrigin(request)) return NextResponse.json({ error: "Anfrageherkunft nicht zulässig" }, { status: 403, headers });
     if (!isCrudKind(kind)) throw new Error("Unbekannter Datentyp");
     const body = await readPrivateJson(request);
     return NextResponse.json(withStoreTransaction(() => updateRecord(kind, String(body.id || ""), kind === "agents" ? validateAgentConfig(body) : body)), { headers });
@@ -58,6 +60,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
   const { kind } = await params;
   try {
     if (!auth(request)) return NextResponse.json({ error: "Lokale Sitzung erforderlich" }, { status: 401, headers });
+    if (!trustedPrivateMutationOrigin(request)) return NextResponse.json({ error: "Anfrageherkunft nicht zulässig" }, { status: 403, headers });
     if (!isCrudKind(kind)) throw new Error("Unbekannter Datentyp");
     const id = request.nextUrl.searchParams.get("id");
     const version = Number(request.nextUrl.searchParams.get("version"));

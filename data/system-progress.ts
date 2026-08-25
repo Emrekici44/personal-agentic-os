@@ -461,6 +461,13 @@ export const systemProgress = {
       status: "complete",
     },
     {
+      id: "private-mutation-origin",
+      label: "Private Änderungen auf echte App-Herkunft begrenzen",
+      evidence: "Same-Origin lokal/Tailscale · Cross-Site/opaque abgewiesen · vor Body, Store und Calendar-Transport",
+      href: "#settings",
+      status: "complete",
+    },
+    {
       id: "ongoing-local-gap-audit",
       label: "Nächste lokale Bedien-/Recovery-Lücke prüfen",
       evidence: "Nur reversible lokale Änderungen · keine externen Writes, Migrationen, Installationen oder Kosten",

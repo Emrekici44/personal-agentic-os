@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { buildVaultWriteProposal, revalidateVaultWriteProposal } from "@/lib/obsidian-write-proposal";
 import { publicApiError } from "@/lib/public-api-error";
-import { readPrivateJson } from "@/lib/private-request";
+import { readPrivateJson, trustedPrivateMutationOrigin } from "@/lib/private-request";
 import { approveVaultWriteProposal, listVaultWriteProposals, saveVaultWriteProposal, verifyLocalSession, withStoreTransaction } from "@/lib/shared-store";
 
 const headers = { "Cache-Control": "no-store, private" };
@@ -12,11 +12,13 @@ const errorResponse = (error: unknown, status = 400) => { const fallback = "Vaul
 
 export async function GET(request: NextRequest) {
   if (!authorized(request)) return errorResponse(new Error("Lokale Sitzung erforderlich"), 401);
+  if (!trustedPrivateMutationOrigin(request)) return NextResponse.json({ error: "Anfrageherkunft nicht zulässig", applyAvailable: false, writesPerformed: false, existingNotesModified: 0 }, { status: 403, headers });
   return NextResponse.json({ proposals: listVaultWriteProposals(), applyAvailable: false, writesPerformed: false, existingNotesModified: 0 }, { headers });
 }
 
 export async function POST(request: NextRequest) {
   if (!authorized(request)) return errorResponse(new Error("Lokale Sitzung erforderlich"), 401);
+  if (!trustedPrivateMutationOrigin(request)) return NextResponse.json({ error: "Anfrageherkunft nicht zulässig", applyAvailable: false, writesPerformed: false, existingNotesModified: 0 }, { status: 403, headers });
   try {
     const proposal = await buildVaultWriteProposal(await readPrivateJson(request));
     const approvalToken = crypto.randomBytes(32).toString("base64url");

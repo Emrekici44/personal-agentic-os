@@ -1,6 +1,26 @@
 const DEFAULT_MAX_PRIVATE_JSON_BYTES = 64 * 1024;
 const DEFAULT_PRIVATE_BODY_TIMEOUT_MS = 5_000;
 
+export function trustedPrivateMutationOrigin(request: Request): boolean {
+  const fetchSite = request.headers.get("sec-fetch-site")?.trim().toLowerCase();
+  if (fetchSite === "cross-site") return false;
+
+  const origin = request.headers.get("origin")?.trim();
+  if (!origin) return true;
+  if (origin === "null") return false;
+
+  try {
+    const originUrl = new URL(origin);
+    const requestUrl = new URL(request.url);
+    const expectedHost = (request.headers.get("host") || requestUrl.host).trim().toLowerCase();
+    const forwardedProtocol = request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim();
+    const expectedProtocol = (forwardedProtocol || requestUrl.protocol).replace(/:$/, "").toLowerCase();
+    return originUrl.host.toLowerCase() === expectedHost && originUrl.protocol.toLowerCase() === `${expectedProtocol}:`;
+  } catch {
+    return false;
+  }
+}
+
 export async function readPrivateJson(
   request: Request,
   maxBytes = DEFAULT_MAX_PRIVATE_JSON_BYTES,

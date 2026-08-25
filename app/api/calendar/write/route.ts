@@ -5,7 +5,7 @@ import { auditCalendarWrite, consumeApproval, type CalendarChange } from "@/lib/
 import { refreshedAccessToken } from "@/lib/google-calendar";
 import { googleRequestSignal } from "@/lib/google-transport";
 import { publicApiError } from "@/lib/public-api-error";
-import { readPrivateJson } from "@/lib/private-request";
+import { readPrivateJson, trustedPrivateMutationOrigin } from "@/lib/private-request";
 import { verifyLocalSession } from "@/lib/shared-store";
 
 const headers = { "Cache-Control": "no-store, private" };
@@ -14,6 +14,9 @@ const respond = (body: unknown, init: ResponseInit = {}) => NextResponse.json(bo
 export async function POST(request: NextRequest) {
   if (!verifyLocalSession(request.cookies.get("agentic_os_local_session")?.value)) {
     return respond({ error: "Lokale Sitzung erforderlich", written: false, approvalConsumed: false }, { status: 401 });
+  }
+  if (!trustedPrivateMutationOrigin(request)) {
+    return respond({ error: "Anfrageherkunft nicht zulässig", written: false, outcome: "not_started", approvalConsumed: false, retryAllowed: false }, { status: 403 });
   }
 
   let access: string | null = null;

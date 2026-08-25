@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { agentWorkflowProfiles, buildAgentWorkflowProposal, isAgentWorkflowId } from "@/lib/agent-workflows";
 import { publicApiError, publicConflict } from "@/lib/public-api-error";
-import { readPrivateJson } from "@/lib/private-request";
+import { readPrivateJson, trustedPrivateMutationOrigin } from "@/lib/private-request";
 import { latestWeeklyPlan, listAgentWorkflowRuns, listRecords, saveAgentWorkflowRun, transitionAgentWorkflowRun, verifyLocalSession, withStoreTransaction } from "@/lib/shared-store";
 
 const authorized = (request: NextRequest) => verifyLocalSession(request.cookies.get("agentic_os_local_session")?.value);
@@ -19,6 +19,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   if (!authorized(request)) return respond({ error: "Lokale Sitzung erforderlich", externalActionsPerformed: false }, { status: 401 });
+  if (!trustedPrivateMutationOrigin(request)) return respond({ error: "Anfrageherkunft nicht zulässig", externalActionsPerformed: false }, { status: 403 });
   try {
     const body = await readPrivateJson(request);
     if (!isAgentWorkflowId(body.workflowId)) throw new Error("Unbekannter Agenten-Workflow");
@@ -33,6 +34,7 @@ export async function POST(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   if (!authorized(request)) return respond({ error: "Lokale Sitzung erforderlich", externalActionsPerformed: false }, { status: 401 });
+  if (!trustedPrivateMutationOrigin(request)) return respond({ error: "Anfrageherkunft nicht zulässig", externalActionsPerformed: false }, { status: 403 });
   try {
     const body = await readPrivateJson(request);
     return respond({ run: withStoreTransaction(() => transitionAgentWorkflowRun(String(body.runId || ""), body.action, body)), externalActionsPerformed: false, nextExternalAction: "not_available" });

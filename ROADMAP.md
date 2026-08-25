@@ -116,3 +116,5 @@ Every active private JSON mutation route now shares a bounded server-side body r
 Stateful mutation clients now treat private 401/403/5xx responses as source failures, clear stale controls and require a verified reload. Agent and Skill cross-source references expose their own read-only retries.
 
 Local session signatures now include a server-validated issuance time and expire after 24 hours independently of the browser cookie. Normal private session bootstrapping refreshes rejected legacy or expired sessions.
+
+Private state and proposal mutations now require a same-origin browser request on localhost, LAN or the private Tailscale proxy. Cross-site, mismatched and opaque origins stop before body parsing, persistence or Google transport; non-browser local tooling without Origin remains supported.
