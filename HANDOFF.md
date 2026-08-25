@@ -119,6 +119,9 @@ Project root: `outputs/agentic-os`. Private source remote: `https://github.com/E
 - The method-level origin audit corrected guard placement for Skill update/archive/review and Vault review: both PATCH paths now stop before body parsing, while Vault GET remains a signed read. The stronger contract inventories every active mutation method separately; the full Root 147/147, Electron, Expo and production-build matrix remains green.
 - The Expo shell performs one private WebView retry on iOS background→active only if it was already in a verified failed state. Manual Retry and same-origin navigation remain; there is no background polling, public fallback or data mutation. Physical acceptance of this new resume path remains a user action.
 - Full verification for Expo foreground recovery: Root 149/149, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed. The live web surface rendered progress 66/69 with no alerts or desktop/390×844 overflow. Physical background→active acceptance remains bundled in `PENDING-DECISIONS.md` and is not claimed complete.
+- Web, Electron web content and Expo WebView responses now share restrictive CSP, frame/object denial, disabled camera/microphone/location/payment/USB and no-referrer/nosniff. Production scripts omit unsafe-eval; HSTS is intentionally absent to preserve the verified LAN HTTP development route.
+- Full verification for browser security headers: Root 151/151, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed. A temporary loopback production server returned 200 with all five headers and without unsafe-eval/HSTS; it was stopped afterward, port 3100 is free and the user service on 3000 remained 200.
+- The running local user service also picked up the headers and stayed free of live alerts/overflow; dashboard progress rendered 67/70.
 
 ## Immediate continuation
 

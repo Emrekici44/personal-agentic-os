@@ -181,6 +181,9 @@ Last verified: 25.08.2026, Europe/Berlin.
 - Der methodengenaue Herkunftsaudit korrigierte die Guard-Platzierung für Skill-Update/Archiv/Review und Vault-Review: beide `PATCH`-Pfade prüfen jetzt vor dem Body; der Vault-`GET` bleibt ein reiner signierter Read. Der verschärfte Vertrag inventarisiert jede aktive Mutationsmethode einzeln; die vollständige Matrix bleibt Root 147/147 plus Desktop/Expo/Build grün.
 - Die Expo-Hülle lädt nach iOS Background→Active nur dann einmal neu, wenn zuvor bereits ein echter WebView-/Erreichbarkeitsfehler vorlag. Manueller Retry und Same-Origin-Navigation bleiben erhalten; es gibt kein Hintergrundpolling und keine Datenaktion.
 - Verifikation der Expo-Wiederaufnahme: Root 149/149, Lint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export und isolierter Produktionsbuild sind grün. Live-Weboberfläche: Fortschritt 66/69, keine Alerts und 0 Überlauf auf Desktop/390×844. Die physische Background→Active-Abnahme bleibt gebündelt in `PENDING-DECISIONS.md`; sie wird nicht als bestanden behauptet.
+- Die private Oberfläche liefert CSP, Frame-/Objekt-Sperre, Geräteberechtigungs-Sperren sowie `no-referrer`/`nosniff`. Produktionsskripte erhalten kein `unsafe-eval`; HSTS bleibt wegen des lokalen LAN-HTTP-Pfads bewusst aus.
+- Verifikation der Browser-Schutzheader: Root 151/151, Lint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export und isolierter Produktionsbuild sind grün. Ein kurzlebiger Loopback-Produktionsserver lieferte 200 plus alle fünf Header, ohne `unsafe-eval`/HSTS; er wurde danach beendet, Port 3100 ist frei und der Nutzer-Dienst auf 3000 blieb 200.
+- Der laufende lokale Nutzer-Dienst übernahm die Header ebenfalls und blieb ohne Live-Alert oder Überlauf; Dashboard-Fortschritt 67/70.
 
 ## User boundaries
 

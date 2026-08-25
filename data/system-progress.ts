@@ -482,6 +482,13 @@ export const systemProgress = {
       status: "complete",
     },
     {
+      id: "private-ui-security-headers",
+      label: "Private Oberfläche mit Browser-Schutzheadern ausliefern",
+      evidence: "CSP · keine Frames/Objekte · keine Kamera/Mikrofon/Ort/Zahlung/USB · no-referrer/nosniff · lokales HTTP bleibt möglich",
+      href: "#settings",
+      status: "complete",
+    },
+    {
       id: "ongoing-local-gap-audit",
       label: "Nächste lokale Bedien-/Recovery-Lücke prüfen",
       evidence: "Nur reversible lokale Änderungen · keine externen Writes, Migrationen, Installationen oder Kosten",

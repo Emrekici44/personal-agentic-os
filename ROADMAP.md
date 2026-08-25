@@ -122,3 +122,5 @@ Private state and proposal mutations now require a same-origin browser request o
 Journal drafts no longer create plaintext browser-storage copies. New drafts live only in the open session; any legacy copy remains untouched behind explicit import or two-stage discard, and imported legacy content is cleared only after a successful encrypted shared-store journal save.
 
 The Expo shell now performs one private WebView reload only when iOS resumes from background with an already known failure. Manual Retry remains visible; there is no background polling, public fallback, broadened navigation or data mutation.
+
+Web, Electron web content and the Expo WebView now receive one restrictive browser-security header set: same-origin CSP, frame/object denial, disabled camera/microphone/location/payment/USB plus no-referrer/nosniff. HSTS is intentionally omitted so the verified local LAN HTTP development path remains usable.
