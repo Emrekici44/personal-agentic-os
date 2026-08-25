@@ -8,21 +8,22 @@ import { createMemoryCandidate } from "../repositories/memory-repository.ts";
 import { appendRuntimeAudit } from "../repositories/audit-repository.ts";
 import { createRuntimeRun, persistContextSnapshot, persistRunSteps } from "../repositories/runtime-repository.ts";
 import { createExecutionReceipt } from "../repositories/execution-receipt-repository.ts";
-import { withStoreTransaction } from "../shared-store.ts";
+import { saveWeeklyPlan, withStoreTransaction } from "../shared-store.ts";
+import type { RuntimeSource } from "./types.ts";
 
-export interface RunAgentInput { agentId: string; input: string; projectId?: string; scope?: { area?: string }; requestedSkillId?: string; requestedToolId?: string; createMemoryCandidate?: boolean; }
+export interface RunAgentInput { agentId: string; input: string; projectId?: string; scope?: { area?: string }; requestedSkillId?: string; requestedToolId?: string; createMemoryCandidate?: boolean; trustedSourceOverrides?: Partial<Record<RuntimeSource, unknown[]>>; plannerInput?: Record<string, unknown>; }
 export async function runAgent(request: RunAgentInput) {
   const input = String(request.input || "").trim(); if (input.length < 2 || input.length > 1000) throw new Error("Arbeitsauftrag muss 2–1000 Zeichen enthalten");
   const agent = getAgentDefinition(String(request.agentId || ""));
   try {
     assertAgentRunnable(agent); assertRiskAllowed(agent, "read");
     if (request.requestedToolId) throw new RuntimePolicyError("direct_tool_denied", "Direkte Tool-Aufrufe sind gesperrt");
-    const context = buildRuntimeContext(agent, { userInput: input, projectId: request.projectId, scope: request.scope || { area: agent.area } });
-    const plan = validatePlannerResult(agent, await getPlanner(agent.plannerPolicy.plannerId).plan({ agent, userInput: input, context, projectId: request.projectId, requestedSkillId: request.requestedSkillId }));
+    const context = buildRuntimeContext(agent, { userInput: input, projectId: request.projectId, scope: request.scope || { area: agent.area }, trustedSourceOverrides: request.trustedSourceOverrides });
+    const plan = validatePlannerResult(agent, await getPlanner(agent.plannerPolicy.plannerId).plan({ agent, userInput: input, context, projectId: request.projectId, requestedSkillId: request.requestedSkillId, plannerInput: request.plannerInput }));
     if (plan.modelUsed || plan.externalActionsPerformed) throw new RuntimePolicyError("unsafe_planner_result", "Unsicheres Planner-Ergebnis wurde blockiert");
-    const skills = plan.skillInvocations.map((planned) => executeSkill({ agent, skillId: planned.skillId, input: planned.input }));
+    const skills = plan.skillInvocations.map((planned) => executeSkill({ agent, skillId: planned.skillId, input: planned.input, sourceOverrides: request.trustedSourceOverrides as Record<string, unknown[]> | undefined }));
     const tools = skills.flatMap((item) => item.toolExecutions);
-    return withStoreTransaction(() => {
+    const persisted = withStoreTransaction(() => {
       persistContextSnapshot(context); const run = createRuntimeRun(agent.id, input, context, plan), now = new Date().toISOString(); let index = 1;
       const raw: any[] = [
         { index: index++, type: "policy", status: "completed", startedAt: now, completedAt: now, evidence: { riskClass: "read", allowed: true } },
@@ -39,5 +40,7 @@ export async function runAgent(request: RunAgentInput) {
       for (const tool of tools) appendRuntimeAudit("tool.read.completed", "agent_workflow", run.id, { toolId: tool.invocation.toolId, recordCount: tool.result.recordCount, status: tool.result.status });
       return { run: { ...run, steps }, context: { id: context.id, sources: context.sources, memoryCount: context.memories.length }, skillExecutions: skills.map((x) => x.result), toolExecutions: tools.map((x) => x.result), receipts, memoryCandidate, proposalOnly: true, externalActionsPerformed: false, modelUsed: false, backgroundActions: false, networkCalls: false, fileWrites: false, provider: "local-rules", model: "none" };
     });
+    const weeklyProposal = skills.find((item) => item.result.skillId === "weekly_plan")?.result.data as Parameters<typeof saveWeeklyPlan>[0] | undefined;
+    return { ...persisted, weeklyPlan: weeklyProposal ? saveWeeklyPlan(weeklyProposal) : null };
   } catch (error) { if (error instanceof RuntimePolicyError) try { withStoreTransaction(() => appendRuntimeAudit("policy.blocked", "agent", agent.id, { code: error.code })); } catch {} throw error; }
 }

@@ -1,12 +1,17 @@
 import { buildAgentWorkflowProposal } from "../../agent-workflows.ts";
 import type { AgentDefinition, PlannerResult, RuntimeContextSnapshot } from "../types.ts";
 
-export interface Planner { id: "deterministic-local" | "model-assisted"; plan(input: { agent: AgentDefinition; userInput: string; context: RuntimeContextSnapshot; projectId?: string; requestedSkillId?: string }): Promise<PlannerResult>; }
+export interface Planner { id: "deterministic-local" | "model-assisted"; plan(input: { agent: AgentDefinition; userInput: string; context: RuntimeContextSnapshot; projectId?: string; requestedSkillId?: string; plannerInput?: Record<string, unknown> }): Promise<PlannerResult>; }
 
 export const deterministicLocalPlanner: Planner = {
   id: "deterministic-local",
-  async plan({ agent, userInput, context, projectId, requestedSkillId }) {
+  async plan({ agent, userInput, context, projectId, requestedSkillId, plannerInput = {} }) {
     const records = context.records;
+    if (agent.defaultSkillId === "weekly_plan") {
+      const selectedCalendarIds = Array.isArray(plannerInput.selectedCalendarIds) ? plannerInput.selectedCalendarIds.map(String).slice(0, 12) : [];
+      if (!selectedCalendarIds.length) throw new Error("Mindestens ein Kalender ist erforderlich");
+      return { summary: "Wochenvorschlag wird deterministisch aus den verifizierten Quellen berechnet.", proposedSteps: [], requiresApproval: false, modelUsed: false, externalActionsPerformed: false, evidence: context.sources, skillInvocations: [{ skillId: "weekly_plan", input: { selectedCalendarIds, generatedAt: String(plannerInput.generatedAt || new Date().toISOString()) }, requestedBy: "agent_default" }], toolIntents: [], memorySuggestions: [], approvalRequirements: [] };
+    }
     const result = buildAgentWorkflowProposal(agent.id as Parameters<typeof buildAgentWorkflowProposal>[0], userInput, {
       projects: records.projects || [], tasks: records.tasks || [], inbox: records.inbox || [], habits: records.habits || [],
       journal: records.journal_metadata || [], areas: records.area_records || [], weeklyPlan: records.weekly_plans?.[0] || null,

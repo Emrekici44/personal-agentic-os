@@ -4,6 +4,8 @@ Stand: 24.08.2026, Europe/Berlin. Diese Punkte blockieren nicht die übrige loka
 
 Die deterministische Agent Runtime benötigt aktuell keine Provider-, Kosten- oder Autonomieentscheidung. Modellgestützte Planung, Background Agents, beliebige Tools, externe Aktionen und automatische Policy-Memory-Promotion bleiben technisch deaktiviert und wären jeweils ein späterer eigener Freigabeschritt.
 
+Die lokale Vorbereitung ist vollständig genug, dass keine Entscheidung für Contracts oder Tests nötig ist: Provider Router und OpenAI Boundary transportieren nichts, Scheduler-Auswertung ist manuell/proposal-only, Calendar bleibt Einzelapproval, Vault bleibt Vorschau. Eine echte Aktivierung dieser Grenzen bleibt ausdrücklich eine neue Nutzer-/Providerentscheidung.
+
 ## Obsidian-Schreibfreigabe
 
 - Benötigte Entscheidung: Eine später erzeugte exakte Markdown-Diffvorschau ausdrücklich freigeben oder verwerfen.

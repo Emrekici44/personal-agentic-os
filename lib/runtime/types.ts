@@ -1,6 +1,6 @@
-export type RuntimeSource = "projects" | "tasks" | "inbox" | "habits" | "journal_metadata" | "area_records" | "weekly_plans";
+export type RuntimeSource = "projects" | "tasks" | "inbox" | "habits" | "journal_metadata" | "area_records" | "weekly_plans" | "calendar_catalog" | "calendar_events";
 export type RiskClass = "read" | "local_mutation" | "external_mutation";
-export type RuntimeStatus = "created" | "context_built" | "planning" | "proposal_ready" | "waiting_for_review" | "approved" | "rejected" | "completed" | "failed";
+export type RuntimeStatus = "created" | "context_ready" | "planned" | "executing" | "waiting_for_approval" | "waiting_for_review" | "completed" | "blocked" | "failed" | "unknown" | "rejected";
 export type RunStepType = "context" | "planner" | "skill" | "tool" | "policy" | "approval" | "result";
 export type ExecutionStatus = "not_started" | "blocked" | "started" | "confirmed" | "failed" | "unknown";
 export type RetryPolicy = "safe" | "new_approval_required" | "manual_verification_required" | "not_retryable";
@@ -81,10 +81,12 @@ export interface SkillDefinition {
 export interface ToolDefinition {
   id: string;
   name: string;
-  source: RuntimeSource;
+  version: number;
+  source?: RuntimeSource;
   capability: "read" | "local_write" | "external_write";
-  riskClass: "low" | "medium" | "high";
+  riskClass: RiskClass;
   requiresApproval: boolean;
+  approvalClass?: string;
   inputSchema: Record<string, unknown>;
 }
 
@@ -189,6 +191,7 @@ export interface SkillExecutionResult {
   networkCalls: false;
   fileWrites: false;
   backgroundActions: false;
+  data?: unknown;
 }
 
 export interface RunStep {

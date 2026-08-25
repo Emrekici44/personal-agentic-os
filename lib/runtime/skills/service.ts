@@ -4,10 +4,10 @@ import { assertSkillAllowed } from "../policies/evaluator.ts";
 import { executeTool } from "../tools/service.ts";
 import type { AgentDefinition, SkillExecutionResult } from "../types.ts";
 
-const sourceTool: Record<string, string> = { projects: "read_projects", tasks: "read_tasks", inbox_items: "read_inbox", habits: "read_habits", area_records: "read_area_records", journal_metadata: "read_journal_metadata", weekly_plans: "read_weekly_plan" };
+const sourceTool: Record<string, string> = { projects: "read_projects", tasks: "read_tasks", inbox_items: "read_inbox", habits: "read_habits", area_records: "read_area_records", journal_metadata: "read_journal_metadata", weekly_plans: "read_weekly_plan", calendar_catalog: "read_calendar_catalog", calendar_events: "read_calendar_events" };
 type StoredSkillDefinition = { id: string; name: string; purpose: string; procedureId: string; allowedSources: string[]; assignedAgentWorkflowIds?: string[]; status: string; version?: number; executionMode?: string; approvalClass?: string };
 
-function executeValidatedSkill(agent: AgentDefinition, skillId: string, input: Record<string, unknown>, runId: string | undefined, stored?: StoredSkillDefinition) {
+function executeValidatedSkill(agent: AgentDefinition, skillId: string, input: Record<string, unknown>, runId: string | undefined, stored?: StoredSkillDefinition, sourceOverrides: Record<string, unknown[]> = {}) {
   const definition = stored ? { status: stored.status, executionMode: stored.executionMode } : assertSkillAllowed(agent, skillId);
   if (stored && !agent.allowedSkills.includes(skillId)) throw new Error("Skill ist für diesen Ausführungskontext nicht erlaubt");
   if (definition.status !== "active") throw new Error("Skill ist pausiert");
@@ -20,18 +20,18 @@ function executeValidatedSkill(agent: AgentDefinition, skillId: string, input: R
     const toolInput: Record<string, unknown> = {};
     if (input.projectId && ["projects", "tasks", "inbox_items"].includes(source)) toolInput.projectId = input.projectId;
     if (input.area && ["tasks", "habits", "area_records"].includes(source)) toolInput.area = input.area;
-    return executeTool({ agent, toolId: sourceTool[source], input: toolInput, runId, skillId });
+    return executeTool({ agent, toolId: sourceTool[source], input: toolInput, runId, skillId, sourceOverride: sourceOverrides[source] });
   });
   const sources = Object.fromEntries(toolExecutions.map((execution, index) => [allowedSources[index], execution.records]));
   const localDefinition = normalizeSkillDefinition({ name: stored?.name || procedure.name, purpose: stored?.purpose || procedure.purpose, procedureId: procedure.id, allowedSources, assignedAgentWorkflowIds: stored?.assignedAgentWorkflowIds || [agent.id], status: definition.status });
   const preview = executeLocalSkill(localDefinition, input, sources);
-  const result: SkillExecutionResult = { invocationId: invocation.id, skillId, status: "completed", summary: preview.summary, items: preview.items as SkillExecutionResult["items"], toolInvocations: toolExecutions.map((item) => item.invocation), toolResults: toolExecutions.map((item) => item.result), deterministicSteps: preview.deterministicSteps, sourceEvidence: preview.sourceEvidence, input, externalActionsPerformed: false, modelUsed: false, networkCalls: false, fileWrites: false, backgroundActions: false };
+  const result: SkillExecutionResult = { invocationId: invocation.id, skillId, status: "completed", summary: preview.summary, items: preview.items as SkillExecutionResult["items"], toolInvocations: toolExecutions.map((item) => item.invocation), toolResults: toolExecutions.map((item) => item.result), deterministicSteps: preview.deterministicSteps, sourceEvidence: preview.sourceEvidence, input, data: preview.data, externalActionsPerformed: false, modelUsed: false, networkCalls: false, fileWrites: false, backgroundActions: false };
   return { invocation, result, toolExecutions, preview };
 }
 
-export function executeSkill({ agent, skillId, input = {}, runId }: { agent: AgentDefinition; skillId: string; input?: Record<string, unknown>; runId?: string }) {
+export function executeSkill({ agent, skillId, input = {}, runId, sourceOverrides = {} }: { agent: AgentDefinition; skillId: string; input?: Record<string, unknown>; runId?: string; sourceOverrides?: Record<string, unknown[]> }) {
   assertSkillAllowed(agent, skillId);
-  return executeValidatedSkill(agent, skillId, input, runId);
+  return executeValidatedSkill(agent, skillId, input, runId, undefined, sourceOverrides);
 }
 
 export function executeStandaloneSkill(skill: StoredSkillDefinition, input: Record<string, unknown> = {}) {

@@ -2,9 +2,9 @@
 
 ## Runtime Foundation
 
-Lokal geschlossen: persistente deterministische Agent Runtime, formale Definitionen, allowlist-basierte Read Tools, strukturierter quellenbegrenzter Context, Planner-Grenze, Runtime-Policy-Auswertung, verschlüsselte Context Snapshots, persistente Run Steps, strukturiertes Scope-Memory, Candidate-Review und inhaltsarmes Audit.
+Lokal geschlossen: persistente deterministische Agent Runtime, vollständige eingebaute Agent Definitionen, vereinheitlichte Skill Engine, allowlist-basierte Read Tools, fünf enge Local-Intent-Mutationen, budgetierter Context, Planner-/Policy-Grenze, verschlüsselte Context Snapshots, persistente Run/Skill/Tool Steps, Execution Receipts, generalisierter Exact-Approval-Core, strukturiertes Scope-Memory samt Review/Lifecycle, Weekly-Planner-Runtime, Run/Approval/Execution-Inspektion, proposal-only Scheduler Foundation und inhaltsarmes Audit.
 
-Bewusst offen: keine autonomen oder modellgestützten Agenten, kein Background Scheduler, kein ChatGPT-History-Zugriff, keine bezahlten OpenAI-Aufrufe, keine beliebige Tool-/Code-Ausführung, keine automatischen Calendar-/Vault-/Datei-/Nachrichten-/Finanzaktionen und keine automatische Policy-Memory-Promotion. Die Memory-Review-API existiert; eine eigene Review-UI ist der nächste kleine Vertikalschnitt. Ältere Domain-Repositories nutzen weiterhin die Shared-Store-Kompatibilitätsfassade und werden später schrittweise statt über einen zweiten Store extrahiert.
+Prepared but gated: Modellcontracts, strukturierter Planner-Output, Fake-Testprovider und OpenAI-No-Transport-Adapter sind vorhanden; produktiv bleibt Model-assisted deaktiviert. Persistierte Zeitpläne benötigen weiterhin eine bewusste manuelle Evaluation beziehungsweise später einen freizugebenden OS-Host. Vault Apply, neue OAuth Scopes, bezahlte Provider, PostgreSQL-Migration, Messaging/Bank/Health-Connectoren und weitere External Writes sind externe Entscheidungen. Lokal offen bleibt die schrittweise Extraktion älterer Domain-Repositories aus der Shared-Store-Kompatibilitätsfassade; es gibt keine zweite Source of Truth.
 
 Stand: 24.08.2026, Europe/Berlin. Diese Liste verwendet nur diskrete Zustände. Sie ist kein Prozentwert und kein Versprechen über ungeprüfte Funktionen.
 

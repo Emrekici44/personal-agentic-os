@@ -54,6 +54,11 @@ export async function GET(request: NextRequest) {
       reconnect: "Agentic OS über den Desktop-Launcher neu starten. Keine separate Cloud-Anmeldung erforderlich.", evidence: shared ? { schemaVersion: shared.schemaVersion, wal: shared.wal, encryptedFields: shared.sensitiveFieldEncryption } : {}, ...base(checkedAt),
     },
     {
+      id: "agent-runtime", name: "Agent Runtime", area: "Planner, Skills, Tools & Evidence", status: shared?.online ? "online" : "offline", costClass: "Free", classification: "local_runtime", lastSuccessfulSync: shared?.online ? checkedAt : null,
+      currentAction: shared?.online ? `${Number(localRecords.agent_workflow_runs||0)} Runs · ${Number(localRecords.execution_receipts||0)} Receipts · ${Number(localRecords.approvals||0)} Approval-Artefakte` : "Runtime-Persistenz nicht verifiziert", recentError: sharedError||null,
+      permissionScope: ["Deterministic local", "Allowlisted skills/tools", "Exact approvals"], privacy: "Health Evidence enthält nur Zähler und Capability-Zustände, keine Inputs, Memory-Inhalte oder Secrets.", reconnect: "Shared Store lokal wiederherstellen und Diagnose erneut laden.", evidence: { modelProvider:"disabled", externalWritesAutomatic:false, backgroundActions:false, receipts:Number(localRecords.execution_receipts||0), schedules:Number(localRecords.runtime_schedules||0) }, ...base(checkedAt),
+    },
+    {
       id: "openai", name: "OpenAI API", area: "Optionale Modelle",
       status: openai.configured && openai.mode === "api" && !openai.killSwitch ? "degraded" : "unconfigured", costClass: "Usage-based", classification: "optional_paid_api", lastSuccessfulSync: null,
       currentAction: "Keine Anfrage; API-Modus bleibt standardmäßig deaktiviert", recentError: null,

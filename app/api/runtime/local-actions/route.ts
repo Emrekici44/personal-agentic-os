@@ -1,0 +1,7 @@
+import { NextRequest, NextResponse } from "next/server";
+import { executeLocalMutationTool } from "@/lib/runtime/tools/local-mutation-service";
+import { publicApiError, publicConflict } from "@/lib/public-api-error";
+import { readPrivateJson, trustedPrivateMutationOrigin } from "@/lib/private-request";
+import { verifyLocalSession } from "@/lib/shared-store";
+const headers={"Cache-Control":"no-store, private"};const respond=(body:unknown,init:ResponseInit={})=>NextResponse.json(body,{...init,headers});
+export async function POST(request:NextRequest){if(!verifyLocalSession(request.cookies.get("agentic_os_local_session")?.value))return respond({error:"Lokale Sitzung erforderlich",writesPerformed:false},{status:401});if(!trustedPrivateMutationOrigin(request))return respond({error:"Anfrageherkunft nicht zulässig",writesPerformed:false},{status:403});try{const body=await readPrivateJson(request);const execution=executeLocalMutationTool({toolId:String(body.toolId||""),payload:body.payload&&typeof body.payload==="object"?body.payload:{},authority:"user_direct_intent"});return respond({...execution,writesPerformed:true},{status:201})}catch(error){const fallback="Lokale Aktion konnte nicht sicher ausgeführt werden",message=publicApiError(error,fallback),conflict=publicConflict(error);return respond({error:message,conflict,writesPerformed:false},{status:conflict?409:message===fallback?503:400})}}

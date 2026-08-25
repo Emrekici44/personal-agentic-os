@@ -1,0 +1,2 @@
+import type {ExecutionStatus,RetryPolicy} from "../types.ts";
+export function vaultProposalReceipt(status:"proposal"|"approved_preview"|"rejected"|"expired"):{status:ExecutionStatus;retryPolicy:RetryPolicy;external:false}{if(status==="approved_preview")return{status:"not_started",retryPolicy:"new_approval_required",external:false};if(status==="rejected"||status==="expired")return{status:"blocked",retryPolicy:"not_retryable",external:false};return{status:"not_started",retryPolicy:"safe",external:false}}

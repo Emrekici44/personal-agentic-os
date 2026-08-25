@@ -1,0 +1,9 @@
+import { NextRequest, NextResponse } from "next/server";
+import { listPendingApprovalArtifacts, rejectApprovalArtifact } from "@/lib/repositories/approval-repository";
+import { publicApiError, publicConflict } from "@/lib/public-api-error";
+import { readPrivateJson, trustedPrivateMutationOrigin } from "@/lib/private-request";
+import { verifyLocalSession, withStoreTransaction } from "@/lib/shared-store";
+
+const headers={"Cache-Control":"no-store, private"},respond=(body:unknown,init:ResponseInit={})=>NextResponse.json(body,{...init,headers}),auth=(request:NextRequest)=>verifyLocalSession(request.cookies.get("agentic_os_local_session")?.value);
+export async function GET(request:NextRequest){if(!auth(request))return respond({error:"Lokale Sitzung erforderlich"},{status:401});try{return respond({approvals:listPendingApprovalArtifacts(),inventoryVerified:true,bulkApprovalAvailable:false})}catch{return respond({error:"Approval Ledger ist nicht erreichbar",approvals:[],inventoryVerified:false,retrySafe:true},{status:503})}}
+export async function PATCH(request:NextRequest){if(!auth(request))return respond({error:"Lokale Sitzung erforderlich",writesPerformed:false},{status:401});if(!trustedPrivateMutationOrigin(request))return respond({error:"Anfrageherkunft nicht zulässig",writesPerformed:false},{status:403});try{const body=await readPrivateJson(request);if(body.action!=="reject")throw new Error("Nur explizites Ablehnen ist im Approval Center verfügbar");const approval=withStoreTransaction(()=>rejectApprovalArtifact(String(body.id||""),Number(body.version)));return respond({approval,writesPerformed:true})}catch(error){const fallback="Freigabe konnte nicht sicher geändert werden",message=publicApiError(error,fallback),conflict=publicConflict(error);return respond({error:message,conflict,writesPerformed:false},{status:conflict?409:message===fallback?503:400})}}

@@ -1,0 +1,4 @@
+.surface{margin-top:20px;padding:20px;border:1px solid var(--line);border-radius:18px;background:var(--surface)}
+.summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:16px 0}.summary span{padding:12px;border:1px solid var(--line);border-radius:12px}.summary b{display:block;font-size:1.35rem}
+.columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.columns>div{min-width:0}.columns article,.columns details{margin:8px 0;padding:11px;border:1px solid var(--line);border-radius:12px}.columns summary,.columns article span{display:flex;gap:8px;align-items:center}.columns small,.columns code{display:block;margin-top:4px;overflow-wrap:anywhere}.columns dl{display:grid;gap:5px}.columns dl div{display:flex;justify-content:space-between}.columns button{margin-top:8px}
+@media(max-width:900px){.columns{grid-template-columns:1fr}.summary{grid-template-columns:1fr}}

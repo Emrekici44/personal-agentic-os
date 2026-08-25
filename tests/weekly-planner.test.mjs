@@ -1,5 +1,10 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import { mkdtempSync, rmSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import os from "node:os";
+import path from "node:path";
+import { pathToFileURL } from "node:url";
 import test from "node:test";
 import { buildWeeklyPlan, weeklyWindow } from "../lib/weekly-planner.ts";
 import { validateWeeklyPlan, validateWeeklyReview } from "../lib/shared-store.ts";
@@ -115,9 +120,10 @@ test("weekly plan persistence is versioned, encrypted and approval-linked", asyn
   assert.match(store, /BEGIN IMMEDIATE/);
   assert.match(route, /verifyLocalSession/);
   assert.match(route, /readGoogleCalendarWindow/);
-  assert.match(route, /listRecords\("tasks"\)/);
-  assert.match(route, /listRecords\("inbox_items"\)/);
-  assert.match(route, /listRecords\("projects"\)/);
+  assert.match(route, /runAgent\(\{ agentId: "weekly_planner"/);
+  assert.match(route, /calendar_catalog: calendars/);
+  assert.match(route, /calendar_events: events/);
+  assert.match(route, /modelUsed: false/);
   assert.match(route, /rawEventDetailsExposed: false/);
   assert.match(route, /weeklyWindow\(new Date\(\)\)/);
   assert.match(route, /Cache-Control.*no-store, private/);
@@ -144,3 +150,7 @@ test("weekly planner UI is guided and keeps writes behind the exact approval sta
   assert.match(tokenStore, /refresh_token/);
   assert.match(tokenStore, /storeTokenBundle\(JSON\.stringify\(next\)\)/);
 });
+
+test("weekly planner product path uses the common runtime and persists read receipts",()=>{const root=mkdtempSync(path.join(os.tmpdir(),"agentic-os-weekly-runtime-")),serviceUrl=pathToFileURL(path.resolve("lib/runtime/service.ts")).href,storeUrl=pathToFileURL(path.resolve("lib/shared-store.ts")).href,script=`
+await import(${JSON.stringify(storeUrl)});const {runAgent}=await import(${JSON.stringify(serviceUrl)});const calendar={id:"cal-1",summary:"Fokus",writable:true,primary:true};const result=await runAgent({agentId:"weekly_planner",input:"Wochenvorschlag aus verifizierten Quellen erzeugen",trustedSourceOverrides:{calendar_catalog:[calendar],calendar_events:[]},plannerInput:{selectedCalendarIds:[calendar.id],generatedAt:"2026-08-24T08:00:00.000Z"}});if(!result.weeklyPlan||result.modelUsed||result.externalActionsPerformed||result.backgroundActions)throw new Error("unsafe weekly runtime");if(result.toolExecutions.length!==6||result.receipts.length!==6)throw new Error("weekly tool receipts missing");if(result.run.steps.filter(step=>step.type==="tool").length!==6)throw new Error("weekly tool steps missing");if(result.weeklyPlan.capacity.bufferPercent!==35||result.weeklyPlan.outcomes.length>3)throw new Error("weekly rules changed");
+`;try{const result=spawnSync(process.execPath,["--input-type=module","--eval",script],{cwd:root,encoding:"utf8",env:{...process.env,AUTH_SECRET:"weekly-runtime-test-secret"}});assert.equal(result.status,0,result.stderr||result.stdout)}finally{rmSync(root,{recursive:true,force:true})}});

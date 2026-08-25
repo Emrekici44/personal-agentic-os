@@ -4,18 +4,19 @@ import { retrieveActiveMemories } from "../../repositories/memory-repository.ts"
 import { assertAreaScopeAllowed, assertSourceAllowed } from "../policies/evaluator.ts";
 import type { AgentDefinition, RuntimeContextSnapshot, RuntimeSource } from "../types.ts";
 
-function readSource(source: RuntimeSource): unknown[] {
+function readSource(source: RuntimeSource, overrides: Partial<Record<RuntimeSource, unknown[]>>): unknown[] {
+  if (source === "calendar_catalog" || source === "calendar_events") { const value = overrides[source]; if (!Array.isArray(value)) throw new Error("Verifizierte Connector-Quelle ist nicht verfügbar"); return value; }
   if (source === "inbox") return listRecords("inbox_items");
   if (source === "weekly_plans") { const plan = latestWeeklyPlan(); return plan ? [plan] : []; }
   return listRecords(source);
 }
 
-export function buildRuntimeContext(agent: AgentDefinition, input: { userInput: string; projectId?: string; scope?: { area?: string } }): RuntimeContextSnapshot {
+export function buildRuntimeContext(agent: AgentDefinition, input: { userInput: string; projectId?: string; scope?: { area?: string }; trustedSourceOverrides?: Partial<Record<RuntimeSource, unknown[]>> }): RuntimeContextSnapshot {
   assertAreaScopeAllowed(agent, input.scope?.area);
   const records: RuntimeContextSnapshot["records"] = {}, sources: RuntimeContextSnapshot["sources"] = [];
   for (const source of agent.allowedSources) {
     assertSourceAllowed(agent, source);
-    let values = readSource(source);
+    let values = readSource(source, input.trustedSourceOverrides || {});
     if (input.projectId && source === "projects") values = values.filter((item) => (item as { id?: string }).id === input.projectId);
     if (input.projectId && ["tasks", "inbox"].includes(source)) values = values.filter((item) => (item as { projectId?: string }).projectId === input.projectId);
     if (input.scope?.area && source === "area_records") values = values.filter((item) => (item as { area?: string }).area === input.scope?.area);

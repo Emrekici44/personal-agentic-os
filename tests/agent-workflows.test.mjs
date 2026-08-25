@@ -54,15 +54,17 @@ test("workflow persistence is encrypted, resumable, audited and private", async 
 });
 
 test("custom agent configuration is explicit, validated and never claims model execution", async () => {
-  const [store, route, page] = await Promise.all([
+  const [store, validator, route, page] = await Promise.all([
     readFile(new URL("../lib/shared-store.ts", import.meta.url), "utf8"),
+    readFile(new URL("../lib/runtime/agents/custom-validation.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/api/state/records/[kind]/route.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
   ]);
   assert.match(store, /validateAgentConfig/);
-  assert.match(store, /\['subscription','none'\]/);
-  assert.match(store, /\['chatgpt-companion-manual','none'\]/);
-  assert.match(store, /Eigene Agent-Konfiguration ist nicht ausführbar/);
+  assert.match(validator, /\["subscription","none"\]/);
+  assert.match(validator, /\["chatgpt-companion-manual","none"\]/);
+  assert.match(validator, /Eigene Agent-Konfiguration ist nicht ausführbar/);
+  assert.match(validator, /customJavaScript/);
   assert.match(route, /kind === "agents" \? validateAgentConfig\(body\) : body/);
   for (const label of ["Zugeordnete Lebensbereiche", "ChatGPT Companion · manuell", "Kein Modell", "Keine Ausführung", "Konfiguration speichern"]) assert.match(page, new RegExp(label));
   assert.match(page, /OpenAI API · Kostenfreigabe nötig/);

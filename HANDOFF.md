@@ -1,5 +1,14 @@
 # Resume handoff
 
+## Deterministic Runtime consolidation (2026-08-25)
+
+- Agent and standalone Skill entrypoints share one deterministic Skill service and local Procedure catalog. Six built-in agents, including Weekly Planner, use declared sources/skills/tools/context/risk policies.
+- Runtime evidence now includes ordered Skill/Tool steps and bounded execution receipts. Calendar uses the generalized exact approval ledger plus outcome-specific receipts; unknown writes remain manual-verification-only.
+- Memory Review, Runtime Run inspection, Approval Center and Execution History are real private UI surfaces with Loading/Offline/verified-empty and 409 recovery. No fake activity or bulk high-risk approval exists.
+- Weekly planning now enters through `weekly_planner` → bounded trusted Calendar/context → `weekly_plan` Skill → six read tools → encrypted weekly proposal. Calendar writes remain separate per-block exact approvals.
+- Five narrow local mutation tools execute only from the server-assigned explicit `user_direct_intent`; agent/scheduled proposals cannot mutate. Persisted schedules are manually evaluated read/proposal runs only—there is no background daemon.
+- Model routing, structured output validation, cost evidence, test-only fake provider and OpenAI gates are prepared. Production remains `modelUsed: false`; no provider transport or cost was introduced.
+
 Checkpoint date: 25.08.2026, Europe/Berlin.
 
 ## Resume location

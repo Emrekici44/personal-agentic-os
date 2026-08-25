@@ -12,7 +12,7 @@ import { executeReadTool, getToolDefinition, toolDefinitions } from "../lib/runt
 import { modelAssistedPlanner } from "../lib/runtime/planning/planner.ts";
 
 test("agent definitions and policy evaluator fail closed", async () => {
-  assert.equal(agentDefinitions.length, 5);
+  assert.equal(agentDefinitions.length, 6);
   assert.throws(() => getAgentDefinition("unknown"), /Unbekannter Agent/);
   assert.throws(() => assertAgentRunnable({ ...agentDefinitions[0], status: "paused" }), RuntimePolicyError);
   assert.throws(() => assertSourceAllowed(getAgentDefinition("health_planner"), "journal_metadata"), /nicht erlaubt/);
@@ -33,6 +33,8 @@ test("tool registry is a fixed read-only allowlist", () => {
   assert.deepEqual(executeReadTool("read_tasks", { tasks: () => [] }), []);
   assert.throws(() => executeReadTool("read_tasks", {}), /nicht verfügbar/);
 });
+
+test("all built-in agent capabilities resolve through fixed registries",()=>{for(const agent of agentDefinitions){assert.ok(agent.allowedSources.length>0);assert.ok(agent.allowedSkills.includes(agent.defaultSkillId));for(const skill of agent.allowedSkills)assert.doesNotThrow(()=>getRuntimeSkill(skill));for(const tool of agent.allowedTools)assert.doesNotThrow(()=>getToolDefinition(tool));assert.ok(agent.allowedSources.every(source=>agent.contextPolicy.sourcePriorities[source]));assert.deepEqual(agent.permissionPolicy.allowedRiskClasses,["read"]);}});
 
 test("runtime persists bounded context, steps, encrypted memory and no actions", () => {
   const root = mkdtempSync(path.join(os.tmpdir(), "agentic-os-runtime-"));

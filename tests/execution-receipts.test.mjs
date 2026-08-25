@@ -25,14 +25,18 @@ test("generic approvals and receipts are exact, single-use and content-light", (
     const receipts = await import(${JSON.stringify(receiptUrl)});
     const payload = { taskId: "safe-id", version: 1 };
     const artifact = approval.createApprovalArtifact({ actionType: "task.complete", approvalClass: "local_mutation", exactPayload: payload, expiresAt: new Date(Date.now()+60000).toISOString() });
+    try { approval.consumeApprovalArtifact({ id: artifact.id, actionType: "task.complete", approvalClass: "external_calendar_write", exactPayload: payload }); throw new Error("wrong class accepted"); } catch (error) { if (!String(error.message).includes("Freigabeklasse")) throw error; }
     try { approval.consumeApprovalArtifact({ id: artifact.id, actionType: "task.complete", approvalClass: "local_mutation", exactPayload: { ...payload, version: 2 } }); throw new Error("changed payload accepted"); } catch (error) { if (!String(error.message).includes("stimmt nicht")) throw error; }
     approval.consumeApprovalArtifact({ id: artifact.id, actionType: "task.complete", approvalClass: "local_mutation", exactPayload: payload });
     try { approval.consumeApprovalArtifact({ id: artifact.id, actionType: "task.complete", approvalClass: "local_mutation", exactPayload: payload }); throw new Error("replay accepted"); } catch (error) { if (!String(error.message).includes("bereits verwendet")) throw error; }
+    const expired = approval.createApprovalArtifact({ actionType: "task.reopen", approvalClass: "local_mutation", exactPayload: payload, expiresAt: new Date(Date.now()+60000).toISOString() });
+    const internal = (await import(${JSON.stringify(storeUrl)})).getStoreDatabase(); internal.prepare("UPDATE approvals SET expires_at=? WHERE id=?").run(new Date(Date.now()-1000).toISOString(),expired.id);
+    try { approval.consumeApprovalArtifact({ id: expired.id, actionType: "task.reopen", approvalClass: "local_mutation", exactPayload: payload }); throw new Error("expired approval accepted"); } catch (error) { if (!String(error.message).includes("abgelaufen")) throw error; }
     const invocationId = crypto.randomUUID();
     receipts.createExecutionReceipt({ invocationId, actionType: "read_tasks", targetType: "tool", status: "confirmed", external: false, retryPolicy: "safe", evidence: { recordCount: 2, content: "must-not-persist", token: "secret" } });
     const { DatabaseSync } = await import("node:sqlite"); const db = new DatabaseSync("local-state/agentic-os.sqlite");
     const row = db.prepare("SELECT evidence_json FROM execution_receipts WHERE invocation_id=?").get(invocationId); if (row.evidence_json.includes("must-not-persist") || row.evidence_json.includes("secret")) throw new Error("receipt leaked content");
-    if (db.prepare("SELECT MAX(version) version FROM schema_migrations").get().version !== 11) throw new Error("latest migration missing"); db.close();
+    if (db.prepare("SELECT MAX(version) version FROM schema_migrations").get().version !== 13) throw new Error("latest migration missing"); db.close();
   `;
   try { const result = spawnSync(process.execPath, ["--input-type=module", "--eval", script], { cwd: root, encoding: "utf8", env: { ...process.env, AUTH_SECRET: "receipt-test-secret" } }); assert.equal(result.status, 0, result.stderr || result.stdout); }
   finally { rmSync(root, { recursive: true, force: true }); }

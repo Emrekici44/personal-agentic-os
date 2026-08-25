@@ -48,3 +48,9 @@
 # Executing Runtime Boundary (August 2026)
 
 Runtime tool IDs resolve only through a fixed registry, inputs accept bounded named filters, and agent allowlists plus read-risk policy are checked before execution. Model-assisted skills and planners, direct tool requests, mutation tools, network calls, shell/code execution, file writes, and background chains remain fail-closed. Ordinary runs no longer create automatic memory candidates; policy memory still requires the dedicated user review boundary.
+
+Execution receipts persist only bounded scalar evidence; key names shaped like content, input, output, payload, path, token or secret are removed. The general approval core binds approval class and canonical payload hash, enforces expiry and optimistic single use, and never weakens Calendar's pre-transport consumption or read-back rules. Unknown external outcomes require manual verification and are never automatically retried.
+
+The only active local mutation entrypoint assigns `user_direct_intent` server-side after signed session and trusted-origin checks. It exposes five fixed schemas rather than a generic CRUD primitive. `agent_proposal` and `scheduled_trigger` remain review-only. Scheduler evaluation is manual and proposal-only; no background loop exists.
+
+Connector calendar records enter the Weekly Planner only as trusted server-side source overrides after the bounded Google read. They cannot be supplied through the public Agent workflow API. Context evidence stores counts, priority, inclusion/exclusion reason and definition versions without plaintext record bodies; full selected data remains field-encrypted.

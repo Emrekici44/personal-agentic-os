@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { refreshedAccessToken } from "@/lib/google-calendar";
 import { readCalendarCatalog, readGoogleCalendarWindow } from "@/lib/google-calendar-read";
-import { buildWeeklyPlan, weeklyWindow } from "@/lib/weekly-planner";
+import { weeklyWindow } from "@/lib/weekly-planner";
+import { runAgent } from "@/lib/runtime/service";
 import { publicApiError, publicConflict } from "@/lib/public-api-error";
 import { readPrivateJson, trustedPrivateMutationOrigin } from "@/lib/private-request";
-import { latestWeeklyPlan, listRecords, listWeeklyPlanSummaries, reviewWeeklyPlan, saveWeeklyPlan, verifyLocalSession, withStoreTransaction } from "@/lib/shared-store";
+import { latestWeeklyPlan, listWeeklyPlanSummaries, reviewWeeklyPlan, verifyLocalSession, withStoreTransaction } from "@/lib/shared-store";
 
 const headers = { "Cache-Control": "no-store, private" };
 const respond = (body: unknown, init: ResponseInit = {}) => NextResponse.json(body, { ...init, headers });
@@ -50,17 +51,8 @@ export async function POST(request: NextRequest) {
     return respond({ error: staleSelection ? "Kalenderauswahl ist nicht mehr aktuell; bitte Kalender neu laden" : "Kalenderquellen für den Wochenplan sind vorübergehend nicht erreichbar", writesPerformed: false, retrySafe: true }, { status: staleSelection ? 409 : 502 });
   }
   try {
-    const proposal = buildWeeklyPlan({
-      now: new Date(),
-      calendars,
-      selectedCalendarIds,
-      events,
-      tasks: listRecords("tasks"),
-      inbox: listRecords("inbox_items"),
-      projects: listRecords("projects"),
-    });
-    const plan = saveWeeklyPlan(proposal);
-    return respond({ plan, history: listWeeklyPlanSummaries(), generatedFromRealSources: true, rawEventDetailsExposed: false, writesPerformed: false });
+    const runtime = await runAgent({ agentId: "weekly_planner", input: "Erzeuge den Wochenvorschlag aus den ausgewählten, verifizierten Kalendern.", trustedSourceOverrides: { calendar_catalog: calendars, calendar_events: events }, plannerInput: { selectedCalendarIds, generatedAt: new Date().toISOString() } });
+    return respond({ plan: runtime.weeklyPlan, history: listWeeklyPlanSummaries(), runtime: { runId: runtime.run.id, steps: runtime.run.steps, receipts: runtime.receipts, modelUsed: false, externalActionsPerformed: false, backgroundActions: false }, generatedFromRealSources: true, rawEventDetailsExposed: false, writesPerformed: false });
   } catch (error) {
     const fallback = "Wochenplan konnte lokal nicht sicher gespeichert werden";
     const message = publicApiError(error, fallback);

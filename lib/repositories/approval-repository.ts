@@ -29,3 +29,23 @@ export function consumeApprovalArtifact(input: { id: string; actionType: string;
   operationalDatabase().prepare("INSERT INTO audit_log(id,action,entity_type,entity_id,metadata_json,created_at) VALUES(?,?,?,?,?,?)").run(crypto.randomUUID(), "approval.consume", "approval", input.id, JSON.stringify({ actionType: input.actionType, approvalClass: input.approvalClass, status: "consumed" }), now);
   return { id: input.id, status: "consumed" as const, consumedAt: now, version: Number(row.version) + 1 };
 }
+
+export function listPendingApprovalArtifacts(limit = 50) {
+  const safe = Math.min(50, Math.max(1, Math.trunc(limit) || 50)), now = new Date().toISOString();
+  const rows = operationalDatabase().prepare("SELECT * FROM approvals WHERE status='review_required' ORDER BY updated_at DESC LIMIT ?").all(safe) as Array<Record<string, unknown>>;
+  return rows.map((row) => { const stored = decryptSensitive(String(row.exact_diff_json)) as { approvalClass?: string; exactPayload?: unknown }; return { id: String(row.id), actionType: String(row.action_type), approvalClass: String(stored.approvalClass || "legacy"), status: Date.parse(String(row.expires_at)) <= Date.parse(now) ? "expired" : "review_required", exactPayloadHash: digest(stored.exactPayload).toString("hex"), expiresAt: String(row.expires_at), createdAt: String(row.updated_at), version: Number(row.version), exactActionPreview: approvalPreview(String(row.action_type), stored.exactPayload) }; });
+}
+
+function approvalPreview(actionType: string, payload: unknown) {
+  const value = payload && typeof payload === "object" ? payload as Record<string, unknown> : {};
+  return { actionType, action: typeof value.action === "string" ? value.action.slice(0, 40) : undefined, targetType: typeof value.calendarId === "string" ? "calendar" : undefined, hasExactPayload: true };
+}
+
+export function rejectApprovalArtifact(id: string, expectedVersion: number) {
+  const row = operationalDatabase().prepare("SELECT action_type,status,version FROM approvals WHERE id=?").get(id) as Record<string, unknown> | undefined;
+  if (!row || row.status !== "review_required" || Number(row.version) !== expectedVersion) throw new Error("Datenkonflikt: Freigabe wurde bereits geändert");
+  const now = new Date().toISOString(), result = operationalDatabase().prepare("UPDATE approvals SET status='rejected',decided_at=?,version=version+1,updated_at=? WHERE id=? AND status='review_required' AND version=?").run(now, now, id, expectedVersion);
+  if (!result.changes) throw new Error("Datenkonflikt: Freigabe wurde bereits geändert");
+  operationalDatabase().prepare("INSERT INTO audit_log(id,action,entity_type,entity_id,metadata_json,created_at) VALUES(?,?,?,?,?,?)").run(crypto.randomUUID(), "approval.reject", "approval", id, JSON.stringify({ actionType: String(row.action_type), status: "rejected" }), now);
+  return { id, status: "rejected" as const, decidedAt: now, version: expectedVersion + 1 };
+}

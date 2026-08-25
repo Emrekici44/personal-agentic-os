@@ -41,6 +41,14 @@ export function reviewMemory(id: string, decision: "activate" | "reject", expect
   const status = decision === "activate" ? "active" : "rejected", now = new Date().toISOString();
   const result = operationalDatabase().prepare("UPDATE memory_items SET status=?,last_confirmed_at=?,version=version+1,updated_at=? WHERE id=? AND version=? AND status='candidate'").run(status, decision === "activate" ? now : null, now, id, expectedVersion);
   if (!result.changes) throw new Error("Datenkonflikt: Memory wurde bereits geändert");
+  if (decision === "activate" && current.supersedesId) {
+    const target = getMemory(current.supersedesId);
+    if (!target || target.status !== "active" || target.kind !== current.kind || target.scope !== current.scope || target.scopeId !== current.scopeId) throw new Error("Zu ersetzendes Memory ist nicht mehr kompatibel");
+    const changed = operationalDatabase().prepare("UPDATE memory_items SET status='superseded',version=version+1,updated_at=? WHERE id=? AND version=? AND status='active'").run(now, target.id, target.version);
+    if (!changed.changes) throw new Error("Datenkonflikt: Zu ersetzendes Memory wurde geändert");
+    operationalDatabase().prepare("INSERT INTO memory_events(id,memory_id,event_type,actor_type,metadata_json,created_at) VALUES(?,?,?,?,?,?)").run(crypto.randomUUID(), target.id, "superseded", actorType, JSON.stringify({ replacementId: current.id }), now);
+    appendRuntimeAudit("memory.superseded", "memory", target.id, { kind: target.kind, scope: target.scope });
+  }
   operationalDatabase().prepare("INSERT INTO memory_events(id,memory_id,event_type,actor_type,metadata_json,created_at) VALUES(?,?,?,?,?,?)").run(crypto.randomUUID(), id, status, actorType, "{}", now);
   appendRuntimeAudit(status === "active" ? "memory.activated" : "memory.rejected", "memory", id, { kind: current.kind, scope: current.scope });
   return getMemory(id)!;

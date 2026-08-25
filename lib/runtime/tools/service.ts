@@ -7,7 +7,7 @@ const maxLimit = 100;
 function validateInput(toolId: string, raw: Record<string, unknown>) {
   const allowed: Record<string, string[]> = {
     read_projects: ["projectId", "status", "limit"], read_tasks: ["projectId", "area", "status", "limit"], read_inbox: ["projectId", "status", "limit"],
-    read_habits: ["area", "status", "limit"], read_area_records: ["area", "recordType", "status", "limit"], read_journal_metadata: ["date", "status", "limit"], read_weekly_plan: [],
+    read_habits: ["area", "status", "limit"], read_area_records: ["area", "recordType", "status", "limit"], read_journal_metadata: ["date", "status", "limit"], read_weekly_plan: [], read_calendar_catalog: ["limit"], read_calendar_events: ["limit"],
   };
   if (!allowed[toolId] || Object.keys(raw).some((key) => !allowed[toolId].includes(key))) throw new Error("Ungültige Tool-Eingabe");
   const limit = raw.limit === undefined ? maxLimit : Number(raw.limit);
@@ -17,11 +17,14 @@ function validateInput(toolId: string, raw: Record<string, unknown>) {
   return { ...raw, limit } as Record<string, unknown> & { limit: number };
 }
 
-export function executeTool({ agent, toolId, input = {}, skillId }: { agent: AgentDefinition; toolId: string; input?: Record<string, unknown>; runId?: string; skillId?: string }) {
+export function executeTool({ agent, toolId, input = {}, skillId, sourceOverride }: { agent: AgentDefinition; toolId: string; input?: Record<string, unknown>; runId?: string; skillId?: string; sourceOverride?: unknown[] }) {
   const definition = assertToolAllowed(agent, toolId); assertRiskAllowed(agent, "read");
   if (definition.capability !== "read" || definition.requiresApproval) throw new Error("Mutierendes Tool ist gesperrt");
   const filters = validateInput(toolId, input), source = definition.source;
-  let records: any[] = source === "weekly_plans" ? (latestWeeklyPlan() ? [latestWeeklyPlan()] : []) : listRecords(source === "inbox" ? "inbox_items" : source);
+  if (!source) throw new Error("Tool-Quelle ist nicht verfügbar");
+  let records: any[];
+  if (source === "calendar_catalog" || source === "calendar_events") { if (!Array.isArray(sourceOverride)) throw new Error("Verifizierte Connector-Quelle ist nicht verfügbar"); records = sourceOverride; }
+  else records = source === "weekly_plans" ? (latestWeeklyPlan() ? [latestWeeklyPlan()] : []) : listRecords(source === "inbox" ? "inbox_items" : source);
   const projectId = filters.projectId && String(filters.projectId);
   if (projectId) records = records.filter((item) => item.id === projectId || item.projectId === projectId);
   for (const key of ["area", "status", "recordType"]) if (filters[key]) records = records.filter((item) => String(item[key]) === String(filters[key]));

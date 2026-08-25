@@ -9,7 +9,7 @@ const route = await readFile(new URL("../app/api/skills/route.ts", import.meta.u
 const ui = await readFile(new URL("../app/page.tsx", import.meta.url), "utf8");
 
 test("catalog exposes only fixed deterministic local procedures", () => {
-  assert.deepEqual(skillProcedureCatalog.map((item) => item.id), ["priority_review", "daily_check", "area_overview", "project_snapshot"]);
+  assert.deepEqual(skillProcedureCatalog.map((item) => item.id), ["weekly_plan", "priority_review", "daily_check", "area_overview", "project_snapshot"]);
   assert.equal(skillSafetyContract.approvalClass, "local_read_proposal");
   for (const permission of ["arbitraryCode", "shell", "dynamicImports", "network", "fileWrites", "modelCalls", "externalWrites", "backgroundChains"]) assert.equal(skillSafetyContract[permission], false);
   assert.doesNotMatch(source, /child_process|\beval\s*\(|new\s+Function|\bfetch\s*\(|import\s*\(/);
