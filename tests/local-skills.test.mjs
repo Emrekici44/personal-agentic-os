@@ -63,7 +63,8 @@ test("skill persistence, private API and UI preserve approval and audit boundari
   assert.match(store, /skill\.run\.preview|skill\.run\.review/);
   assert.match(store, /Skills benötigen die sichere Prozedur-API/);
   assert.match(route, /verifyLocalSession/);
-  assert.match(route, /loadAllowedSources/);
+  assert.match(route, /executeStandaloneSkill/);
+  assert.doesNotMatch(route, /executeLocalSkill|loadAllowedSources/);
   assert.match(route, /previewOnly: true/);
   assert.match(route, /externalActionsPerformed: false/);
   assert.doesNotMatch(route, /OpenAI|child_process|exec\s*\(|spawn\s*\(/i);
