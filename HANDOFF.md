@@ -122,6 +122,8 @@ Project root: `outputs/agentic-os`. Private source remote: `https://github.com/E
 - Web, Electron web content and Expo WebView responses now share restrictive CSP, frame/object denial, disabled camera/microphone/location/payment/USB and no-referrer/nosniff. Production scripts omit unsafe-eval; HSTS is intentionally absent to preserve the verified LAN HTTP development route.
 - Full verification for browser security headers: Root 151/151, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed. A temporary loopback production server returned 200 with all five headers and without unsafe-eval/HSTS; it was stopped afterward, port 3100 is free and the user service on 3000 remained 200.
 - The running local user service also picked up the headers and stayed free of live alerts/overflow; dashboard progress rendered 67/70.
+- Backup, recovery-diagnosis and archive timestamps now share one Europe/Berlin formatter so desktop and iPhone show the same operational time independently of device timezone; stored UTC values are unchanged.
+- Full verification for device-independent time display: Root 152/152, ESLint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export and isolated Next production build passed. Settings with Backup/Recovery/Archive rendered without alert or desktop/390×844 overflow; dashboard progress 68/71. No backup, restore or archive action ran.
 
 ## Immediate continuation
 

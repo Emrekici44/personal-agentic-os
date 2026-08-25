@@ -184,6 +184,8 @@ Last verified: 25.08.2026, Europe/Berlin.
 - Die private Oberfläche liefert CSP, Frame-/Objekt-Sperre, Geräteberechtigungs-Sperren sowie `no-referrer`/`nosniff`. Produktionsskripte erhalten kein `unsafe-eval`; HSTS bleibt wegen des lokalen LAN-HTTP-Pfads bewusst aus.
 - Verifikation der Browser-Schutzheader: Root 151/151, Lint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export und isolierter Produktionsbuild sind grün. Ein kurzlebiger Loopback-Produktionsserver lieferte 200 plus alle fünf Header, ohne `unsafe-eval`/HSTS; er wurde danach beendet, Port 3100 ist frei und der Nutzer-Dienst auf 3000 blieb 200.
 - Der laufende lokale Nutzer-Dienst übernahm die Header ebenfalls und blieb ohne Live-Alert oder Überlauf; Dashboard-Fortschritt 67/70.
+- Backup-, Recovery-Diagnose- und Archivzeitpunkte nutzen nun eine gemeinsame Europe/Berlin-Anzeige, sodass Desktop und iPhone unabhängig von der Gerätezeitzone denselben operativen Zeitpunkt zeigen; UTC-Speicherwerte bleiben unverändert.
+- Verifikation der gerätegleichen Zeitdarstellung: Root 152/152, Lint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export und isolierter Produktionsbuild sind grün. Einstellungen mit Backup/Recovery/Archiv renderten ohne Alert oder Überlauf auf Desktop/390×844; Dashboard 68/71. Es wurde weder Backup noch Restore/Archiv-Aktion ausgelöst.
 
 ## User boundaries
 

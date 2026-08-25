@@ -489,6 +489,13 @@ export const systemProgress = {
       status: "complete",
     },
     {
+      id: "berlin-display-time",
+      label: "Operative Zeitpunkte gerätegleich anzeigen",
+      evidence: "Backups · Recovery-Diagnose · Archiv · Europe/Berlin auf Desktop und iPhone · gespeicherte UTC-Zeit bleibt unverändert",
+      href: "#settings",
+      status: "complete",
+    },
+    {
       id: "ongoing-local-gap-audit",
       label: "Nächste lokale Bedien-/Recovery-Lücke prüfen",
       evidence: "Nur reversible lokale Änderungen · keine externen Writes, Migrationen, Installationen oder Kosten",

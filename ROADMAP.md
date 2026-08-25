@@ -124,3 +124,5 @@ Journal drafts no longer create plaintext browser-storage copies. New drafts liv
 The Expo shell now performs one private WebView reload only when iOS resumes from background with an already known failure. Manual Retry remains visible; there is no background polling, public fallback, broadened navigation or data mutation.
 
 Web, Electron web content and the Expo WebView now receive one restrictive browser-security header set: same-origin CSP, frame/object denial, disabled camera/microphone/location/payment/USB plus no-referrer/nosniff. HSTS is intentionally omitted so the verified local LAN HTTP development path remains usable.
+
+Backup, recovery-diagnosis and archive timestamps now render consistently in Europe/Berlin on desktop and iPhone while preserving their UTC source values.
