@@ -179,6 +179,8 @@ Last verified: 25.08.2026, Europe/Berlin.
 - Journalentwürfe werden nicht mehr als Klartext in Browser-/WebView-Storage geschrieben. Ein Altentwurf bleibt bis zur sichtbaren Übernahme oder zweistufigen Verwerfung unangetastet; nach Übernahme wird seine lokale Kopie erst nach erfolgreichem verschlüsseltem Shared-Store-Abschluss entfernt.
 - Verifikation der Journal-Draft-Grenze: Root 147/147, Lint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export und isolierter Produktionsbuild sind grün. Die reale Journalansicht zeigte die Sitzung-/Nicht-Autospeichern-Wahrheit ohne Altinhalte auszulesen; Desktop und 390×844 hatten 0 Alerts/Überlauf. Fortschritt 65/68, keine Testdaten oder Speicherlöschung.
 - Der methodengenaue Herkunftsaudit korrigierte die Guard-Platzierung für Skill-Update/Archiv/Review und Vault-Review: beide `PATCH`-Pfade prüfen jetzt vor dem Body; der Vault-`GET` bleibt ein reiner signierter Read. Der verschärfte Vertrag inventarisiert jede aktive Mutationsmethode einzeln; die vollständige Matrix bleibt Root 147/147 plus Desktop/Expo/Build grün.
+- Die Expo-Hülle lädt nach iOS Background→Active nur dann einmal neu, wenn zuvor bereits ein echter WebView-/Erreichbarkeitsfehler vorlag. Manueller Retry und Same-Origin-Navigation bleiben erhalten; es gibt kein Hintergrundpolling und keine Datenaktion.
+- Verifikation der Expo-Wiederaufnahme: Root 149/149, Lint, TypeScript, Electron 2/2, Expo TypeScript/Lint/Web-Export und isolierter Produktionsbuild sind grün. Live-Weboberfläche: Fortschritt 66/69, keine Alerts und 0 Überlauf auf Desktop/390×844. Die physische Background→Active-Abnahme bleibt gebündelt in `PENDING-DECISIONS.md`; sie wird nicht als bestanden behauptet.
 
 ## User boundaries
 

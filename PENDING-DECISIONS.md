@@ -69,7 +69,7 @@ Stand: 24.08.2026, Europe/Berlin. Diese Punkte blockieren nicht die übrige loka
 ## Physische iPhone-Abnahme des aktuellen Stands
 
 - Benötigte Entscheidung: Nach Emres Rückkehr Expo Go einmal vollständig neu öffnen und den aktuellen Stand auf dem iPhone kurz bestätigen.
-- Grund: Automatisierte 390×844-Prüfung ersetzt keine echte WebView-/Touch-Abnahme auf dem Gerät. Seit der letzten physischen Abnahme kamen Tageseditoren, Checklisten, Inbox-Filter, Companion-Bibliothek und Konfliktschutz hinzu.
+- Grund: Automatisierte 390×844-Prüfung ersetzt keine echte WebView-/Touch-Abnahme auf dem Gerät. Seit der letzten physischen Abnahme kamen Tageseditoren, Checklisten, Inbox-Filter, Companion-Bibliothek, Konfliktschutz und der einmalige Background→Active-Recovery-Pfad hinzu.
 - Auswirkung: Bestätigt die aktuellen mobilen Bedienpfade; bei einem Gerätefehler bleibt der Desktop-/Serverstand unverändert und der Fehler wird separat behoben.
 - Kosten/Datenschutz: Keine Kosten, kein externer Write und keine Testdaten erforderlich. Tailscale/Expo bleibt privat.
-- Sicherer nächster Schritt: Expo Go vollständig beenden/neu öffnen und nacheinander `Heute`, `Inbox`, `Chats & Modelle` sowie Light/Dark ohne Speichern persönlicher Testinhalte antippen.
+- Sicherer nächster Schritt: Expo Go vollständig beenden/neu öffnen und nacheinander `Heute`, `Inbox`, `Chats & Modelle` sowie Light/Dark ohne Speichern persönlicher Testinhalte antippen; danach bei sichtbarem Offlinezustand einmal in den Hintergrund und zurück wechseln und nur die Wiederverbindung bestätigen.

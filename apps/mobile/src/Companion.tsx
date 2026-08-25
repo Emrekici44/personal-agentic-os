@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Linking, Platform, StyleSheet, View } from "react-native";
+import { AppState, Linking, Platform, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { WebView } from "react-native-webview";
 import ShellScreen from "./ShellScreen";
@@ -29,6 +29,16 @@ export default function Companion() {
     const timer = setTimeout(() => setFailed(true), 8000);
     return () => clearTimeout(timer);
   }, [documentLoaded, failed, runtimeReady]);
+
+  useEffect(() => {
+    let previous = AppState.currentState;
+    const subscription = AppState.addEventListener("change", (next) => {
+      const resumed = /inactive|background/.test(previous) && next === "active";
+      previous = next;
+      if (resumed && failed) retry();
+    });
+    return () => subscription.remove();
+  }, [failed, retry]);
 
   if (!config.ok) {
     return (

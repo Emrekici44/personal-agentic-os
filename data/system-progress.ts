@@ -475,6 +475,13 @@ export const systemProgress = {
       status: "complete",
     },
     {
+      id: "expo-foreground-recovery",
+      label: "Expo nach echtem iOS-Offlinezustand wiederaufnehmen",
+      evidence: "Nur Background→Active + bestehender Fehler · genau ein privater Reload · sichtbarer Retry bleibt · kein Polling",
+      href: "#settings",
+      status: "complete",
+    },
+    {
       id: "ongoing-local-gap-audit",
       label: "Nächste lokale Bedien-/Recovery-Lücke prüfen",
       evidence: "Nur reversible lokale Änderungen · keine externen Writes, Migrationen, Installationen oder Kosten",
