@@ -6,6 +6,7 @@ $npm = (Get-Command npm.cmd -ErrorAction Stop).Source
 $localUrl = "http://127.0.0.1:3211"
 $runtimeRoot = Join-Path $env:LOCALAPPDATA "AgenticOS"
 $pidFile = Join-Path $runtimeRoot "private-web.pid"
+$authSecretFile = Join-Path $runtimeRoot "auth-secret"
 $defaultVault = Join-Path $env:USERPROFILE "Documents\Obsidian Vault\Emre"
 if (-not $env:AGENTIC_OS_OBSIDIAN_VAULT -and (Test-Path -LiteralPath $defaultVault)) {
   $env:AGENTIC_OS_OBSIDIAN_VAULT = $defaultVault
@@ -37,6 +38,19 @@ if (-not $dnsName) {
 
 $privateUrl = "https://${dnsName}"
 New-Item -ItemType Directory -Path $runtimeRoot -Force | Out-Null
+
+# The private API requires a stable signing key. Keep it outside the repository
+# and create it once for this Windows user when no explicit secret is supplied.
+if (-not $env:AUTH_SECRET) {
+  if (-not (Test-Path -LiteralPath $authSecretFile)) {
+    $secretBytes = New-Object byte[] 48
+    [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($secretBytes)
+    [Convert]::ToBase64String($secretBytes) |
+      Set-Content -LiteralPath $authSecretFile -Encoding ascii -NoNewline
+  }
+  $env:AUTH_SECRET = (Get-Content -LiteralPath $authSecretFile -Raw).Trim()
+}
+$env:APP_URL = $privateUrl
 
 if (-not (Test-Endpoint $localUrl)) {
   if (-not (Test-Path -LiteralPath (Join-Path $projectRoot ".next\BUILD_ID"))) {

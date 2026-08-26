@@ -35,7 +35,12 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   allowedDevOrigins,
   devIndicators: false,
-  distDir: process.env.AGENTIC_OS_BUILD_DIR || ".next",
+  // Keep development output away from the production build used by the
+  // private Tailscale server. Otherwise starting `next dev` can leave the
+  // persistent iPhone server with stale chunk references and a non-interactive UI.
+  distDir:
+    process.env.AGENTIC_OS_BUILD_DIR ||
+    (process.env.NODE_ENV === "development" ? ".next-dev" : ".next"),
   turbopack: { root: process.cwd() },
   async headers() {
     return [{ source: "/(.*)", headers: securityHeaders }];

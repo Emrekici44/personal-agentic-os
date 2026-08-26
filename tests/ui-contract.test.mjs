@@ -303,7 +303,7 @@ test("keeps the iPhone shell safe-area aware and resistant to touch and zoom bug
   assert.match(companion, /allowsBackForwardNavigationGestures=\{false\}/);
   assert.match(companion, /isMainDocument/);
   assert.match(companion, /message\?\.type !== "agentic-os-ready"/);
-  assert.match(companion, /setTimeout\(\(\) => setFailed\(true\), 8000\)/);
+  assert.match(companion, /setTimeout\(\(\) => setFailed\(true\), 12000\)/);
   assert.match(page, /mobileBridge\?\.postMessage/);
 });
 
@@ -326,6 +326,10 @@ test("keeps Tailscale access private, dynamic, and Funnel-free", async () => {
 
   assert.match(privateHelper, /http:\/\/127\.0\.0\.1:3211/);
   assert.match(privateHelper, /serve --bg --yes \$localUrl/);
+  assert.match(privateHelper, /auth-secret/);
+  assert.match(privateHelper, /RandomNumberGenerator/);
+  assert.match(privateHelper, /\$env:AUTH_SECRET/);
+  assert.match(privateHelper, /\$env:APP_URL = \$privateUrl/);
   assert.doesNotMatch(privateHelper, /& \$tailscale funnel/);
   assert.match(iphoneHelper, /\$status\.TailscaleIPs/);
   assert.match(iphoneHelper, /\$env:REACT_NATIVE_PACKAGER_HOSTNAME = \$tailscaleIp/);
