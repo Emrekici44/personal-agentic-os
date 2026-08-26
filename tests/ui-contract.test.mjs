@@ -39,7 +39,7 @@ test("keeps the futuristic shell responsive and motion-accessible", async () => 
   assert.match(page, /function MobileNav/);
   assert.match(
     page,
-    /function MobileNav[\s\S]*?<button[\s\S]*?onClick=\{\(\) => go\(id\)\}[\s\S]*?type="button"/,
+    /function MobileNav[\s\S]*?const choose=\(id:string\)=>\{setMoreOpen\(false\);go\(id\)\}[\s\S]*?<button[\s\S]*?onClick=\{\(\) => choose\(id\)\}[\s\S]*?type="button"/,
     "mobile navigation uses real touch buttons instead of WebView-intercepted anchors",
   );
   assert.match(css, /@media \(prefers-reduced-motion: reduce\)/);
@@ -59,6 +59,10 @@ test("gives every mobile destination and drawer control real navigation semantic
   assert.match(page, /aria-controls="primary-navigation"/);
   assert.match(page, /aria-expanded=\{menu\}/);
   assert.match(page, /aria-current=\{v === id \? "page"/);
+  assert.match(page, /Weitere Bereiche/);
+  assert.match(page, /\["brain", "Wissen"/);
+  assert.match(page, /\["integrations", "Verbindungen"/);
+  assert.match(page, /\["settings", "Einstellungen"/);
 });
 
 test("does not present generic action buttons without a handler as active", async () => {

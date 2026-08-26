@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AppState, Linking, Platform, StyleSheet, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { WebView } from "react-native-webview";
 import ShellScreen from "./ShellScreen";
 import { getWebConfig } from "./config";
@@ -9,7 +8,6 @@ type Request = { url: string };
 
 export default function Companion() {
   const config = useMemo(getWebConfig, []);
-  const insets = useSafeAreaInsets();
   const [failed, setFailed] = useState(false);
   const [loading, setLoading] = useState(true);
   const [documentLoaded, setDocumentLoaded] = useState(false);
@@ -44,8 +42,8 @@ export default function Companion() {
     return (
       <ShellScreen
         detail={`${config.reason} Starte auf dem Windows-Laptop „Agentic OS – iPhone starten“.`}
-        eyebrow="VERBINDUNG FEHLT"
-        title="Laptop zuerst starten"
+        eyebrow="PERSONAL OS NICHT KONFIGURIERT"
+        title="Verbindung einrichten"
       />
     );
   }
@@ -53,9 +51,9 @@ export default function Companion() {
   if (Platform.OS === "web") {
     return (
       <ShellScreen
-        detail={`Die iPhone-App lädt dieselbe Oberfläche von ${config.origin}. Der physische LAN-Start ist verifiziert; privater Fernzugriff wird separat bestätigt.`}
-        eyebrow="EXPO SHELL PREVIEW"
-        title="Bereit für Emres iPhone"
+        detail={`Die iPhone-App öffnet dieselbe private Oberfläche von ${config.origin}. Auf dem iPhone bleibt die zentrale Web-App die einzige Produktquelle.`}
+        eyebrow="IPHONE-ZUGANG"
+        title="Personal OS ist bereit"
       />
     );
   }
@@ -69,9 +67,9 @@ export default function Companion() {
             ? "Prüfe, ob Tailscale auf iPhone und Laptop verbunden ist und der Laptop eingeschaltet und wach bleibt."
             : "Laptop und iPhone müssen im selben WLAN sein. Prüfe außerdem die Windows-Firewall und lasse das Startfenster geöffnet."
         }
-        eyebrow="OFFLINE / NICHT ERREICHBAR"
+        eyebrow="VERBINDUNG UNTERBROCHEN"
         onAction={retry}
-        title="Agentic OS nicht erreichbar"
+        title="Personal OS nicht erreichbar"
       />
     );
   }
@@ -88,7 +86,7 @@ export default function Companion() {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+    <View style={styles.container}>
       <WebView
         key={reloadKey}
         allowsBackForwardNavigationGestures={false}
@@ -142,13 +140,9 @@ export default function Companion() {
         <View style={StyleSheet.absoluteFill}>
           <ShellScreen
             detail="Die gemeinsame private Oberfläche wird sicher vom Laptop geladen."
-            eyebrow={
-              config.mode === "private-https"
-                ? "TAILNET LINK INITIALIZING"
-                : "LOCAL LINK INITIALIZING"
-            }
+            eyebrow="PERSONAL OS"
             loading
-            title="Agentic OS wird verbunden"
+            title="Agentic OS wird geöffnet"
           />
         </View>
       ) : null}

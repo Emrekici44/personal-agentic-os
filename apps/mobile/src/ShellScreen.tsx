@@ -37,7 +37,7 @@ export default function ShellScreen({
         </View>
         <View>
           <Text style={styles.brand}>AGENTIC OS</Text>
-          <Text style={styles.brandMeta}>MOBILE COMPANION // LOCAL</Text>
+          <Text style={styles.brandMeta}>DEIN PERSONAL LIFE OS</Text>
         </View>
       </View>
 
@@ -61,7 +61,7 @@ export default function ShellScreen({
 
       <View style={styles.safety}>
         <View style={styles.safetyDot} />
-        <Text style={styles.safetyText}>Keine Cloud · keine API-Kosten · private Verbindung</Text>
+        <Text style={styles.safetyText}>Privater Zugang zu deinem persönlichen System</Text>
       </View>
     </View>
   );

@@ -517,7 +517,7 @@ function RetryNotice({ message, onRetry, label = "Erneut laden" }: { message: st
 function Today({ go, note }: any) {
   return <>
     <QuickCapture note={note}/>
-    <Home go={go}/>
+    <div className="todayOverview"><Home go={go}/></div>
     <div className="todayWork"><Habits embedded/></div>
   </>;
 }
@@ -1348,14 +1348,14 @@ function Agents({ note }: any) {
 }
 function AgentsAndSkills({note}:{note:(message:string)=>void}) {
   const [tab,setTab]=useState<"agents"|"skills">("agents");
-  return <>
+  return <div className="agentHub">
     <Intro eyebrow="DEINE ASSISTENTEN" title="Agenten und ihre Fähigkeiten."><p>Verwalte an einem Ort, wer dich wobei unterstützt. Technische Laufzeitdetails bleiben im Hintergrund.</p></Intro>
     <div className="dailyTabs" role="tablist" aria-label="Agenten und Skills">
       <button aria-selected={tab==="agents"} className={tab==="agents"?"active":""} onClick={()=>setTab("agents")} role="tab" type="button"><I.Bot/> Agenten</button>
       <button aria-selected={tab==="skills"} className={tab==="skills"?"active":""} onClick={()=>setTab("skills")} role="tab" type="button"><I.Sparkles/> Skills</button>
     </div>
     {tab==="agents"?<Agents note={note}/>:<Skills note={note}/>}
-  </>;
+  </div>;
 }
 function Skills({ note }: any) {
   const agentNames: Record<string,string> = {project_coach:"Projekt-Coach",faith_reflection:"Glaubensassistent",health_planner:"Gesundheitsplaner",finance_overview:"Finanzassistent",relationship_care:"Beziehungsassistent"};
@@ -2342,20 +2342,31 @@ function Settings({ brand, save, theme, changeTheme, note, preferenceState, relo
   );
 }
 function MobileNav({ v, go }: any) {
+  const [moreOpen,setMoreOpen]=useState(false);
+  const primary = [
+    ["home", "Heute", I.Gauge],
+    ["areas", "Leben", I.Orbit],
+    ["projects", "Projekte", I.PanelsTopLeft],
+    ["weekly", "Planung", I.CalendarRange],
+  ];
+  const secondary = [
+    ["agents", "Agenten & Skills", I.Bot, "Assistenten und Fähigkeiten"],
+    ["brain", "Wissen", I.Network, "Notizen und Obsidian"],
+    ["integrations", "Verbindungen", I.PlugZap, "Kalender und Dienste"],
+    ["settings", "Einstellungen", I.Settings2, "Darstellung und Datenschutz"],
+  ];
+  const choose=(id:string)=>{setMoreOpen(false);go(id)};
   return (
-    <div className="mobileNav">
-      {[
-        ["home", "Heute", I.Gauge],
-        ["areas", "Leben", I.Orbit],
-        ["projects", "Projekte", I.PanelsTopLeft],
-        ["weekly", "Planung", I.CalendarRange],
-        ["agents", "Agenten", I.Bot],
-      ].map(([id, n, Icon]: any) => (
+    <>
+      {moreOpen&&<button aria-label="Mehr-Menü schließen" className="mobileMoreShade" onClick={()=>setMoreOpen(false)} type="button"/>}
+      {moreOpen&&<section aria-label="Weitere Bereiche" className="mobileMore" role="dialog"><div><b>Weitere Bereiche</b><button aria-label="Mehr-Menü schließen" onClick={()=>setMoreOpen(false)} type="button"><I.X/></button></div>{secondary.map(([id,n,Icon,detail]:any)=><button aria-current={v===id?"page":undefined} key={id} onClick={()=>choose(id)} type="button"><Icon/><span><b>{n}</b><small>{detail}</small></span><I.ChevronRight/></button>)}</section>}
+      <div className="mobileNav">
+      {primary.map(([id, n, Icon]: any) => (
         <button
           aria-current={v === id ? "page" : undefined}
           aria-label={n}
           className={v === id ? "active" : ""}
-          onClick={() => go(id)}
+          onClick={() => choose(id)}
           key={id}
           type="button"
         >
@@ -2363,6 +2374,8 @@ function MobileNav({ v, go }: any) {
           <span>{n}</span>
         </button>
       ))}
-    </div>
+      <button aria-expanded={moreOpen} aria-label="Weitere Bereiche" className={secondary.some(([id])=>id===v)?"active":""} onClick={()=>setMoreOpen(current=>!current)} type="button"><I.Menu/><span>Mehr</span></button>
+      </div>
+    </>
   );
 }
