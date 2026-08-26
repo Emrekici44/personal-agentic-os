@@ -28,3 +28,9 @@ The launcher detects the laptop's current LAN IPv4 address, starts Next.js on th
 Verified locally: SDK 54 Expo Go project structure, TypeScript, Expo lint, static web export, and responsive checks at 375×667, 390×844, 430×932, and 844×390. The checks cover navigation reachability, 44-pixel touch targets, horizontal overflow, the Quick Capture position, the secondary menu, and portrait/landscape shell behavior. A prior physical iPhone launch over LAN proves network/runtime compatibility; device-specific visual differences can still require a focused device check. No iOS binary or installer has been produced.
 
 For private access away from home, see `REMOTE-ACCESS.md`. The optional Tailscale helper supplies a verified private HTTPS/MagicDNS URL to the same WebView and advertises Metro on the laptop's Tailscale IP. It never creates a public tunnel.
+
+## One product, mandatory verification
+
+Next.js remains the only screen and domain implementation. Electron and Expo are clients of that same UI. Run `npm run verify:clients` after shared UI changes. Before pushing, `npm run verify:all` additionally verifies the live private Tailscale HTTPS page, every referenced CSS/JavaScript asset, signed session creation, and Shared Store access. The repository pre-push hook runs this complete check.
+
+The private production server uses `.next-private`, while local development uses `.next-dev`. A normal desktop or CI build can therefore no longer invalidate the chunks currently used by the iPhone WebView.

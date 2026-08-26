@@ -16,13 +16,16 @@ Use the installed ChatGPT app/subscription for conversations. Use Agentic OS for
 2. Create a Web OAuth client with the exact local and future private-host redirect URLs.
 3. Register exactly `http://localhost:3000/api/calendar/callback` as the local redirect URI.
 4. Download the official Web OAuth client JSON, then run `Agentic OS - Google lokal importieren.cmd`. The importer validates the callback and writes Client ID/secret only to ignored `.env.local`; it never prints them.
-4. Copy `.env.example` to `.env.local`, set the four values, and generate `AUTH_SECRET` locally. Never paste values into chat or commit the file.
-5. Restart Agentic OS, connect from Integrations, select calendars, and verify the bounded week.
-6. The current connector is read-only. Write scope and actual commit logic require a separate reviewed change and renewed consent.
+5. Restart Agentic OS, connect from Verbindungen, and approve Calendar plus Tasks transparently in the same Google consent.
+6. Calendar and Tasks writes remain single-target, explicitly confirmed, and read-back verified. No background writes are enabled.
 
 Expected environment variable names: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `AUTH_SECRET`, and `APP_URL`. A future hosted deployment must set these in the host's encrypted secret manager.
 
-Without them, Agentic OS automatically uses clearly labeled fixed test data that cannot contact or modify Google.
+Without them, Calendar and Tasks remain honestly unconfigured; no fake events or tasks are shown.
+
+Existing Calendar grants must be approved again once to add the Tasks scope. Both services use the same private OAuth token, while the UI reports their permissions separately.
+
+OpenAI remains disabled until the user explicitly accepts API costs. `Agentic OS - OpenAI lokal konfigurieren.cmd` requests the key through a hidden prompt and requires positive daily, monthly, per-run, and estimated per-run limits. It writes only to git-ignored `.env.local`; restart Agentic OS afterward.
 
 ## Visual Studio Code
 

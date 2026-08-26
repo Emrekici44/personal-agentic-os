@@ -406,16 +406,6 @@ export default function App() {
             <I.Search />
             Suchen
           </button>
-          <button
-            aria-label={theme === "dark" ? "Light Mode aktivieren" : "Dark Mode aktivieren"}
-            className="themeSwitch"
-            disabled={preferenceState !== "online"}
-            onClick={() => changeTheme(theme === "dark" ? "light" : "dark")}
-            title={theme === "dark" ? "Light Mode" : "Dark Mode"}
-            type="button"
-          >
-            {theme === "dark" ? <I.Sun /> : <I.Moon />}
-          </button>
           <span className="avatar">E</span>
         </header>
         {runtimeHealth.state === "offline" && <div className="runtimeOffline" role="status"><I.WifiOff/><span><b>Gemeinsamer Datenkern nicht erreichbar</b>Eingaben bleiben in geöffneten Feldern, werden aber nicht als synchron gespeichert. Es gibt keinen stillen lokalen Ersatzstand.</span><button onClick={checkRuntimeHealth} type="button"><I.RefreshCw/>Erneut prüfen</button></div>}

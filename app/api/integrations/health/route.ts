@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { calendarConfig, calendarScopes, hasStoredToken, refreshedAccessToken, tokenScopes } from "@/lib/google-calendar";
 import { readVaultPreview, vaultConfigured } from "@/lib/obsidian-vault";
 import { providerPolicy } from "@/lib/openai-provider.mjs";
+import { googleTasksScopes } from "@/lib/google-tasks";
 import { storeStatus, verifyLocalSession } from "@/lib/shared-store";
 
 const headers = { "Cache-Control": "no-store, private" };
@@ -21,6 +22,7 @@ export async function GET(request: NextRequest) {
   let shared: any = null, sharedError = "";
   try { shared = storeStatus(); } catch { sharedError = "Lokaler Shared Store konnte nicht geprüft werden"; }
   const openai = providerPolicy(process.env), privateHost = process.env.AGENTIC_OS_PRIVATE_HOST?.trim(), requestHost = request.headers.get("x-forwarded-host") || request.headers.get("host") || "", forwardedProto = request.headers.get("x-forwarded-proto") || "";
+  const tasksConnected = calendarConnected && grantedScopes.includes(googleTasksScopes.write);
   const privateRouteVerifiedHere = Boolean(privateHost && requestHost.toLowerCase() === privateHost.toLowerCase() && forwardedProto === "https");
   const localRecords = shared?.counts || {};
   const connectors = [
@@ -63,13 +65,14 @@ export async function GET(request: NextRequest) {
       status: openai.configured && openai.mode === "api" && !openai.killSwitch ? "degraded" : "unconfigured", costClass: "Usage-based", classification: "optional_paid_api", lastSuccessfulSync: null,
       currentAction: "Keine Anfrage; API-Modus bleibt standardmäßig deaktiviert", recentError: null,
       permissionScope: ["Keine verifizierten Modelle", "Kein Client-Key", "Kill Switch"], privacy: "Prompts würden erst nach Kostenfreigabe serverseitig an OpenAI gesendet; aktuell findet keine Übertragung statt.",
-      reconnect: "Nur nach Emres separater Kostenfreigabe: serverseitigen Key, positive Tages-/Monatslimits und bewussten Kill-Switch-Wechsel konfigurieren.",
+      reconnect: "Nur nach bewusster Kostenfreigabe den lokalen OpenAI-Konfigurationslauncher verwenden; Key und Limits bleiben serverseitig in .env.local.",
       evidence: { mode: openai.mode, configured: openai.configured, killSwitch: openai.killSwitch, preciseUsageAvailable: false }, ...base(checkedAt),
     },
     {
       id: "google-tasks", name: "Google Tasks", area: "Aufgaben",
-      status: "unconfigured", costClass: "Unknown", classification: "new_oauth_scope", lastSuccessfulSync: null, currentAction: "Keine Verbindung oder Berechtigung aktiv", recentError: null,
-      permissionScope: ["Keine Tasks-Scopes"], privacy: "Eine spätere Verbindung wäre eine getrennte OAuth-Erweiterung und wird nicht aus Calendar abgeleitet.", reconnect: "Vor Aktivierung Scope, Datenumfang und Kosten prüfen; anschließend separaten Consent starten.", evidence: { calendarTokenReused: false }, ...base(checkedAt),
+      status: tasksConnected ? "online" : calendarConfiguration.configured ? "degraded" : "unconfigured", costClass: "Free", classification: "direct_api", lastSuccessfulSync: tasksConnected ? checkedAt : null,
+      currentAction: tasksConnected ? "Google-Tasks-Berechtigung serverseitig verifiziert" : calendarConfiguration.configured ? "Google-Verbindung erneut freigeben, um Tasks einzuschließen" : "Lokalen Google-OAuth-Client konfigurieren", recentError: null,
+      permissionScope: ["Google Tasks lesen", "Kontrollierte Einzel-Writes nach Bestätigung"], privacy: "Tasks verwenden dieselbe private Google-OAuth-Sitzung; keine Hintergrundwrites und keine stillen Löschungen.", reconnect: "Google im Bereich Verbindungen freigeben. Calendar und Tasks werden gemeinsam transparent angefragt.", evidence: { sharedGoogleConsent: true, writeScopeGranted: tasksConnected, exactApproval: true }, ...base(checkedAt),
     },
     {
       id: "health-local", name: "Gesundheit · manuell lokal", area: "Training, Erholung, Ernährung",

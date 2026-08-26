@@ -1,3 +1,5 @@
+param([switch]$Refresh, [switch]$NoPrompt)
+
 $ErrorActionPreference = "Stop"
 
 $projectRoot = Split-Path -Parent $PSScriptRoot
@@ -7,6 +9,7 @@ $localUrl = "http://127.0.0.1:3211"
 $runtimeRoot = Join-Path $env:LOCALAPPDATA "AgenticOS"
 $pidFile = Join-Path $runtimeRoot "private-web.pid"
 $authSecretFile = Join-Path $runtimeRoot "auth-secret"
+$privateBuildDir = ".next-private"
 $defaultVault = Join-Path $env:USERPROFILE "Documents\Obsidian Vault\Emre"
 if (-not $env:AGENTIC_OS_OBSIDIAN_VAULT -and (Test-Path -LiteralPath $defaultVault)) {
   $env:AGENTIC_OS_OBSIDIAN_VAULT = $defaultVault
@@ -37,10 +40,37 @@ if (-not $dnsName) {
 }
 
 $privateUrl = "https://${dnsName}"
+$env:AGENTIC_OS_PRIVATE_HOST = $dnsName
+$env:AGENTIC_OS_BUILD_DIR = $privateBuildDir
 New-Item -ItemType Directory -Path $runtimeRoot -Force | Out-Null
 
 # The private API requires a stable signing key. Keep it outside the repository
 # and create it once for this Windows user when no explicit secret is supplied.
+if (-not $env:AUTH_SECRET) {
+  $localEnv = Join-Path $projectRoot ".env.local"
+  if (Test-Path -LiteralPath $localEnv) {
+    $configuredSecret = Get-Content -LiteralPath $localEnv |
+      Where-Object { $_ -match '^AUTH_SECRET=(.+)$' } |
+      Select-Object -First 1
+    if ($configuredSecret -and $configuredSecret -match '^AUTH_SECRET=(.+)$') {
+      $env:AUTH_SECRET = $matches[1]
+    }
+  }
+}
+
+if ($Refresh) {
+  $listener = Get-NetTCPConnection -State Listen -LocalPort 3211 -ErrorAction SilentlyContinue |
+    Select-Object -First 1
+  if ($listener) {
+    $runningServer = Get-CimInstance Win32_Process -Filter "ProcessId=$($listener.OwningProcess)"
+    $escapedRoot = [regex]::Escape($projectRoot)
+    if ($runningServer.CommandLine -notmatch $escapedRoot -or $runningServer.CommandLine -notmatch 'next.+3211') {
+      throw "Port 3211 wird von einem anderen Prozess verwendet; sicherer Refresh wurde abgebrochen."
+    }
+    Stop-Process -Id $runningServer.ProcessId
+    Start-Sleep -Seconds 1
+  }
+}
 if (-not $env:AUTH_SECRET) {
   if (-not (Test-Path -LiteralPath $authSecretFile)) {
     $secretBytes = New-Object byte[] 48
@@ -53,8 +83,24 @@ if (-not $env:AUTH_SECRET) {
 $env:APP_URL = $privateUrl
 
 if (-not (Test-Endpoint $localUrl)) {
-  if (-not (Test-Path -LiteralPath (Join-Path $projectRoot ".next\BUILD_ID"))) {
-    throw "Der Produktions-Build fehlt. Bitte im Projekt einmal npm run build ausfuehren."
+  if ($Refresh -or -not (Test-Path -LiteralPath (Join-Path $projectRoot "$privateBuildDir\BUILD_ID"))) {
+    & $npm run build
+    if ($LASTEXITCODE -ne 0) {
+      throw "Der private Produktions-Build konnte nicht erstellt werden."
+    }
+    # Next rewrites this generated pointer to the active distDir. Keep the
+    # tracked source pointer stable for normal desktop/CI builds.
+    $nextEnv = Join-Path $projectRoot "next-env.d.ts"
+    $nextEnvSource = @(
+      '/// <reference types="next" />',
+      '/// <reference types="next/image-types/global" />',
+      'import "./.next/types/routes.d.ts";',
+      '',
+      '// NOTE: This file should not be edited',
+      '// see https://nextjs.org/docs/app/api-reference/config/typescript for more information.',
+      ''
+    ) -join [Environment]::NewLine
+    [IO.File]::WriteAllText($nextEnv, $nextEnvSource, [Text.UTF8Encoding]::new($false))
   }
 
   $server = Start-Process -FilePath $npm -ArgumentList @("run", "start:private-web") -WorkingDirectory $projectRoot -WindowStyle Hidden -PassThru
@@ -99,4 +145,4 @@ Write-Host "  Nur Tailnet-Geraete koennen zugreifen. Funnel ist AUS." -Foregroun
 Write-Host "  Der Laptop muss eingeschaltet, wach und am Strom bleiben."
 Write-Host "  Run Unattended wird nicht automatisch aktiviert."
 Write-Host ""
-Read-Host "Enter schliesst nur dieses Hinweisfenster"
+if (-not $NoPrompt) { Read-Host "Enter schliesst nur dieses Hinweisfenster" }

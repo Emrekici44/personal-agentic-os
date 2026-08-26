@@ -13,9 +13,11 @@
     "desktop": "npm --prefix apps/desktop start",
     "desktop:check": "npm --prefix apps/desktop run check",
     "mobile:check": "npm --prefix apps/mobile run check",
+    "verify:clients": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/verify-shared-clients.ps1",
+    "verify:all": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/verify-shared-clients.ps1 -RequireTailscale",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint . --ignore-pattern dist --ignore-pattern .next --ignore-pattern .next-verify",
+    "lint": "eslint . --ignore-pattern dist --ignore-pattern .next --ignore-pattern .next-dev --ignore-pattern .next-private --ignore-pattern .next-verify",
     "test": "node --test tests/*.test.mjs"
   },
   "dependencies": {

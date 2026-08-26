@@ -88,7 +88,8 @@ test("shares an accessible light and dark preference across desktop and mobile w
   ]);
   assert.match(page, /api\/state\/preferences\/theme/);
   assert.match(page, /data-theme=\{theme\}/);
-  assert.match(page, /aria-label=\{theme === "dark" \? "Light Mode aktivieren"/);
+  assert.doesNotMatch(page, /className="themeSwitch"/);
+  assert.match(page, /className="themeChoices"/);
   assert.match(css, /\.os\[data-theme="light"\]/);
   assert.match(mobileConfig, /"userInterfaceStyle": "automatic"/);
 });
@@ -327,6 +328,8 @@ test("keeps Tailscale access private, dynamic, and Funnel-free", async () => {
   assert.match(privateHelper, /http:\/\/127\.0\.0\.1:3211/);
   assert.match(privateHelper, /serve --bg --yes \$localUrl/);
   assert.match(privateHelper, /auth-secret/);
+  assert.match(privateHelper, /\.next-private/);
+  assert.match(privateHelper, /\[switch\]\$Refresh/);
   assert.match(privateHelper, /RandomNumberGenerator/);
   assert.match(privateHelper, /\$env:AUTH_SECRET/);
   assert.match(privateHelper, /\$env:APP_URL = \$privateUrl/);
