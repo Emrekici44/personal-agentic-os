@@ -190,6 +190,20 @@ header h1 {
   max-width: 1440px;
   margin: auto;
 }
+.quickCapture {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding: 12px 14px;
+}
+.quickCapture > svg { width: 20px; color: var(--sage); }
+.quickCapture label { min-width: 0; }
+.quickCapture input { width: 100%; border: 0; outline: 0; background: transparent; color: inherit; padding: 9px 0; }
+.quickCapture button { border: 0; border-radius: 9px; padding: 9px 14px; background: var(--ink); color: white; cursor: pointer; }
+.quickCapture button:disabled { opacity: .45; cursor: default; }
+.todayWork { margin-top: 28px; }
 .intro {
   display: flex;
   justify-content: space-between;

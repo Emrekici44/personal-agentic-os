@@ -17,7 +17,7 @@ const tailscaleIphoneHelperPath = new URL(
 test("uses Emre as the local user identity without the mistaken names", async () => {
   const page = await readFile(pagePath, "utf8");
 
-  assert.match(page, /Guten Abend, Emre\./);
+  assert.match(page, /Was ist heute wichtig\?/);
   assert.match(page, /className="avatar">E<\/span>/);
   assert.doesNotMatch(page, /\b(?:Eden|Eren)\b/i);
   assert.match(page, /localStorage\.setItem\("aos:" \+ k/);
@@ -48,7 +48,7 @@ test("keeps the futuristic shell responsive and motion-accessible", async () => 
 test("gives every mobile destination and drawer control real navigation semantics", async () => {
   const page = await readFile(pagePath, "utf8");
 
-  for (const destination of ["home", "areas", "inbox", "habits", "agents"]) {
+  for (const destination of ["home", "areas", "projects", "weekly", "agents"]) {
     assert.match(page, new RegExp(`\\["${destination}",`));
   }
   assert.match(page, /href=\{`#\$\{id\}`\}/);
@@ -148,17 +148,18 @@ test("shared clients expose offline truth and reload after version conflicts", a
   assert.match(page, /workflowState\.state==="online"&&!busy/);
 });
 
-test("command center derives planner, vault and OpenAI API status from live private endpoints", async () => {
+test("today derives planning and connection truth without exposing provider operations", async () => {
   const page = await readFile(pagePath, "utf8");
-  for (const endpoint of ["/api/calendar/status", "/api/planner", "/api/obsidian/status", "/api/openai/status"]) assert.match(page, new RegExp(endpoint.replaceAll("/", "\\/")));
+  for (const endpoint of ["/api/calendar/status", "/api/planner", "/api/obsidian/status"]) assert.match(page, new RegExp(endpoint.replaceAll("/", "\\/")));
   assert.match(page, /function Home\(\{ go \}: any\)/);
+  assert.match(page, /function Today\(\{ go, note \}: any\)/);
+  assert.match(page, /function QuickCapture/);
   assert.match(page, /const readSource = async \(url: string\)/);
   assert.match(page, /return \{ ok: false, result: null \}/);
   assert.match(page, /setPlannerState\(\{ state: planner\.ok \? "online" : "offline", plan: planner\.ok \? planner\.result\.plan \|\| null : null \}\)/);
-  assert.match(page, /openai\.result\.mode === "api" && openai\.result\.configured && !openai\.result\.killSwitch/);
-  assert.match(page, /sourceLabel\[x\[1\]\] \|\| "Nicht verifiziert"/);
   assert.match(page, /window\.addEventListener\("agentic-os:runtime-online",recover\)/);
-  assert.doesNotMatch(page, /\["OpenAI", "unconfigured"\]/);
+  assert.match(page, /\["agents", "Agenten & Skills"/);
+  assert.doesNotMatch(page, /\["chat", "Chats & Modelle"/);
 });
 
 test("loading and offline sources are never rendered as truthful zero counts", async () => {

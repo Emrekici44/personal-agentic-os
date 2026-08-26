@@ -1,11 +1,8 @@
 "use client";
-import { type MouseEvent, useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import * as I from "lucide-react";
-import { systemProgress } from "@/data/system-progress";
 import { runtimeHealthTransition, type RuntimeSourceState } from "@/lib/runtime-recovery";
 import { privateApiFetch } from "@/lib/private-client";
-import { MemoryReview } from "@/features/memory/MemoryReview";
-import { RuntimeOperations } from "@/features/agents/RuntimeOperations";
 type View =
   | "home"
   | "agents"
@@ -45,7 +42,7 @@ const areas = [
     "finance",
     "Finanzen",
     "#6098c8",
-    "Manuell, privat und ohne Transaktionen",
+    "Konten, Transaktionen, Budgets und Vermögen",
     I.WalletCards,
   ],
   [
@@ -55,20 +52,14 @@ const areas = [
     "Menschen und Kontaktpflege",
     I.UsersRound,
   ],
-  ["projects", "Projekte", "#d1a33c", "Gemeinsame Daten öffnen", I.LayoutGrid],
 ] as const;
 const navGroups: any[] = [
-  ["FOKUS", [
-    ["home", "Kommando", I.Gauge],
-    ["inbox", "Inbox", I.Inbox],
-    ["journal", "Heute", I.NotebookPen],
-    ["weekly", "Wochenplanung", I.CalendarRange],
+  ["DEIN LEBEN", [
+    ["home", "Heute", I.Sunrise],
+    ["areas", "Leben", I.Orbit],
     ["projects", "Projekte", I.PanelsTopLeft],
-  ]],
-  ["SYSTEM", [
-    ["agents", "Agenten", I.Bot],
-    ["skills", "Skills", I.Sparkles],
-    ["chat", "Chats & Modelle", I.MessagesSquare],
+    ["weekly", "Planung", I.CalendarRange],
+    ["agents", "Agenten & Skills", I.Bot],
     ["brain", "Wissen", I.Network],
     ["integrations", "Verbindungen", I.PlugZap],
     ["settings", "Einstellungen", I.Settings2],
@@ -336,8 +327,9 @@ export default function App() {
     window.addEventListener("keydown", closeOnEscape);
     return () => window.removeEventListener("keydown", closeOnEscape);
   }, [menu]);
-  const title =
-    v === "habits" ? "Heute" : nav.find((n) => n[0] === v)?.[1] || brand.name;
+  const title = v === "habits" || v === "journal" || v === "inbox"
+    ? "Heute"
+    : nav.find((n) => n[0] === v)?.[1] || areas.find((area) => area[0] === v)?.[1] || brand.name;
   return (
     <div className="os" data-theme={theme}>
       <aside
@@ -433,7 +425,7 @@ export default function App() {
           ref={contentRef}
           tabIndex={-1}
         >
-          {v === "home" && <Home go={navigate} />}{" "}
+          {v === "home" && <Today go={navigate} note={note} />}{" "}
           {v === "areas" && <Areas go={navigate} />} {v === "faith" && <Faith note={note} />}
           {v === "career" && <Career note={note} />}
           {v === "finance" && <Finance note={note} />}
@@ -456,7 +448,7 @@ export default function App() {
               note={note}
             />
           )}{" "}
-          {v === "agents" && <Agents note={note} />}{" "}
+          {v === "agents" && <AgentsAndSkills note={note} />}{" "}
           {v === "skills" && <Skills note={note} />}
           {v === "chat" && <Chats note={note} />}{" "}
           {v === "inbox" && <Inbox note={note} />}{" "}
@@ -522,12 +514,24 @@ function Intro({ eyebrow, title, children, action }: any) {
 function RetryNotice({ message, onRetry, label = "Erneut laden" }: { message: string; onRetry: () => void; label?: string }) {
   return <div className="inlineRecovery" role="alert"><I.WifiOff/><span>{message}</span><button onClick={onRetry} type="button"><I.RefreshCw/>{label}</button></div>;
 }
+function Today({ go, note }: any) {
+  return <>
+    <QuickCapture note={note}/>
+    <Home go={go}/>
+    <div className="todayWork"><Habits embedded/></div>
+  </>;
+}
+function QuickCapture({note}:{note:(message:string)=>void}) {
+  const {state,create}=useSharedRecords("inbox_items");
+  const [title,setTitle]=useState(""),[busy,setBusy]=useState(false);
+  const save=async()=>{const value=title.trim();if(value.length<2||state!=="online")return;setBusy(true);try{await create({title:value,content:"",status:"active",area:"Inbox",kind:"capture"});setTitle("");note("In der Inbox erfasst")}catch(error){note(error instanceof Error?error.message:"Konnte nicht erfasst werden")}finally{setBusy(false)}};
+  return <Card className="quickCapture"><I.PlusCircle/><label><span className="srOnly">Gedanke, Aufgabe oder Idee erfassen</span><input autoComplete="off" disabled={state!=="online"||busy} onChange={event=>setTitle(event.target.value)} onKeyDown={event=>{if(event.key==="Enter")void save()}} placeholder={state==="online"?"Gedanke, Aufgabe oder Idee erfassen …":"Inbox wird verbunden …"} value={title}/></label><button disabled={state!=="online"||busy||title.trim().length<2} onClick={save} type="button">Erfassen</button></Card>;
+}
 function Home({ go }: any) {
   const { records: tasks, state: taskState, reload: reloadTasks } = useSharedRecords("tasks");
   const [calendarState, setCalendarState] = useState("loading");
   const [plannerState, setPlannerState] = useState<any>({ state: "loading", plan: null });
   const [vaultState, setVaultState] = useState("loading");
-  const [openaiApiState, setOpenaiApiState] = useState("loading");
   const loadHomeSources = useCallback(async () => {
     try {
       const session = await privateApiFetch("/api/state/session", { method: "POST" });
@@ -541,21 +545,18 @@ function Home({ go }: any) {
           return { ok: false, result: null };
         }
       };
-      const [calendar, planner, vault, openai] = await Promise.all([
+      const [calendar, planner, vault] = await Promise.all([
         readSource("/api/calendar/status"),
         readSource("/api/planner"),
         readSource("/api/obsidian/status"),
-        readSource("/api/openai/status"),
       ]);
       setCalendarState(calendar.ok ? (calendar.result.connected ? "online" : calendar.result.configured ? "offline" : "unconfigured") : "offline");
       setPlannerState({ state: planner.ok ? "online" : "offline", plan: planner.ok ? planner.result.plan || null : null });
       setVaultState(vault.ok && vault.result.status === "online" ? "online" : vault.ok && !vault.result.configured ? "unconfigured" : "offline");
-      setOpenaiApiState(openai.ok && openai.result.mode === "api" && openai.result.configured && !openai.result.killSwitch ? "online" : openai.ok && !(openai.result.mode === "api" || openai.result.configured) ? "unconfigured" : "offline");
     } catch {
       setCalendarState("offline");
       setPlannerState({ state: "offline", plan: null });
       setVaultState("offline");
-      setOpenaiApiState("offline");
     }
   }, []);
   useEffect(() => {
@@ -568,7 +569,7 @@ function Home({ go }: any) {
   const openTasks = tasks.filter((task: any) => !task.done && task.status !== "archived");
   return (
     <>
-      <Intro eyebrow="DEIN SYSTEM AUF EINEN BLICK" title="Guten Abend, Emre.">
+      <Intro eyebrow="HEUTE" title="Was ist heute wichtig?">
         <p>Was braucht heute wirklich deine Aufmerksamkeit?</p>
       </Intro>
       <p className="sourceLine"><I.Database /> Fokus, Aufgaben, Bereichszähler und Verbindungsstatus stammen aus gemeinsamen oder verifizierten Quellen.</p>
@@ -593,7 +594,6 @@ function Home({ go }: any) {
           <Btn soft onClick={() => go("integrations")}>Verbindungen prüfen</Btn>
         </Card>
       </div>
-      <SystemProgress go={go} />
       <div className="sectionhead">
         <h3>Lebensbereiche</h3>
         <button onClick={() => go("areas")}>
@@ -634,21 +634,6 @@ function Home({ go }: any) {
             <p className="muted">Noch keine gemeinsamen Aufgaben.</p>
           )}
         </Card>
-        <Card>
-          <Tag>SYSTEMSTATUS</Tag>
-          {[
-            ["Wochenplaner", plannerState.state],
-            ["Google Calendar", calendarState],
-            ["OpenAI API", openaiApiState],
-            ["Obsidian", vaultState],
-          ].map((x) => (
-            <div className="statusline" key={x[0]}>
-              <i className={x[1]} />
-              {x[0]}
-              <small>{sourceLabel[x[1]] || "Nicht verifiziert"}</small>
-            </div>
-          ))}
-        </Card>
         <Card className="capacity">
           <Tag>WOCHENKAPAZITÄT · ECHTE QUELLEN</Tag>
           <h3>{plannerState.plan ? `${plannerState.plan.capacity.bufferPercent}% Puffer geschützt` : "Keine erfundene Auslastung"}</h3>
@@ -659,88 +644,12 @@ function Home({ go }: any) {
     </>
   );
 }
-function SystemProgress({ go }: any) {
-  const completeCount = systemProgress.items.filter(
-    (item) => item.status === "complete",
-  ).length;
-  const activeItem = systemProgress.items.find((item) => item.status === "active");
-  const userAction = systemProgress.items.find(
-    (item) => item.status === "user_action",
-  );
-
-  const openProgressLink = (event: MouseEvent<HTMLAnchorElement>, href?: string) => {
-    if (!href) return;
-    event.preventDefault();
-    go(href.slice(1));
-  };
-
-  return (
-    <section aria-labelledby="system-progress-title" className="card systemProgress">
-      <div className="progressHead">
-        <div>
-          <Tag>SYSTEMAUFBAU · FORTSCHRITT</Tag>
-          <h3 id="system-progress-title">{systemProgress.currentPhase}</h3>
-          <p aria-live="polite" role="status">
-            {activeItem ? `Aktiv: ${activeItem.label}` : "Kein interner Schritt aktiv"}
-          </p>
-        </div>
-        <span className="progressCount">
-          <b>{completeCount} von {systemProgress.items.length}</b>
-          Schritte abgeschlossen
-        </span>
-      </div>
-      <ol className="progressChecklist">
-        {systemProgress.items.map((item) => (
-          <li className={item.status} key={item.id}>
-            <i aria-hidden="true">
-              {item.status === "complete" ? (
-                <I.Check />
-              ) : item.status === "active" ? (
-                <I.LoaderCircle />
-              ) : item.status === "user_action" ? (
-                <I.UserRoundCheck />
-              ) : (
-                <I.Circle />
-              )}
-            </i>
-            <span>
-              <b>{item.label}</b>
-              <small>{item.evidence}</small>
-            </span>
-            {item.href && (
-              <a
-                aria-label={`${item.label} öffnen`}
-                href={item.href}
-                onClick={(event) => openProgressLink(event, item.href)}
-              >
-                Öffnen <I.ChevronRight />
-              </a>
-            )}
-          </li>
-        ))}
-      </ol>
-      <footer>
-        <span>
-          <I.Clock3 /> Zuletzt verifiziert: {systemProgress.lastVerifiedAt}
-        </span>
-        {userAction && (
-          <a
-            href={userAction.href}
-            onClick={(event) => openProgressLink(event, userAction.href)}
-          >
-            <I.TriangleAlert /> Wartet auf dich: {userAction.label}
-          </a>
-        )}
-      </footer>
-    </section>
-  );
-}
 function Areas({ go }: any) {
   const { records, state, reload } = useSharedRecords("area_records");
   return (
     <>
       <Intro
-        eyebrow="SECHS BEREICHE · EIN LEBEN"
+        eyebrow="FÜNF BEREICHE · EIN LEBEN"
         title="Dein Leben in Balance."
       >
         <p>
@@ -754,7 +663,7 @@ function Areas({ go }: any) {
       {state==="error"&&<RetryNotice message="Die gemeinsamen Bereichsdaten sind gerade nicht erreichbar; alle Zähler bleiben unverifiziert." onRetry={reload} label="Bereiche neu laden"/>}
       <div className="area-grid">
         {areas.map(([id, n, c, s, Icon], i) => {
-          const count = id === "projects" ? null : records.filter((record: any) => record.area === id).length;
+          const count = records.filter((record: any) => record.area === id).length;
           return (
           <Card className="areaHero" key={id}>
             <div style={{ "--c": c } as any} className="areaIcon">
@@ -1429,8 +1338,6 @@ function Agents({ note }: any) {
         <Card className="workflowResult"><div className="row"><div><Tag>OUTPUT & STATUS</Tag><h3>{activeRun ? workflowState.profiles.find((profile:any)=>profile.id===activeRun.workflowId)?.name : "Noch kein Lauf gewählt"}</h3></div>{activeRun&&<em className={`runStatus ${activeRun.status}`}>{activeRun.status}</em>}</div>{workflowError&&<p className="plannerError" role="alert"><I.TriangleAlert/>{workflowError}</p>}{!activeRun&&<div className="honestEmpty"><I.Bot/><span><b>Noch kein echter Vorschlagslauf</b>Wähle einen Workflow und formuliere einen Arbeitsauftrag. Es werden keine Ergebnisse erfunden.</span></div>}{activeRun&&<><p>{activeRun.output.summary}</p><div className="sourceCounts"><span><b>Lokale Regeln</b>Provider</span><span><b>Keines</b>Modell</span><span><b>{activeRun.output.runtime?.verifiedSourceCount??Object.keys(activeRun.sourceEvidence||{}).length}</b>Quellen verifiziert</span><span><b>{activeRun.steps?.length??0}</b>Run Steps</span><span><b>0</b>Externe Aktionen</span></div>{activeRun.steps?.length>0&&<ol className="skillSteps">{activeRun.steps.map((step:any)=><li key={step.id}>{step.index}. {step.type} · {step.status}</li>)}</ol>}<div className="workflowSuggestions">{activeRun.output.suggestions.map((item:any)=><label className={selectedSuggestions.includes(item.id)?"selected":""} key={item.id}><input checked={selectedSuggestions.includes(item.id)} disabled={activeRun.status==="reviewed"} onChange={()=>toggleSuggestion(item.id)} type="checkbox"/><span><b>{item.title}</b><small>{item.rationale}</small></span><em>Vorschlag</em></label>)}</div><div className="workflowActions">{activeRun.status === "proposal" && <><Btn onClick={!busy ? ()=>transition("review") : undefined}>Review speichern</Btn><button onClick={()=>transition("pause")} disabled={busy}>Pausieren</button></>}{activeRun.status === "paused" && <Btn onClick={!busy ? ()=>transition("resume") : undefined}>Workflow fortsetzen</Btn>}{activeRun.status === "reviewed" && <span><I.CheckCircle2/>Review abgeschlossen · keine Folgeaktion ausgeführt</span>}</div><small className="workflowBoundary"><I.Lock/>Externe oder folgenreiche Aktionen sind in diesem Workflow nicht implementiert und brauchen später eine eigene exakte Vorschau und Freigabe.</small></>}</Card>
       </div>
       {workflowState.runs.length > 0 && <Card className="workflowHistory"><Tag>RESUME & AUDIT</Tag><div>{workflowState.runs.slice(0,10).map((run:any)=><button className={activeRunId===run.id?"active":""} key={run.id} onClick={()=>setActiveRunId(run.id)}><I.History/><span><b>{workflowState.profiles.find((profile:any)=>profile.id===run.workflowId)?.name}</b><small>{new Intl.DateTimeFormat("de-DE",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit",timeZone:"Europe/Berlin"}).format(new Date(run.updatedAt))} · Schritt {run.currentStep}</small></span><em>{run.status}</em></button>)}</div></Card>}
-      <MemoryReview notify={note}/>
-      <RuntimeOperations notify={note}/>
       <div className="sectionhead"><h3>Eigene Agent-Metadaten</h3><span>{state === "online" ? `${records.length} persistent · nicht ausführbar` : state === "loading" ? "Konfigurationen werden geladen" : "Konfigurationen offline"}</span></div>
       {state === "error" && <RetryNotice message="Eigene Agent-Konfigurationen sind gerade nicht erreichbar." onRetry={reloadAgents} label="Konfigurationen neu laden"/>}
       {state === "online" && editing && <Card className="agentConfigurator"><div className="row"><Tag>AGENT-KONFIGURATOR · SICHERE VORSCHAU</Tag><button aria-label="Konfigurator schließen" onClick={()=>setEditing(null)}><I.X/></button></div><label>Name<input value={agentDraft.name} onChange={event=>setAgentDraft({...agentDraft,name:event.target.value})} placeholder="Agentname"/></label><label>Zweck<textarea value={agentDraft.purpose} onChange={event=>setAgentDraft({...agentDraft,purpose:event.target.value})} placeholder="Wofür soll diese Konfiguration später dienen?"/></label><div className="agentAreaChoices"><b>Zugeordnete Lebensbereiche</b><div>{agentAreas.map(([id,name])=><label key={id}><input checked={agentDraft.areas.includes(id)} onChange={()=>toggleAgentArea(id)} type="checkbox"/>{name}</label>)}</div></div><div className="agentProviderGrid"><label>Arbeitsmodus<select value={agentDraft.providerMode} onChange={event=>setAgentDraft({...agentDraft,providerMode:event.target.value,model:event.target.value==="subscription"?"chatgpt-companion-manual":"none"})}><option value="none">Kein Provider</option><option value="subscription">ChatGPT Companion · manuell</option><option disabled>OpenAI API · Kostenfreigabe nötig</option></select></label><label>Modellzugriff<input readOnly value={agentDraft.model==="chatgpt-companion-manual"?"Kein API-Modell · manuelle Übergabe":"Kein Modell"}/></label><label>Status<select value={agentDraft.status} onChange={event=>setAgentDraft({...agentDraft,status:event.target.value})}><option value="metadata_only">Nicht ausführbar</option><option value="paused">Pausiert</option></select></label></div><div className="workflowGate"><I.Lock/><span><b>Transparente Grenze</b>Speichern aktiviert weder einen Modellzugriff noch einen Workflow. Companion bedeutet nur manuelles Öffnen/Übernehmen.</span></div><div className="editorActions"><Btn onClick={agentDraft.name.trim().length>=2&&agentDraft.purpose.trim().length>=2?saveAgent:undefined}>Konfiguration speichern</Btn><button onClick={()=>setEditing(null)}>Abbrechen</button>{editing.id&&!agentArchiveArmed&&<button className="dangerQuiet" onClick={()=>setAgentArchiveArmed(true)}>Archivieren …</button>}{editing.id&&agentArchiveArmed&&<button className="dangerQuiet" onClick={archiveAgent}>Archivierung bestätigen</button>}</div></Card>}
@@ -1438,6 +1345,17 @@ function Agents({ note }: any) {
       <div className="agentMetadata">{records.map((agent:any)=><Card key={agent.id}><div className="row"><span className="agentIcon"><I.Bot/></span><i className="badge unconfigured">{agent.status==="paused"?"Pausiert":"Nicht ausführbar"}</i></div><h3>{agent.name||agent.title}</h3><p>{agent.purpose||"Zweck noch nicht beschrieben"}</p><div className="agentFacts"><span><b>Bereiche</b>{(agent.areas||[]).map((id:string)=>agentAreas.find(([area])=>area===id)?.[1]).filter(Boolean).join(" · ")||"Nicht zugeordnet"}</span><span><b>Modell</b>{agent.model==="chatgpt-companion-manual"?"Companion · manuell":"Keines"}</span><span><b>Aktivität</b>Keine Ausführung</span></div><button onClick={()=>{setEditing(agent);setAgentArchiveArmed(false);setAgentDraft({name:agent.name||agent.title,purpose:agent.purpose||"",areas:agent.areas||[],providerMode:agent.providerMode||"none",model:agent.model||"none",status:agent.status==="paused"?"paused":"metadata_only"})}}>Konfigurieren<I.Settings2/></button></Card>)}</div>
     </>
   );
+}
+function AgentsAndSkills({note}:{note:(message:string)=>void}) {
+  const [tab,setTab]=useState<"agents"|"skills">("agents");
+  return <>
+    <Intro eyebrow="DEINE ASSISTENTEN" title="Agenten und ihre Fähigkeiten."><p>Verwalte an einem Ort, wer dich wobei unterstützt. Technische Laufzeitdetails bleiben im Hintergrund.</p></Intro>
+    <div className="dailyTabs" role="tablist" aria-label="Agenten und Skills">
+      <button aria-selected={tab==="agents"} className={tab==="agents"?"active":""} onClick={()=>setTab("agents")} role="tab" type="button"><I.Bot/> Agenten</button>
+      <button aria-selected={tab==="skills"} className={tab==="skills"?"active":""} onClick={()=>setTab("skills")} role="tab" type="button"><I.Sparkles/> Skills</button>
+    </div>
+    {tab==="agents"?<Agents note={note}/>:<Skills note={note}/>}
+  </>;
 }
 function Skills({ note }: any) {
   const agentNames: Record<string,string> = {project_coach:"Projekt-Coach",faith_reflection:"Glaubensassistent",health_planner:"Gesundheitsplaner",finance_overview:"Finanzassistent",relationship_care:"Beziehungsassistent"};
@@ -2428,10 +2346,10 @@ function MobileNav({ v, go }: any) {
     <div className="mobileNav">
       {[
         ["home", "Heute", I.Gauge],
-        ["areas", "Bereiche", I.Orbit],
-        ["inbox", "Erfassen", I.PlusCircle],
-        ["habits", "Aufgaben", I.CheckSquare],
-        ["weekly", "Woche", I.CalendarRange],
+        ["areas", "Leben", I.Orbit],
+        ["projects", "Projekte", I.PanelsTopLeft],
+        ["weekly", "Planung", I.CalendarRange],
+        ["agents", "Agenten", I.Bot],
       ].map(([id, n, Icon]: any) => (
         <button
           aria-current={v === id ? "page" : undefined}
