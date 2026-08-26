@@ -22,6 +22,8 @@ test("Expo recovery remains explicit and does not poll or broaden navigation", (
   assert.match(companion, /target\.origin === config\.origin/);
   assert.match(companion, /onContentProcessDidTerminate/);
   assert.match(companion, /cacheEnabled=\{false\}/);
+  assert.match(companion, /setTimeout\(\(\) => setFailed\(true\), 12000\)/);
+  assert.match(companion, /onLoadEnd=\{\(\) => \{[\s\S]*?setLoading\(false\)/);
 });
 
 test("Expo stays a thin safe-area-aware shell around the shared product", () => {

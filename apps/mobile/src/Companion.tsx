@@ -10,23 +10,21 @@ export default function Companion() {
   const config = useMemo(getWebConfig, []);
   const [failed, setFailed] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [documentLoaded, setDocumentLoaded] = useState(false);
   const [runtimeReady, setRuntimeReady] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
 
   const retry = useCallback(() => {
     setFailed(false);
     setLoading(true);
-    setDocumentLoaded(false);
     setRuntimeReady(false);
     setReloadKey((value) => value + 1);
   }, []);
 
   useEffect(() => {
-    if (!documentLoaded || runtimeReady || failed) return;
-    const timer = setTimeout(() => setFailed(true), 8000);
+    if (!loading || runtimeReady || failed) return;
+    const timer = setTimeout(() => setFailed(true), 12000);
     return () => clearTimeout(timer);
-  }, [documentLoaded, failed, runtimeReady]);
+  }, [failed, loading, runtimeReady]);
 
   useEffect(() => {
     let previous = AppState.currentState;
@@ -111,9 +109,11 @@ export default function Companion() {
             setFailed(true);
           }
         }}
-        onLoadEnd={() => setDocumentLoaded(true)}
+        onLoadEnd={() => {
+          setLoading(false);
+          setFailed(false);
+        }}
         onLoadStart={() => {
-          setDocumentLoaded(false);
           setRuntimeReady(false);
           setLoading(true);
         }}
